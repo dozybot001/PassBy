@@ -5,9 +5,9 @@
 - 开发者：Zeng Deyang；App 内名称：PassBy。
 - Bundle ID：`cn.tenonai.apps.passby`；Team：`3U6LT38JKB`。
 - 版本 1.0，首个候选 build 1；iOS 17+，仅 iPhone，竖屏。
-- 首发免费，沿用 WeSaid 的中国大陆以外地区。实际上架地区须在 Connect 核对。
+- 首发买断制，美国区 US$1.99，其他地区采用 Apple 自动换算；已确认沿用 WeSaid 的 174 个中国大陆以外地区。
 - 主要商店语言：英语（美国）；补充简体中文。
-- 独立应用名 PassBy 已被占用；商店名称暂用 `PassBy — Password Notebook`。
+- 独立应用名 PassBy 已被占用；商店名称采用 `PassBy — Password Notebook`。
 - 隐私政策：`https://tenon.asia/passby/privacy/`。
 - 支持页面：`https://tenon.asia/passby/support/`。
 - 支持邮箱：`support@tenonai.cn`，经用户确认沿用 Tenon 的公共支持邮箱。
@@ -40,7 +40,7 @@ Your notebook is encrypted on your device using AES-256-GCM before syncing to yo
 
 Save your recovery key outside PassBy. You need it to open the same notebook on a new iPhone or after your local key becomes unavailable. The developer cannot recover a lost key or decrypt your notebook.
 
-Swipe down to keep an encrypted local draft while you switch apps. Save when you finish, or Cancel to discard the draft. PassBy supports English and Simplified Chinese, light and dark appearances, and adjustable text sizes.
+Swipe down to keep an encrypted local draft while you switch apps. Tap New password to resume it. Save when you finish, or Cancel to discard the draft. PassBy supports English and Simplified Chinese, light and dark appearances, and adjustable text sizes.
 
 Requirements: iPhone with iOS 17 or later, a device passcode, Face ID enrollment, and an iCloud account. Screen recording and mirroring prevent unlocking. Cold launch requires confirming your iCloud identity. PassBy does not provide AutoFill in this version.
 
@@ -64,7 +64,7 @@ PassBy 是一款简洁的 iPhone 密码本。每项记录包含标题、账户�
 
 请将恢复密钥保存在 PassBy 之外。新 iPhone 或本机密钥失效后，需要同一 iCloud 账号和恢复密钥才能打开密码本。开发者无法找回丢失的密钥或解密密码本。
 
-下滑关闭编辑页会保留加密的本机草稿，可切换应用后继续编辑；保存存入条目，取消丢弃草稿。支持中英文、深浅色外观及动态字号。
+下滑关闭编辑页会保留加密的本机草稿，点击“新建密码”恢复编辑；保存存入条目，取消丢弃草稿。支持中英文、深浅色外观及动态字号。
 
 需要 iOS 17 或更新系统、设备密码、已登记 Face ID 和 iCloud 账号。录屏与镜像期间无法解锁，冷启动需确认 iCloud 身份。当前版本不提供自动填充。
 
@@ -81,7 +81,7 @@ PassBy uses the system iCloud Apple Account and does not require a separate app 
 5. Leave and return to the app: Face ID is required again. Screen recording/mirroring intentionally prevents unlocking. Screenshots are permitted by iOS.
 6. Settings shows Apple Account binding and sync status, as well as privacy and support links. A second iPhone signed in to the same iCloud account requires the saved recovery key.
 
-Only an encrypted ciphertext asset and a format version are written to the private CloudKit database. The recovery key is never uploaded. There are no ads, purchases, tracking SDKs or developer-operated password servers.
+Only an encrypted ciphertext asset and a format version are written to the private CloudKit database. The recovery key is never uploaded. The app is a paid download with no subscriptions or in-app purchases. There are no ads, tracking SDKs or developer-operated password servers.
 
 ## 隐私与加密申报依据
 
@@ -102,6 +102,13 @@ Only an encrypted ciphertext asset and a format version are written to the priva
 - Connect 记录已创建：`6817881529`，名称 `PassBy — Password Notebook`，手机内显示名称仍为 PassBy。英文版本资料与审核说明已保存，选择手动发布。
 - 发布归档的应用已安装至连接的 iPhone。
 
-仍需完成：Connect 应用信息/中文资料/隐私/年龄问卷/地区与价格、构建上传及处理、真实设备与跨设备恢复验收、真实应用截图、审核联系方式、提交审核。
+- 2026-10-01：最新版 1.0（1）已重新归档、上传成功，处理完成并关联至版本；包含语言设置入口及仅手动恢复草稿的修复。
+- Connect 中英文资料、工具类别、内容版权、4+ 年龄分级与“未收集数据”隐私标签已保存；隐私发布经用户确认。
+- 买断 US$1.99，美国区显示预计收入 US$1.69；174 个海外地区，Mac / Vision Pro 不提供。
+- 审核联系人沿用 WeSaid，电话已按用户要求更新；私人联系信息不写入仓库。
+
+仍需完成：付费协议/收款配置状态核对、真实设备与跨设备恢复验收、真实应用截图、提交审核。
 
 截图：iPhone 6.9 英寸可用 1320×2868 竖屏，其他允许尺寸以 [Apple 官方说明](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/) 为准。必须使用脱敏测试条目，不能上传用户的真实账户与恢复密钥。
+
+用户于 2026-10-01 暂缓提供截图和跨设备恢复验证，当前未提交审核。
