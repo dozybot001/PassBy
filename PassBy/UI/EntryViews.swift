@@ -187,8 +187,8 @@ struct EntryEditorView: View {
                 if editingActive { _ = session.saveDraft(value) }
             }
         }
-        .interactiveDismissDisabled()
         .onDisappear {
+            if editingActive { _ = session.saveDraft(entry) }
             editingActive = false; entry = VaultEntry(); revealed = false; folderName = ""
         }
     }

@@ -26,7 +26,6 @@ struct PasswordGeneratorView: View {
                         Button { generate() } label: { Label("Generate another", systemImage: "arrow.clockwise") }
                             .buttonStyle(SecondaryButton()).disabled(options.alphabets.isEmpty)
                     }
-                    Rectangle().fill(Palette.rule).frame(height: 1)
                     VStack(spacing: 18) {
                         HStack {
                             Text("Length").fontWeight(.medium)

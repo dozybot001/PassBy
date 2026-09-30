@@ -127,3 +127,29 @@
 "Search passwords" = "搜索密码";
 
 "Close search" = "关闭搜索";
+
+"Linked to your Apple Account" = "已绑定你的 Apple 账号";
+"Apple Account unavailable" = "Apple 账号不可用";
+"Apple Account" = "Apple 账号";
+"PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email." = "PassBy 使用本机登录 iCloud 的 Apple 账号，不会索取你的 Apple 密码、姓名或邮箱。";
+"Changing the iCloud account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key." = "更换 iCloud 账号会锁定当前密码本。不同账号的数据独立加密，新设备还需恢复密钥才能打开。";
+"About PassBy" = "关于 PassBy";
+"Privacy policy" = "隐私政策";
+"Support" = "支持";
+"Email support" = "邮件联系支持";
+"Version" = "版本";
+"Effective October 1, 2026 · Zeng Deyang" = "生效日期：2026 年 10 月 1 日 · Zeng Deyang";
+"Your notebook" = "你的密码本";
+"Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK." = "标题、账户、密码、备注及文件夹在设备上使用 AES-256-GCM 加密后，再同步至你的 iCloud 私有数据库。PassBy 不使用开发者运营的密码服务器、广告或统计 SDK。";
+"Apple Account and Face ID" = "Apple 账号与 Face ID";
+"Your system iCloud account identifies the notebook. PassBy does not receive your Apple password, name or email. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "密码本通过系统 iCloud 账号识别。PassBy 不获取你的 Apple 密码、姓名或邮箱。Face ID 由 iOS 处理，应用只接收验证结果，不接收面部数据。";
+"Keys and recovery" = "密钥与恢复";
+"The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer." = "本机加密密钥受设备钥匙串和当前 Face ID 登记保护。恢复密钥不会上传，请在 PassBy 之外保存。若设备密钥失效且恢复密钥丢失，开发者无法解密密码本。";
+"Clipboard and drafts" = "剪贴板与草稿";
+"Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud." = "复制的内容仅保留在本机，60 秒后过期。接收粘贴的应用可以读取内容。未完成的条目以加密草稿保存在本机，不同步至 iCloud。";
+"Retention and deletion" = "保存与删除";
+"Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy." = "在 PassBy 中删除条目和文件夹后，请等待 iCloud 同步完成，使删除同步至密码本。卸载应用会删除本机文件，不会删除 iCloud 密码本。Apple 按其隐私政策管理 iCloud 存储及服务元数据。";
+"Support and your choices" = "支持与你的选择";
+"You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes." = "如有技术或隐私问题，可联系 support@tenonai.cn。你主动提供的信息仅用于处理支持请求。请勿发送密码、恢复密钥、Apple 验证码或设备密码。";
+"Online privacy policy" = "在线隐私政策";
+"Apple privacy policy" = "Apple 隐私政策";

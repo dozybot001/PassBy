@@ -88,7 +88,7 @@ struct LibraryView: View {
                 NotebookControls(folders: { showFolders = true }, newPassword: {
                         let id: UUID?
                         if case .folder(let value) = filter { id = value } else { id = nil }
-                        editor = VaultEntry(folderID: id)
+                        editor = session.draft ?? VaultEntry(folderID: id)
                 })
             }
             .navigationDestination(for: UUID.self) { id in EntryDetailView(id: id) }

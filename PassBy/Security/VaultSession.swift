@@ -19,6 +19,8 @@ final class VaultSession: ObservableObject {
     @Published var message: String?
     @Published private(set) var toast: String?
 
+    var isAppleAccountLinked: Bool { keyStore != nil && setup == .ready }
+
     private var gate = SessionGate()
     private let cloud = CloudNotebook()
     private var storage: VaultStorage?
