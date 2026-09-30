@@ -73,6 +73,24 @@ struct SecondaryButton: PrimitiveButtonStyle {
     }
 }
 
+struct IconButton: PrimitiveButtonStyle {
+    @ScaledMetric(relativeTo: .body) private var diameter = ControlMetrics.height
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        Button(action: configuration.trigger) {
+            configuration.label
+                .font(.body.weight(.medium))
+                .frame(width: diameter, height: diameter)
+                .foregroundStyle(Palette.ink)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .modifier(ControlSurface(circle: true))
+        .opacity(isEnabled ? 1 : 0.5)
+    }
+}
+
 struct InlineError: View {
     let text: String
     var body: some View {
@@ -128,4 +146,14 @@ struct ControlSurface: ViewModifier {
             content.background(prominent ? Palette.ink : Palette.rule.opacity(0.4), in: Capsule())
         }
     }
+}
+
+#Preview("Circular icon actions") {
+    HStack(spacing: 12) {
+        Button {} label: { Image(systemName: "eye") }.buttonStyle(IconButton())
+        Button {} label: { Image(systemName: "doc.on.doc") }.buttonStyle(IconButton())
+        Button {} label: { Image(systemName: "die.face.5") }.buttonStyle(IconButton())
+    }
+    .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Palette.paper).preferredColorScheme(.dark)
 }

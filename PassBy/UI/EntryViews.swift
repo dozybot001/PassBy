@@ -72,13 +72,13 @@ struct EntryDetailView: View {
                     .accessibilityLabel(hidden && !value.isEmpty ? L("Password hidden") : value)
                 if isPassword {
                     Button { revealed.toggle() } label: {
-                        Image(systemName: revealed ? "eye.slash" : "eye").frame(width: 22)
-                    }.buttonStyle(SecondaryButton())
+                        Image(systemName: revealed ? "eye.slash" : "eye")
+                    }.buttonStyle(IconButton())
                         .accessibilityLabel(L(revealed ? "Hide password" : "Show password"))
                 }
                 Button(action: copy) {
-                    Image(systemName: "doc.on.doc").frame(width: 22)
-                }.buttonStyle(SecondaryButton()).disabled(value.isEmpty)
+                    Image(systemName: "doc.on.doc")
+                }.buttonStyle(IconButton()).disabled(value.isEmpty)
                     .accessibilityLabel(L(isPassword ? "Copy password" : "Copy account"))
             }
             Rectangle().fill(Palette.rule).frame(height: 1)
@@ -115,11 +115,11 @@ struct EntryEditorView: View {
                         .font(.system(.body, design: .monospaced))
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
                         Button { showGenerator = true } label: {
-                            Image(systemName: "die.face.5").frame(width: 44, height: 44)
-                        }.buttonStyle(.borderless).accessibilityLabel("Generate strong password")
+                            Image(systemName: "die.face.5")
+                        }.buttonStyle(IconButton()).accessibilityLabel("Generate strong password")
                         Button { revealed.toggle() } label: {
-                            Image(systemName: revealed ? "eye.slash" : "eye").frame(width: 44, height: 44)
-                        }.buttonStyle(.borderless)
+                            Image(systemName: revealed ? "eye.slash" : "eye")
+                        }.buttonStyle(IconButton())
                             .accessibilityLabel(L(revealed ? "Hide password" : "Show password"))
                     }
                 }
