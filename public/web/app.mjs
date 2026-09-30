@@ -90,7 +90,7 @@ function renderWelcome() {
   intro.append(node('div','eyebrow',t('eyebrow')),node('h1','',t('heading')),node('p','intro',t('intro')));
   const security=node('div','security-notes');security.append(icon('lock'),node('span','',t('security')));intro.append(security);
   const card=node('section','unlock-card');card.append(node('h2','',t(signedIn?'unlock':'signIn')),node('p','',t('signInHelp')));
-  authIn.hidden=signedIn;authOut.hidden=!signedIn;card.append(authIn);
+  authIn.hidden=signedIn;authOut.hidden=!signedIn;card.append(authIn,authOut);
   if(signedIn) {
     const form=node('form'); const label=node('label','',t('key'));label.htmlFor='recovery-key';
     const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
