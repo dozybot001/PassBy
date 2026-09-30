@@ -166,8 +166,6 @@ struct ControlSurface: ViewModifier {
             Button("All") {}.buttonStyle(SecondaryButton(selected: true))
             Button("Unfiled") {}.buttonStyle(SecondaryButton())
         }
-        Button {} label: { Label("New folder", systemImage: "plus") }
-            .buttonStyle(SecondaryButton())
         Button {} label: { Label("Unlock with Face ID", systemImage: "faceid") }
             .buttonStyle(PrimaryButton())
     }

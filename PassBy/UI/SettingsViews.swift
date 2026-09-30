@@ -30,10 +30,10 @@ struct FoldersView: View {
                     Button {
                         editingID = nil; name = ""; showName = true
                     } label: { Label("New folder", systemImage: "plus") }
-                        .buttonStyle(SecondaryButton())
-                        .listRowBackground(Color.clear)
+                        .frame(minHeight: 40)
                 } footer: { Text("Deleting a folder keeps its passwords in Unfiled.") }
             }
+            .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden).background(Palette.paper)
             .navigationTitle("Folders").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
@@ -93,6 +93,7 @@ struct SettingsView: View {
                     Button("Lock notebook") { session.lock() }
                 }
             }
+            .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden).background(Palette.paper)
             .navigationTitle("Settings").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
