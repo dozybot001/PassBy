@@ -76,6 +76,14 @@ function render() {
   if(session.key) renderWorkspace(); else renderWelcome();
 }
 $('language').addEventListener('click',()=>{language=language==='zh'?'en':'zh';closeDialog();editor=null;render();});
+function decorateAuthButtons() {
+  for (const [holder, label] of [[authIn, t('connect')], [authOut, language === 'zh' ? '退出 iCloud' : 'Sign out of iCloud']]) {
+    const element = holder.querySelector('.apple-auth-button');
+    if (!element) continue;
+    element.setAttribute('role', 'button'); element.setAttribute('aria-label', label); element.tabIndex = 0;
+    element.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); element.click(); } };
+  }
+}
 function renderWelcome() {
   // Keep the Apple-authenticated button nodes while updating surrounding text.
   const welcome=node('section','welcome'), intro=node('div');
@@ -96,13 +104,13 @@ function renderWelcome() {
   } else {
     if(!authStarted) card.append(button(t(connecting?'connecting':'connect'),async()=>{
       if(connecting)return;connecting=true;render();
-      try{await session.cloud.authenticate(()=>{signedIn=true;connecting=false;authStarted=true;lock();},()=>{signedIn=false;lock();notify(t('signedOut'));},language);authStarted=true;}
+      try{await session.cloud.authenticate(()=>{signedIn=true;connecting=false;authStarted=true;lock();},()=>{signedIn=false;lock();notify(t('signedOut'));},language);authStarted=true;decorateAuthButtons();}
       catch(error){showError(document.querySelector('.unlock-card'),error);}
       finally{connecting=false;if(authStarted)render();else{const btn=document.querySelector('.unlock-card > button');if(btn)btn.textContent=t('connect');}}
     },'pill primary'));
     card.append(node('p','help',t('existingHelp')));
   }
-  welcome.append(intro,card);main.replaceChildren(welcome);
+  welcome.append(intro,card);main.replaceChildren(welcome);decorateAuthButtons();
 }
 function filteredEntries() {return session.vault.entries.filter(e=>(filter==='all'||(filter==='unfiled'?!e.folderID:e.folderID===filter))&&(`${e.title} ${e.account}`).toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((a,b)=>a.title.localeCompare(b.title,language));}
 function renderWorkspace() {
