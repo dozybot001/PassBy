@@ -84,7 +84,7 @@ struct LockView: View {
                     .font(.footnote).foregroundStyle(Palette.secondary)
                     .padding(.top, 22).frame(maxWidth: .infinity, alignment: .center)
             }
-            .padding(.horizontal, 28).padding(.top, 32).padding(.bottom, 32)
+            .padding(.horizontal, PageMetrics.horizontalPadding).padding(.top, 32).padding(.bottom, 32)
             .frame(maxWidth: 540)
             .frame(maxWidth: .infinity)
         }
@@ -128,7 +128,7 @@ struct RecoverySetupView: View {
                     InlineError(text: message)
                 }
             }
-            .padding(28).frame(maxWidth: 540).frame(maxWidth: .infinity)
+            .padding(PageMetrics.horizontalPadding).frame(maxWidth: 540).frame(maxWidth: .infinity)
         }
     }
 }

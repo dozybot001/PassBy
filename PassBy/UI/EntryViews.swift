@@ -34,7 +34,7 @@ struct EntryDetailView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
-                    .padding(24).frame(maxWidth: 640).frame(maxWidth: .infinity)
+                    .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24).frame(maxWidth: 640).frame(maxWidth: .infinity)
                     .privacySensitive()
                 }
                 .toolbar {
@@ -81,7 +81,6 @@ struct EntryDetailView: View {
                 }.buttonStyle(IconButton()).disabled(value.isEmpty)
                     .accessibilityLabel(L(isPassword ? "Copy password" : "Copy account"))
             }
-            Rectangle().fill(Palette.rule).frame(height: 1)
         }
     }
 }

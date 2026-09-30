@@ -23,7 +23,7 @@ struct NotebookHeader: View {
     let settings: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             NotebookTitle()
             Spacer(minLength: 12)
             Button(action: search) { Image(systemName: "magnifyingglass") }
@@ -34,7 +34,7 @@ struct NotebookHeader: View {
                 .buttonStyle(IconButton()).accessibilityLabel("Settings")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, 28).padding(.trailing, 20)
+        .padding(.horizontal, PageMetrics.horizontalPadding)
         .padding(.top, 32).padding(.bottom, 12)
     }
 }
@@ -58,6 +58,10 @@ struct NotebookMark: View {
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
+}
+
+enum PageMetrics {
+    static let horizontalPadding: CGFloat = 28
 }
 
 enum ControlMetrics {

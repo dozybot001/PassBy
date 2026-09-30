@@ -62,7 +62,7 @@ struct PasswordGeneratorView: View {
                     } label: { Label(L(copyOnly ? "Copy password" : "Use this password"), systemImage: copyOnly ? "doc.on.doc" : "checkmark") }
                         .buttonStyle(PrimaryButton()).disabled(password.isEmpty)
                 }
-                .padding(24)
+                .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)
             }
             .background(Palette.paper)
             .navigationTitle("Strong password").navigationBarTitleDisplayMode(.inline)

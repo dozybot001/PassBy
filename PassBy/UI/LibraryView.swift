@@ -46,7 +46,7 @@ struct LibraryView: View {
                                     count: session.vault.entries.filter { $0.folderID == folder.id }.count,
                                     value: .folder(folder.id), literal: true)
                             }
-                        }.padding(.horizontal, 28).padding(.vertical, 12)
+                        }.padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 12)
                     }
                     .opacity(showSearch ? 0 : 1)
                     .accessibilityHidden(showSearch)
@@ -66,7 +66,7 @@ struct LibraryView: View {
                                 }
                                 .listRowBackground(Palette.paper)
                                 .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
+                                .listRowInsets(EdgeInsets(top: 0, leading: PageMetrics.horizontalPadding, bottom: 0, trailing: PageMetrics.horizontalPadding))
                             }
                         }
                         .listStyle(.plain).scrollContentBackground(.hidden)
@@ -162,7 +162,7 @@ struct NotebookControls: View {
                 .buttonStyle(PrimaryButton())
         }
         .foregroundStyle(Palette.ink)
-        .padding(.horizontal, 28).padding(.vertical, 12)
+        .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 12)
         .background(Palette.paper)
     }
 }
@@ -201,7 +201,7 @@ struct NotebookSearchOverlay: View {
             Button(action: dismiss) { Image(systemName: "xmark") }
                 .buttonStyle(IconButton()).accessibilityLabel("Close search")
         }
-        .padding(.horizontal, 28).padding(.vertical, 12)
+        .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 12)
     }
 }
 
@@ -217,14 +217,14 @@ struct NotebookSearchOverlay: View {
                     Button("All") {}.buttonStyle(SecondaryButton(selected: true))
                     Button("Unfiled") {}.buttonStyle(SecondaryButton())
                     Spacer()
-                }.padding(.horizontal, 28).padding(.vertical, 12)
+                }.padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 12)
                 .opacity(showSearch ? 0 : 1)
                 List {
                     ForEach([VaultEntry(title: "Mail", account: "name@example.com"),
                              VaultEntry(title: "Travel", account: "traveler"),
                              VaultEntry(title: "Work", account: "name@example.com")]) { entry in
                         NavigationLink {} label: { LibraryEntryRow(entry: entry) }
-                            .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
+                            .listRowInsets(EdgeInsets(top: 0, leading: PageMetrics.horizontalPadding, bottom: 0, trailing: PageMetrics.horizontalPadding))
                             .listRowBackground(Palette.paper).listRowSeparator(.hidden)
                     }
                 }.listStyle(.plain).scrollContentBackground(.hidden)
