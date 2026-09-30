@@ -107,7 +107,8 @@ struct LibraryView: View {
                 if case .folder(let id) = filter, !folders.contains(where: { $0.id == id }) { filter = .all }
             }
             .task {
-                if let draft = session.draft { editor = draft }
+                // Drafts resume only through New password. This task restarts
+                // when returning from a detail page or unlocking the notebook.
                 // Sync remote edits while the notebook is open. No sync task reads
                 // a decrypted notebook when the app is locked.
                 while !Task.isCancelled {

@@ -142,7 +142,7 @@ struct EntryEditorView: View {
                     }
                 }
                 Section {
-                    Text("Your draft is saved encrypted on this iPhone. Switch apps to paste, then unlock with Face ID to continue editing.")
+                    Text("Your draft is saved encrypted on this iPhone. After unlocking, tap New password to resume it.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
                 }
             }

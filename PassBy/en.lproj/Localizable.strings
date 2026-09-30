@@ -114,7 +114,7 @@
 "Use this password" = "Use this password";
 "Strong password" = "Strong password";
 "Generate strong password" = "Generate strong password";
-"Your draft is saved encrypted on this iPhone. Switch apps to paste, then unlock with Face ID to continue editing." = "Your draft is saved encrypted on this iPhone. Switch apps to paste, then unlock with Face ID to continue editing.";
+"Your draft is saved encrypted on this iPhone. After unlocking, tap New password to resume it." = "Your draft is saved encrypted on this iPhone. After unlocking, tap New password to resume it.";
 "For important accounts, use 20 or more characters and multiple character types." = "For important accounts, use 20 or more characters and multiple character types.";
 
 "Clear search" = "Clear search";
