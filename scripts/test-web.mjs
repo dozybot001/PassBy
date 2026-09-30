@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { recoveryKey, openNotebook, sealNotebook, generatePassword } from '../public/web/crypto.mjs';
 import { validateVault, mergeVault } from '../public/web/model.mjs';
 import { NotebookSession } from '../public/web/session.mjs';
+import { CloudNotebook } from '../public/web/cloud.mjs';
 const id = '11111111-1111-4111-8111-111111111111';
 const entry = {id,title:'Example',account:'example@test.invalid',password:'Test-Only-Password',notes:'兼容性'};
 const vault = () => ({schemaVersion:1,folders:[],entries:[{...entry}]});
@@ -53,4 +54,20 @@ test('lock prevents an in-flight unlock from restoring secrets',async()=>{
 test('stale save retries with three-way merge and change tag',async()=>{
   let saves=0;const remote=vault();remote.entries[0].account='remote-edit';const cloud={fetch:async()=>({record:{recordChangeTag:String(saves)},bytes:await sealNotebook(remote,key)}),save:async(record,bytes)=>{saves++;if(saves===1)throw Object.assign(new Error(),{code:'conflict'});assert.equal(record.recordChangeTag,'1');assert.equal((await openNotebook(bytes,key)).entries.length,2);return record;}};
   const session=new NotebookSession(cloud);session.key=key;session.base=vault();session.vault=vault();const local=vault();local.entries[0].password='local-edit';assert.equal(await session.save(local),1);assert.equal(saves,2);
+});
+test('CloudKit transport accepts only Apple HTTPS assets, and uses encrypted Blob and change tag',async()=>{
+  const cloud=new CloudNotebook(),originalFetch=globalThis.fetch;
+  let url='https://cvws.icloud-content.com/file/${f}?token=example',saved;
+  cloud.database={fetchRecords:async()=>({records:[{recordName:'notebook-v1',recordType:'Notebook',fields:{format:{value:1},ciphertext:{value:{downloadURL:url}}}}]}),saveRecords:async record=>{saved=record;return{records:[record]};}};
+  globalThis.fetch=async assetURL=>{assert.equal(assetURL,'https://cvws.icloud-content.com/file/notebook.enc?token=example');return{ok:true,arrayBuffer:async()=>new ArrayBuffer(28)};};
+  try{
+    await cloud.fetch();
+    url='https://icloud-content.com.attacker.invalid/file';await assert.rejects(cloud.fetch(),{code:'invalidNotebook'});
+    url='http://cvws.icloud-content.com/file';await assert.rejects(cloud.fetch(),{code:'invalidNotebook'});
+    const sealed=await sealNotebook(vault(),key);await cloud.save({recordName:'notebook-v1',recordChangeTag:'expected-tag'},sealed);
+    assert.equal(saved.recordChangeTag,'expected-tag');assert.equal(saved.fields.format.value,1);
+    assert.deepEqual(await openNotebook(await saved.fields.ciphertext.value.arrayBuffer(),key),vault());
+    cloud.database.fetchRecords=async()=>({hasErrors:true,errors:[{ckErrorCode:'NOT_FOUND'}]});await assert.rejects(cloud.fetch(),{code:'noNotebook'});
+    cloud.database.saveRecords=async()=>({hasErrors:true,errors:[{ckErrorCode:'CONFLICT'}]});await assert.rejects(cloud.save({},sealed),{code:'conflict'});
+  }finally{globalThis.fetch=originalFetch;}
 });

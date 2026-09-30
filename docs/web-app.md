@@ -56,7 +56,7 @@ token deliberately does not authorize localhost. UI verification used an
 isolated `/tmp` harness with a fake cloud transport and example entries; no
 test transport or vault is shipped in `public/`.
 
-Commit on main, then run `scripts/publish-site.sh`. It runs the tests/checks,
+Commit on main, then run `bash scripts/publish-site.sh`. It runs the tests/checks,
 exports exact committed static files, validates the SHA-256 manifest, validates
 Caddy, reloads with rollback on failure, compares every publicly served file,
 and only then updates `/opt/passby-site/current`. No native app binary changes.

@@ -34,11 +34,12 @@ export class CloudNotebook {
     if (!record) throw new NotebookError('noNotebook');
     if (record.recordType !== 'Notebook' || record.fields?.format?.value !== 1) throw new NotebookError('version');
     const url = record.fields?.ciphertext?.value?.downloadURL;
-    const assetURL = new URL(url);
+    if (typeof url !== 'string') throw new NotebookError('invalidNotebook');
+    const assetURL = new URL(url.replace('${f}', 'notebook.enc'));
     // CloudKit supplies Apple CDN URLs. Never follow a record-supplied URL to an
     // arbitrary host (including a hostile container record).
     if (assetURL.protocol !== 'https:' || !/(^|\.)(icloud\.com|icloud-content\.com|apple\.com|apple-cloudkit\.com)$/.test(assetURL.hostname)) throw new NotebookError('invalidNotebook');
-    const asset = await fetch(assetURL.href.replace('${f}', 'notebook.enc'), { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
+    const asset = await fetch(assetURL.href, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
     if (!asset.ok) throw new NotebookError('service');
     return { record, bytes: await asset.arrayBuffer() };
   }
