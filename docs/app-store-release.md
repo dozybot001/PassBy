@@ -24,7 +24,7 @@ Keychain 隔离。`CKAccountChanged` 使会话立即锁定；每次同步重新�
 
 ## 商店英文文案
 
-副标题：`Private passwords. Simple notes.`
+副标题：`Your private password notebook`
 
 推广文本：`A quiet password notebook for iPhone. Organize accounts, generate strong passwords, and sync an encrypted notebook through your own iCloud.`
 

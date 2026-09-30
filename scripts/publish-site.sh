@@ -14,7 +14,7 @@ files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in sorted((root / 'public').rglob('*')) if p.is_file()}
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
 PY
-tar -czf "$staging/site.tar.gz" -C "$staging" public manifest.json
+COPYFILE_DISABLE=1 tar --no-xattrs -czf "$staging/site.tar.gz" -C "$staging" public manifest.json
 incoming="/tmp/passby-site-$release.tar.gz"
 scp -q "$staging/site.tar.gz" "wesaid-prod:$incoming"
 ssh -o BatchMode=yes wesaid-prod sudo -n bash -s -- "$release" "$incoming" <<'REMOTE'
@@ -69,6 +69,7 @@ if ! curl --fail --silent --show-error --max-time 20 https://tenon.asia/passby/p
     exit 1
 fi
 cp "$lock/previous.caddy" "$directory/ingress-before.caddy"
+find "$directory" -type f -exec chmod 0444 {} +
 ln -sfn "$directory" /opt/passby-site/current
 printf '%s\n' "$release" > /opt/passby-site/last-successful-commit
 rm -f "$incoming"
