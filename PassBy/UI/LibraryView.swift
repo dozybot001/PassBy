@@ -127,7 +127,7 @@ struct NotebookControls: View {
     @Binding var search: String
     let folders: () -> Void
     let newPassword: () -> Void
-    @ScaledMetric(relativeTo: .body) private var height: CGFloat = 44
+    @ScaledMetric(relativeTo: .body) private var height = ControlMetrics.height
 
     var body: some View {
         VStack(spacing: 12) {
@@ -171,28 +171,6 @@ struct NotebookControls: View {
         .foregroundStyle(Palette.ink)
         .padding(.horizontal, 20).padding(.vertical, 12)
         .background(Palette.paper)
-    }
-}
-
-private struct ControlSurface: ViewModifier {
-    var circle = false
-    var prominent = false
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            if circle {
-                content.glassEffect(.regular.interactive(), in: Circle())
-            } else if prominent {
-                content.glassEffect(.regular.tint(Palette.ink).interactive(), in: Capsule())
-            } else {
-                content.glassEffect(.regular, in: Capsule())
-            }
-        } else if circle {
-            content.background(Palette.rule.opacity(0.4), in: Circle())
-        } else {
-            content.background(prominent ? Palette.ink : Palette.rule.opacity(0.4), in: Capsule())
-        }
     }
 }
 

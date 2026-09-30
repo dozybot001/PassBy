@@ -31,51 +31,45 @@ struct NotebookMark: View {
     }
 }
 
-struct PrimaryButton: PrimitiveButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Group {
-            if #available(iOS 26, *) {
-                button(configuration).buttonStyle(.glassProminent)
-            } else {
-                button(configuration).buttonStyle(.borderedProminent)
-            }
-        }
-        .buttonBorderShape(.capsule)
-        .controlSize(.regular)
-        .tint(Palette.accent)
-    }
+enum ControlMetrics {
+    static let height: CGFloat = 44
+}
 
-    private func button(_ configuration: Configuration) -> some View {
+struct PrimaryButton: PrimitiveButtonStyle {
+    @ScaledMetric(relativeTo: .body) private var height = ControlMetrics.height
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
         Button(action: configuration.trigger) {
             configuration.label
                 .font(.body.weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 24)
+                .padding(.horizontal, 18)
+                .frame(maxWidth: .infinity, minHeight: height)
                 .foregroundStyle(Palette.paper)
+                .contentShape(Capsule())
         }
+        .buttonStyle(.plain)
+        .modifier(ControlSurface(prominent: true))
+        .opacity(isEnabled ? 1 : 0.5)
     }
 }
 
 struct SecondaryButton: PrimitiveButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Group {
-            if #available(iOS 26, *) {
-                button(configuration).buttonStyle(.glass)
-            } else {
-                button(configuration).buttonStyle(.bordered)
-            }
-        }
-        .buttonBorderShape(.capsule)
-        .controlSize(.regular)
-        .tint(Palette.ink)
-    }
+    @ScaledMetric(relativeTo: .body) private var height = ControlMetrics.height
+    @Environment(\.isEnabled) private var isEnabled
 
-    private func button(_ configuration: Configuration) -> some View {
+    func makeBody(configuration: Configuration) -> some View {
         Button(action: configuration.trigger) {
             configuration.label
                 .font(.body.weight(.medium))
-                .frame(minHeight: 24)
+                .padding(.horizontal, 18)
+                .frame(minHeight: height)
                 .foregroundStyle(Palette.ink)
+                .contentShape(Capsule())
         }
+        .buttonStyle(.plain)
+        .modifier(ControlSurface())
+        .opacity(isEnabled ? 1 : 0.5)
     }
 }
 
@@ -111,5 +105,27 @@ struct StatusToast: View {
             .background(.regularMaterial, in: Capsule())
             .padding(.bottom, 18)
             .allowsHitTesting(false)
+    }
+}
+
+struct ControlSurface: ViewModifier {
+    var circle = false
+    var prominent = false
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            if circle {
+                content.glassEffect(.regular.interactive(), in: Circle())
+            } else if prominent {
+                content.glassEffect(.regular.tint(Palette.ink).interactive(), in: Capsule())
+            } else {
+                content.glassEffect(.regular, in: Capsule())
+            }
+        } else if circle {
+            content.background(Palette.rule.opacity(0.4), in: Circle())
+        } else {
+            content.background(prominent ? Palette.ink : Palette.rule.opacity(0.4), in: Capsule())
+        }
     }
 }
