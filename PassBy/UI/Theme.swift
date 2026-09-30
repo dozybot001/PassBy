@@ -168,8 +168,6 @@ struct ControlSurface: ViewModifier {
         }
         Button {} label: { Label("New folder", systemImage: "plus") }
             .buttonStyle(SecondaryButton())
-        Button("Sync now") {}.buttonStyle(SecondaryButton())
-        Button("Lock notebook") {}.buttonStyle(SecondaryButton())
         Button {} label: { Label("Unlock with Face ID", systemImage: "faceid") }
             .buttonStyle(PrimaryButton())
     }

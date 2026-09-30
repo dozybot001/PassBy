@@ -73,9 +73,7 @@ struct SettingsView: View {
                 Section("iCloud") {
                     LabeledContent("Status", value: status)
                     Button("Sync now") { Task { await session.syncNow() } }
-                        .buttonStyle(SecondaryButton())
                         .disabled(session.syncStatus == .syncing)
-                        .listRowBackground(Color.clear)
                     if let message = session.syncMessage {
                         Text(message).font(.footnote).foregroundStyle(Palette.secondary)
                     }
@@ -93,8 +91,6 @@ struct SettingsView: View {
                 }
                 Section {
                     Button("Lock notebook") { session.lock() }
-                        .buttonStyle(SecondaryButton())
-                        .listRowBackground(Color.clear)
                 }
             }
             .scrollContentBackground(.hidden).background(Palette.paper)
