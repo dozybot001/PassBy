@@ -28,7 +28,7 @@ struct PasswordGeneratorView: View {
                             Text("\(options.length)").monospacedDigit().foregroundStyle(Palette.accent)
                         }
                         Slider(value: Binding(get: { Double(options.length) },
-                            set: { options.length = Int($0) }), in: 12...64, step: 1)
+                            set: { options.length = Int($0) }), in: Double(PasswordOptions.lengthRange.lowerBound)...Double(PasswordOptions.lengthRange.upperBound), step: 1)
                             .accessibilityLabel("Password length")
                             .accessibilityValue("\(options.length)")
                         Toggle("Lowercase letters (a–z)", isOn: $options.lowercase).tint(Palette.control)

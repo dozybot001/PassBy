@@ -2,6 +2,7 @@ import Foundation
 import Security
 
 struct PasswordOptions: Equatable {
+    static let lengthRange = 8...24
     var length = 20
     var lowercase = true
     var uppercase = true
@@ -21,7 +22,7 @@ struct PasswordOptions: Equatable {
 enum PasswordGenerator {
     static func generate(options: PasswordOptions) throws -> String {
         let alphabets = options.alphabets
-        guard (12...64).contains(options.length), !alphabets.isEmpty else {
+        guard PasswordOptions.lengthRange.contains(options.length), !alphabets.isEmpty else {
             throw PasswordGenerationError.invalidOptions
         }
         let pool = alphabets.flatMap { $0 }
