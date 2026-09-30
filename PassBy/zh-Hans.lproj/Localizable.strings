@@ -153,3 +153,6 @@
 "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes." = "如有技术或隐私问题，可联系 support@tenonai.cn。你主动提供的信息仅用于处理支持请求。请勿发送密码、恢复密钥、Apple 验证码或设备密码。";
 "Online privacy policy" = "在线隐私政策";
 "Apple privacy policy" = "Apple 隐私政策";
+
+"Language" = "语言 / Language";
+"Choose English or Simplified Chinese in iOS Settings for PassBy. If Language is missing, add the language in General > Language & Region first." = "在 iOS 的 PassBy 设置中选择英文或简体中文。如果没有语言选项，请先在“通用 > 语言与地区”中添加该语言。";

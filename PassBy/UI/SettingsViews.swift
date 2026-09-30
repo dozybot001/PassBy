@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct FoldersView: View {
     @EnvironmentObject private var session: VaultSession
@@ -96,6 +97,20 @@ struct SettingsView: View {
                 Section("Recovery") {
                     Text("Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys.")
                         .font(.subheadline).foregroundStyle(Palette.secondary)
+                }
+                Section {
+                    Link(destination: URL(string: UIApplication.openSettingsURLString)!) {
+                        HStack {
+                            Label("Language", systemImage: "globe")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(Palette.secondary)
+                        }
+                        .foregroundStyle(Palette.ink)
+                    }
+                } footer: {
+                    Text("Choose English or Simplified Chinese in iOS Settings for PassBy. If Language is missing, add the language in General > Language & Region first.")
                 }
                 Section("About PassBy") {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
