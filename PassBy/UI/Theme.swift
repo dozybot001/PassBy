@@ -48,13 +48,14 @@ struct PrimaryButton: PrimitiveButtonStyle {
                 .foregroundStyle(Palette.paper)
                 .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ControlPressFeedback())
         .modifier(ControlSurface(prominent: true))
         .opacity(isEnabled ? 1 : 0.5)
     }
 }
 
 struct SecondaryButton: PrimitiveButtonStyle {
+    var selected = false
     @ScaledMetric(relativeTo: .body) private var height = ControlMetrics.height
     @Environment(\.isEnabled) private var isEnabled
 
@@ -64,11 +65,11 @@ struct SecondaryButton: PrimitiveButtonStyle {
                 .font(.body.weight(.medium))
                 .padding(.horizontal, 18)
                 .frame(minHeight: height)
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(selected ? Palette.paper : Palette.ink)
                 .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
-        .modifier(ControlSurface())
+        .buttonStyle(ControlPressFeedback())
+        .modifier(ControlSurface(prominent: selected))
         .opacity(isEnabled ? 1 : 0.5)
     }
 }
@@ -85,9 +86,15 @@ struct IconButton: PrimitiveButtonStyle {
                 .foregroundStyle(Palette.ink)
                 .contentShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ControlPressFeedback())
         .modifier(ControlSurface(circle: true))
         .opacity(isEnabled ? 1 : 0.5)
+    }
+}
+
+private struct ControlPressFeedback: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.opacity(configuration.isPressed ? 0.65 : 1)
     }
 }
 
@@ -148,11 +155,23 @@ struct ControlSurface: ViewModifier {
     }
 }
 
-#Preview("Circular icon actions") {
-    HStack(spacing: 12) {
-        Button {} label: { Image(systemName: "eye") }.buttonStyle(IconButton())
-        Button {} label: { Image(systemName: "doc.on.doc") }.buttonStyle(IconButton())
-        Button {} label: { Image(systemName: "die.face.5") }.buttonStyle(IconButton())
+#Preview("Unified buttons") {
+    VStack(alignment: .leading, spacing: 20) {
+        HStack(spacing: 12) {
+            Button {} label: { Image(systemName: "eye") }.buttonStyle(IconButton())
+            Button {} label: { Image(systemName: "doc.on.doc") }.buttonStyle(IconButton())
+            Button {} label: { Image(systemName: "die.face.5") }.buttonStyle(IconButton())
+        }
+        HStack(spacing: 12) {
+            Button("All") {}.buttonStyle(SecondaryButton(selected: true))
+            Button("Unfiled") {}.buttonStyle(SecondaryButton())
+        }
+        Button {} label: { Label("New folder", systemImage: "plus") }
+            .buttonStyle(SecondaryButton())
+        Button("Sync now") {}.buttonStyle(SecondaryButton())
+        Button("Lock notebook") {}.buttonStyle(SecondaryButton())
+        Button {} label: { Label("Unlock with Face ID", systemImage: "faceid") }
+            .buttonStyle(PrimaryButton())
     }
     .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Palette.paper).preferredColorScheme(.dark)

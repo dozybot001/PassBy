@@ -79,7 +79,6 @@ struct LockView: View {
                     .buttonStyle(PrimaryButton())
                     .disabled(working || (session.setup == .newNotebook && !understood)
                         || (session.setup == .recovery && recovery.isEmpty))
-                    .opacity((session.setup == .newNotebook && !understood) ? 0.5 : 1)
                 }
                 Text("Passwords stay encrypted on this iPhone and in your iCloud.")
                     .font(.footnote).foregroundStyle(Palette.secondary)
@@ -124,7 +123,7 @@ struct RecoverySetupView: View {
                     .font(.footnote).foregroundStyle(Palette.secondary)
                 Toggle("I have saved my recovery key", isOn: $saved).tint(Palette.control).font(.subheadline)
                 Button("Open my notebook") { session.confirmRecoverySaved() }
-                    .buttonStyle(PrimaryButton()).disabled(!saved).opacity(saved ? 1 : 0.5)
+                    .buttonStyle(PrimaryButton()).disabled(!saved)
                 if let message = session.message {
                     InlineError(text: message)
                 }

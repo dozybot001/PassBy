@@ -48,7 +48,6 @@ struct PasswordGeneratorView: View {
                         else { error = VaultError.storageFailed.localizedDescription }
                     } label: { Label("Use this password", systemImage: "checkmark") }
                         .buttonStyle(PrimaryButton()).disabled(password.isEmpty)
-                        .opacity(password.isEmpty ? 0.5 : 1)
                 }
                 .padding(24)
             }

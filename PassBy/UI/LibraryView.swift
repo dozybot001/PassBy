@@ -115,10 +115,7 @@ struct LibraryView: View {
                 Text(literal ? name : L(name)).font(.subheadline.weight(.medium))
                 Text("\(count)").font(.caption).monospacedDigit().opacity(0.7)
             }
-            .padding(.horizontal, 14).padding(.vertical, 12)
-            .foregroundStyle(filter == value ? Palette.paper : Palette.ink)
-            .background(filter == value ? Palette.ink : Palette.rule.opacity(0.35), in: Capsule())
-        }.buttonStyle(.plain)
+        }.buttonStyle(SecondaryButton(selected: filter == value))
             .accessibilityAddTraits(filter == value ? .isSelected : [])
     }
 }
@@ -134,24 +131,14 @@ struct NotebookControls: View {
             HStack(spacing: 12) {
                 Button(action: folders) {
                     Image(systemName: "folder.badge.plus")
-                        .font(.title3)
-                        .frame(width: height, height: height)
-                        .contentShape(Circle())
                 }
-                .buttonStyle(.plain)
-                .modifier(ControlSurface(circle: true))
+                .buttonStyle(IconButton())
                 .accessibilityLabel("Manage folders")
 
                 Button(action: newPassword) {
                     Label("New password", systemImage: "plus")
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: height)
-                        .contentShape(Capsule())
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(Palette.paper)
-                .modifier(ControlSurface(prominent: true))
+                .buttonStyle(PrimaryButton())
             }
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass").foregroundStyle(Palette.secondary)
