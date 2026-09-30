@@ -95,6 +95,8 @@ struct EntryEditorView: View {
     @FocusState private var focused: Bool
     @State private var showGenerator = false
     @State private var editingActive = false
+    @State private var showNewFolder = false
+    @State private var folderName = ""
 
     var body: some View {
         NavigationStack {
@@ -133,6 +135,12 @@ struct EntryEditorView: View {
                             Text(folder.name).tag(Optional(folder.id))
                         }
                     }
+                    Button {
+                        folderName = ""
+                        showNewFolder = true
+                    } label: {
+                        Label("New folder", systemImage: "folder.badge.plus")
+                    }
                 }
                 Section {
                     Text("Your draft is saved encrypted on this iPhone. Switch apps to paste, then unlock with Face ID to continue editing.")
@@ -153,6 +161,18 @@ struct EntryEditorView: View {
                 }
             }
             .privacySensitive()
+            .alert("New folder", isPresented: $showNewFolder) {
+                TextField("Folder name", text: $folderName)
+                Button("Cancel", role: .cancel) { folderName = "" }
+                Button("Save") {
+                    if let id = session.createFolder(name: folderName) {
+                        entry.folderID = id
+                        _ = session.saveDraft(entry)
+                    }
+                    folderName = ""
+                }
+                .disabled(folderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
             .sheet(isPresented: $showGenerator) {
                 PasswordGeneratorView { password in
                     var updated = entry
@@ -169,6 +189,8 @@ struct EntryEditorView: View {
             }
         }
         .interactiveDismissDisabled()
-        .onDisappear { editingActive = false; entry = VaultEntry(); revealed = false }
+        .onDisappear {
+            editingActive = false; entry = VaultEntry(); revealed = false; folderName = ""
+        }
     }
 }

@@ -264,11 +264,22 @@ final class VaultSession: ObservableObject {
     }
 
     @discardableResult
+    func createFolder(name: String) -> UUID? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let folder = VaultFolder(name: trimmed)
+        var next = vault
+        next.folders.append(folder)
+        return commit(next) ? folder.id : nil
+    }
+
+    @discardableResult
     func saveFolder(id: UUID? = nil, name: String) -> Bool {
+        guard let id else { return createFolder(name: name) != nil }
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
         var next = vault
-        if let id, let index = next.folders.firstIndex(where: { $0.id == id }) {
+        if let index = next.folders.firstIndex(where: { $0.id == id }) {
             next.folders[index].name = trimmed
         } else { next.folders.append(VaultFolder(name: trimmed)) }
         return commit(next)
