@@ -18,7 +18,7 @@ struct PasswordGeneratorView: View {
                             .lineSpacing(5).frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
                             .privacySensitive()
                         Button { generate() } label: { Label("Generate another", systemImage: "arrow.clockwise") }
-                            .frame(minHeight: 44).disabled(options.alphabets.isEmpty)
+                            .buttonStyle(SecondaryButton()).disabled(options.alphabets.isEmpty)
                     }
                     Rectangle().fill(Palette.rule).frame(height: 1)
                     VStack(spacing: 18) {
@@ -31,12 +31,12 @@ struct PasswordGeneratorView: View {
                             set: { options.length = Int($0) }), in: 12...64, step: 1)
                             .accessibilityLabel("Password length")
                             .accessibilityValue("\(options.length)")
-                        Toggle("Lowercase letters (a–z)", isOn: $options.lowercase)
-                        Toggle("Uppercase letters (A–Z)", isOn: $options.uppercase)
-                        Toggle("Numbers (0–9)", isOn: $options.digits)
-                        Toggle("Symbols (!@#)", isOn: $options.symbols)
+                        Toggle("Lowercase letters (a–z)", isOn: $options.lowercase).tint(Palette.control)
+                        Toggle("Uppercase letters (A–Z)", isOn: $options.uppercase).tint(Palette.control)
+                        Toggle("Numbers (0–9)", isOn: $options.digits).tint(Palette.control)
+                        Toggle("Symbols (!@#)", isOn: $options.symbols).tint(Palette.control)
                     }
-                    if let error { Text(error).font(.footnote).foregroundStyle(.red) }
+                    if let error { InlineError(text: error) }
                     if options.length < 20 || options.alphabets.count == 1 {
                         Text("For important accounts, use 20 or more characters and multiple character types.")
                             .font(.footnote).foregroundStyle(Palette.secondary)
@@ -71,4 +71,10 @@ struct PasswordGeneratorView: View {
 #Preview("Password generator") {
     PasswordGeneratorView { _ in true }
         .tint(Palette.accent)
+}
+
+#Preview("Password generator · Dark") {
+    PasswordGeneratorView { _ in true }
+        .tint(Palette.accent)
+        .preferredColorScheme(.dark)
 }

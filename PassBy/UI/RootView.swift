@@ -50,7 +50,7 @@ struct LockView: View {
                     }.padding(.bottom, 30)
                     Text("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key.")
                         .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 14)
-                    Toggle("I understand how recovery works", isOn: $understood)
+                    Toggle("I understand how recovery works", isOn: $understood).tint(Palette.control)
                         .font(.subheadline).padding(.bottom, 24)
                 }
                 if session.setup == .recovery {
@@ -73,7 +73,7 @@ struct LockView: View {
                         let text = session.setup == .recovery ? recovery : nil
                         Task { await session.unlock(recoveryText: text) }
                     } label: {
-                        if working { ProgressView().tint(.white) }
+                        if working { ProgressView().tint(Palette.paper) }
                         else { Label(session.setup == .newNotebook ? L("Create my notebook") : L("Unlock with Face ID"), systemImage: "faceid") }
                     }
                     .buttonStyle(PrimaryButton())
@@ -119,14 +119,14 @@ struct RecoverySetupView: View {
                 Button {
                     session.copy(recovery, label: L("Recovery key copied for 60 seconds"))
                 } label: { Label("Copy recovery key", systemImage: "doc.on.doc") }
-                    .frame(minHeight: 44)
+                    .buttonStyle(SecondaryButton())
                 Text("PassBy never uploads this key. If you lose every device and this key, your passwords cannot be recovered.")
                     .font(.footnote).foregroundStyle(Palette.secondary)
-                Toggle("I have saved my recovery key", isOn: $saved).font(.subheadline)
+                Toggle("I have saved my recovery key", isOn: $saved).tint(Palette.control).font(.subheadline)
                 Button("Open my notebook") { session.confirmRecoverySaved() }
                     .buttonStyle(PrimaryButton()).disabled(!saved).opacity(saved ? 1 : 0.5)
                 if let message = session.message {
-                    Text(message).font(.footnote).foregroundStyle(.red)
+                    InlineError(text: message)
                 }
             }
             .padding(28).frame(maxWidth: 540).frame(maxWidth: .infinity)

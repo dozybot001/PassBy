@@ -6,6 +6,8 @@ enum Palette {
     static let secondary = Color("Secondary")
     static let accent = Color("AccentColor")
     static let rule = Color("Rule")
+    // Keep the white system switch thumb distinct in both appearances.
+    static let control = Color(white: 0.4)
 }
 
 struct NotebookMark: View {
@@ -29,14 +31,61 @@ struct NotebookMark: View {
     }
 }
 
-struct PrimaryButton: ButtonStyle {
+struct PrimaryButton: PrimitiveButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.body.weight(.semibold))
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .foregroundStyle(.white)
-            .background(Palette.accent.opacity(configuration.isPressed ? 0.75 : 1),
-                        in: RoundedRectangle(cornerRadius: 17))
+        Group {
+            if #available(iOS 26, *) {
+                button(configuration).buttonStyle(.glassProminent)
+            } else {
+                button(configuration).buttonStyle(.borderedProminent)
+            }
+        }
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        .tint(Palette.accent)
+    }
+
+    private func button(_ configuration: Configuration) -> some View {
+        Button(action: configuration.trigger) {
+            configuration.label
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 30)
+                .foregroundStyle(Palette.paper)
+        }
+    }
+}
+
+struct SecondaryButton: PrimitiveButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Group {
+            if #available(iOS 26, *) {
+                button(configuration).buttonStyle(.glass)
+            } else {
+                button(configuration).buttonStyle(.bordered)
+            }
+        }
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        .tint(Palette.ink)
+    }
+
+    private func button(_ configuration: Configuration) -> some View {
+        Button(action: configuration.trigger) {
+            configuration.label
+                .font(.body.weight(.medium))
+                .frame(minHeight: 30)
+                .foregroundStyle(Palette.ink)
+        }
+    }
+}
+
+struct InlineError: View {
+    let text: String
+    var body: some View {
+        Label(text, systemImage: "exclamationmark.circle")
+            .font(.footnote)
+            .foregroundStyle(Palette.ink)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 

@@ -24,7 +24,7 @@ struct FoldersView: View {
                             }.frame(minHeight: 40).foregroundStyle(Palette.ink)
                         }
                         .swipeActions {
-                            Button("Delete", role: .destructive) { deleting = folder }
+                            Button("Delete", role: .destructive) { deleting = folder }.tint(Palette.ink)
                         }
                     }
                     Button {
@@ -44,7 +44,7 @@ struct FoldersView: View {
             .confirmationDialog("Delete this folder?", isPresented: Binding(
                 get: { deleting != nil }, set: { if !$0 { deleting = nil } }
             ), titleVisibility: .visible) {
-                Button("Delete folder", role: .destructive) {
+                Button("Delete folder") {
                     if let deleting { _ = session.deleteFolder(deleting.id) }
                     deleting = nil
                 }

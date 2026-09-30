@@ -55,8 +55,8 @@ struct LibraryView: View {
                                     Text(String(entry.title.prefix(1)).uppercased())
                                         .font(.title3.weight(.medium))
                                         .foregroundStyle(Palette.accent)
-                                        .frame(width: 42, height: 46)
-                                        .background(Palette.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                                        .frame(width: 44, height: 44)
+                                        .background(Palette.rule.opacity(0.4), in: Circle())
                                     VStack(alignment: .leading, spacing: 5) {
                                         Text(entry.title).font(.body.weight(.semibold)).lineLimit(1)
                                         Text(entry.account.isEmpty ? L("No account added") : entry.account)
@@ -82,10 +82,10 @@ struct LibraryView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                HStack(spacing: 18) {
+                HStack(spacing: 12) {
                     Button { showFolders = true } label: {
-                        Image(systemName: "folder.badge.plus").font(.title3).frame(width: 44, height: 54)
-                    }.accessibilityLabel("Manage folders")
+                        Image(systemName: "folder.badge.plus").font(.title3).frame(width: 30)
+                    }.buttonStyle(SecondaryButton()).accessibilityLabel("Manage folders")
                     Button {
                         let id: UUID?
                         if case .folder(let value) = filter { id = value } else { id = nil }
@@ -123,7 +123,7 @@ struct LibraryView: View {
                 Text("\(count)").font(.caption).monospacedDigit().opacity(0.7)
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
-            .foregroundStyle(filter == value ? Color.white : Palette.secondary)
+            .foregroundStyle(filter == value ? Palette.paper : Palette.ink)
             .background(filter == value ? Palette.ink : Palette.rule.opacity(0.35), in: Capsule())
         }.buttonStyle(.plain)
             .accessibilityAddTraits(filter == value ? .isSelected : [])

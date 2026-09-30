@@ -42,7 +42,9 @@ struct EntryDetailView: View {
                         Button("Edit") { editing = entry }
                     }
                     ToolbarItem(placement: .bottomBar) {
-                        Button("Delete password", role: .destructive) { confirmDelete = true }
+                        Button { confirmDelete = true } label: {
+                            Label("Delete password", systemImage: "trash")
+                        }
                     }
                 }
             } else {
@@ -52,7 +54,7 @@ struct EntryDetailView: View {
         .background(Palette.paper).navigationBarTitleDisplayMode(.inline)
         .sheet(item: $editing) { EntryEditorView(entry: $0, isNew: false) }
         .confirmationDialog("Delete this password?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete password", role: .destructive) {
+            Button("Delete password") {
                 if session.deleteEntry(id) { dismiss() }
             }
         } message: { Text("This removes it from your notebook and syncs the deletion to iCloud.") }
@@ -70,12 +72,14 @@ struct EntryDetailView: View {
                     .accessibilityLabel(hidden && !value.isEmpty ? L("Password hidden") : value)
                 if isPassword {
                     Button { revealed.toggle() } label: {
-                        Image(systemName: revealed ? "eye.slash" : "eye").frame(width: 44, height: 44)
-                    }.accessibilityLabel(L(revealed ? "Hide password" : "Show password"))
+                        Image(systemName: revealed ? "eye.slash" : "eye").frame(width: 22)
+                    }.buttonStyle(SecondaryButton())
+                        .accessibilityLabel(L(revealed ? "Hide password" : "Show password"))
                 }
                 Button(action: copy) {
-                    Image(systemName: "doc.on.doc").frame(width: 44, height: 44)
-                }.disabled(value.isEmpty).accessibilityLabel(L(isPassword ? "Copy password" : "Copy account"))
+                    Image(systemName: "doc.on.doc").frame(width: 22)
+                }.buttonStyle(SecondaryButton()).disabled(value.isEmpty)
+                    .accessibilityLabel(L(isPassword ? "Copy password" : "Copy account"))
             }
             Rectangle().fill(Palette.rule).frame(height: 1)
         }
