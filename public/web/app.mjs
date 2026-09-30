@@ -1,0 +1,173 @@
+import { CloudNotebook } from './cloud.mjs';
+import { NotebookSession } from './session.mjs';
+import { generatePassword } from './crypto.mjs';
+import { newID } from './model.mjs';
+
+const copy = {
+  en: {
+    eyebrow:'YOUR PASSWORD NOTEBOOK', heading:'Your passwords.\nWithin reach.', intro:'The same notebook, even when your iPhone is somewhere else.',
+    security:'Encrypted before syncing to iCloud. Your recovery key stays in this page’s memory.', signIn:'Open your notebook', signInHelp:'Sign in to the Apple Account you use with PassBy on iPhone.',
+    unlock:'Unlock notebook', key:'Recovery key', keyPlaceholder:'Paste your recovery key', keyHelp:'Use a trusted computer. Leaving this window locks your notebook and clears unfinished edits. Nothing is saved in browser storage.',
+    connect:'Continue with iCloud', connecting:'Connecting…', lock:'Lock notebook', locked:'Notebook locked', settings:'Settings', search:'Search', generator:'Password generator', privacy:'Privacy', support:'Support',
+    all:'All', unfiled:'Unfiled', newPassword:'New password', newFolder:'New folder', folders:'Folders', empty:'Your notebook starts here', emptyHelp:'Add an account and password. Keep the details in one place.', noResults:'No matching entries', noResultsHelp:'Try another title or account.', choose:'A little space for your passwords.', chooseHelp:'Choose an entry to see its details.', placeholder:'Search titles or accounts', edit:'Edit', save:'Save', saving:'Saving…', cancel:'Cancel', close:'Close', back:'Back', account:'Account', password:'Password', title:'Title', notes:'Notes', folder:'Folder', noNotes:'No notes added', copy:'Copy', copied:'Copied', show:'Show password', hide:'Hide password', delete:'Delete entry', deleteConfirm:'Delete this entry?', deleteHelp:'It will be removed from your iCloud notebook. This cannot be undone.', deleteFolder:'Delete folder', deleteFolderHelp:'Its passwords will move to Unfiled. This cannot be undone.', confirm:'Delete', saved:'Saved to iCloud', refreshed:'Notebook refreshed', refresh:'Sync now', conflictCopy:' (Conflict copy)', conflicts:'Concurrent changes were kept as conflict copies.', length:'Length', upper:'Uppercase letters', lower:'Lowercase letters', digits:'Numbers', symbols:'Symbols', another:'Generate another', use:'Use & copy', copyPassword:'Copy password', lengthHelp:'Choose 8–24 with the slider, or enter up to 4096 characters.', clipboardHelp:'Copied passwords follow your browser and operating system’s clipboard rules. They are not automatically cleared.', language:'Language', automaticLock:'Automatic lock', automaticLockHelp:'Switching tabs, leaving the window or 5 minutes without activity locks this notebook.', browserHelp:'The web app cannot use iPhone Face ID or block screenshots. Unlock again with your recovery key.', discard:'Discard changes?', discardHelp:'This unfinished entry has not been saved.', discardButton:'Discard', continueEditing:'Keep editing', required:'Enter a title and password.', folderName:'Folder name', signedOut:'Signed out', existingHelp:'Create your notebook in PassBy on iPhone first, then wait for iCloud sync.',
+    invalidKey:'Check the recovery key. Its length or checksum is incorrect.', wrongKey:'This recovery key does not unlock your notebook.', invalidNotebook:'The notebook could not be verified. Your iCloud data has not been changed.', version:'This notebook uses an unsupported format. Update PassBy.', service:'Unable to reach iCloud. Please try again.', noNotebook:'No notebook found in this iCloud account. Create one in PassBy on iPhone and let it sync first.', notConfigured:'Web access is being configured. Your iPhone notebook is unchanged.', invalidLength:'Choose a whole number from 8 to 4096.', selectCharacters:'Select at least one character type.', conflict:'The notebook changed again. Please try saving again.', clipboard:'Copy was blocked by the browser. Select the value and copy it manually.', lockedError:'Unlock your notebook again.', generic:'Something went wrong. Please try again.',
+  },
+  zh: {
+    eyebrow:'你的私人密码本',heading:'密码，\n随时在手边。',intro:'即使 iPhone 不在身边，也能打开同一本密码本。',security:'先加密，再同步至 iCloud。恢复密钥只留在当前页面内存中。',signIn:'打开密码本',signInHelp:'登录你在 iPhone PassBy 中使用的 Apple 账号。',unlock:'解锁密码本',key:'恢复密钥',keyPlaceholder:'粘贴恢复密钥',keyHelp:'请使用可信的电脑。离开窗口会锁定密码本并清除未保存的编辑，浏览器存储中不会保存数据。',connect:'通过 iCloud 继续',connecting:'连接中…',lock:'锁定密码本',locked:'密码本已锁定',settings:'设置',search:'搜索',generator:'密码生成器',privacy:'隐私',support:'支持',all:'全部',unfiled:'未分类',newPassword:'新建密码',newFolder:'新建文件夹',folders:'文件夹',empty:'密码本从这里开始',emptyHelp:'添加账号和密码，将细节保存在一起。',noResults:'没有匹配的条目',noResultsHelp:'试试其他标题或账号。',choose:'为你的密码，留一个位置。',chooseHelp:'选择条目，查看它的详细内容。',placeholder:'搜索标题或账号',edit:'编辑',save:'保存',saving:'保存中…',cancel:'取消',close:'关闭',back:'返回',account:'账号',password:'密码',title:'标题',notes:'备注',folder:'文件夹',noNotes:'没有备注',copy:'复制',copied:'已复制',show:'显示密码',hide:'隐藏密码',delete:'删除条目',deleteConfirm:'删除这个条目？',deleteHelp:'将从 iCloud 密码本中删除，无法撤销。',deleteFolder:'删除文件夹',deleteFolderHelp:'其中的密码将移至未分类，无法撤销。',confirm:'删除',saved:'已保存至 iCloud',refreshed:'密码本已刷新',refresh:'立即同步',conflictCopy:'（冲突副本）',conflicts:'同时修改的内容已保留为冲突副本。',length:'长度',upper:'大写字母',lower:'小写字母',digits:'数字',symbols:'符号',another:'再生成一个',use:'使用并复制',copyPassword:'复制密码',lengthHelp:'滑块可选 8～24 位，也可手动输入最多 4096 位。',clipboardHelp:'已复制的密码遵循浏览器与系统的剪贴板规则，不会自动清除。',language:'语言',automaticLock:'自动锁定',automaticLockHelp:'切换标签页、离开窗口或 5 分钟无操作后，密码本会锁定。',browserHelp:'网页无法使用 iPhone 的 Face ID 或阻止截图，请用恢复密钥重新解锁。',discard:'放弃修改？',discardHelp:'这个未完成的条目尚未保存。',discardButton:'放弃',continueEditing:'继续编辑',required:'请填写标题和密码。',folderName:'文件夹名称',signedOut:'已退出登录',existingHelp:'请先在 iPhone PassBy 创建密码本，并等待 iCloud 同步。',invalidKey:'恢复密钥的长度或校验码不正确，请检查。',wrongKey:'此恢复密钥无法解锁这个密码本。',invalidNotebook:'无法验证密码本，iCloud 数据未被更改。',version:'密码本格式不受支持，请更新 PassBy。',service:'无法连接 iCloud，请重试。',noNotebook:'当前 iCloud 账号没有密码本，请先在 iPhone 创建并完成同步。',notConfigured:'网页版访问正在配置中，iPhone 密码本不受影响。',invalidLength:'请输入 8～4096 之间的整数。',selectCharacters:'至少选择一种字符类型。',conflict:'密码本又被修改了，请重试保存。',clipboard:'浏览器阻止了复制，请选中内容手动复制。',lockedError:'请重新解锁密码本。',generic:'操作未完成，请重试。',
+  },
+};
+let language = navigator.language.startsWith('zh') ? 'zh' : 'en';
+const t = key => copy[language][key] || copy.en[key] || key;
+const $ = id => document.getElementById(id);
+const main = $('main'), tools = $('tools'), dialog = $('dialog');
+const session = new NotebookSession(new CloudNotebook());
+const authIn = document.createElement('div'), authOut = document.createElement('div');
+authIn.id = 'apple-sign-in-button'; authOut.id = 'apple-sign-out-button';
+authIn.className = authOut.className = 'auth-holder';
+let signedIn = false, connecting = false, filter = 'all', selected = null, query = '', searchOpen = false, revealed = false, authStarted = false;
+let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTimer;
+const paths = {
+  search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
+  generator:'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/>',
+  settings:'<path d="M4 6h7m5 0h4M4 12h2m5 0h9M4 18h10m5 0h1"/><circle cx="13.5" cy="6" r="2.5"/><circle cx="8.5" cy="12" r="2.5"/><circle cx="16.5" cy="18" r="2.5"/>',
+  lock:'<rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  copy:'<rect x="8" y="7" width="12" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/>',
+  show:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  hide:'<path d="m3 3 18 18M10 5c7-1 12 7 12 7s-1 2-3 3M6 6c-3 2-4 6-4 6s4 7 10 7c2 0 4-1 5-2"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', folder:'<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  close:'<path d="m6 6 12 12M6 18 18 6"/>', back:'<path d="m15 5-7 7 7 7"/>',
+  delete:'<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',
+  notebook:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+};
+function icon(name) { const span = document.createElement('span'); span.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.notebook}</svg>`; return span.firstElementChild; }
+function node(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text !== undefined) el.textContent = text; return el; }
+function button(label, action, className='pill', symbol) {
+  const el = node('button', className); el.type='button'; el.setAttribute('aria-label', label); el.title=label;
+  if (symbol) el.append(icon(symbol)); if (className !== 'icon-button' && !className.includes('icon-button')) el.append(document.createTextNode(label));
+  el.addEventListener('click', action); return el;
+}
+function notify(message) { clearTimeout(statusTimer); $('status').textContent=message; $('status').hidden=false; statusTimer=setTimeout(() => { $('status').hidden=true; $('status').textContent=''; },5000); }
+function errorMessage(error) { return t(error?.code === 'locked' ? 'lockedError' : error?.code || 'generic'); }
+function showError(parent, error) { parent.querySelector('.error')?.remove(); const el=node('p','error',errorMessage(error)); el.setAttribute('role','alert'); parent.append(el); }
+function setBusy(parent, busy) { parent.querySelectorAll('button,input,textarea,select').forEach(e=>e.disabled=busy); }
+function closeDialog() { dialog.close(); dialog.replaceChildren(); dialogKind=null; generatorValue=''; }
+function lock() {
+  const hadSecrets = !!session.key || !!editor || !!generatorValue;
+  session.lock(); editor=null; revealed=false; selected=null; query=''; searchOpen=false;
+  closeDialog(); clearTimeout(idleTimer); $('status').hidden=true; $('status').textContent='';
+  // Clear the recovery field even when it is awaiting an asynchronous request.
+  main.querySelectorAll('input,textarea').forEach(e => e.value='');
+  render(); if (hadSecrets) notify(t('locked'));
+}
+function resetIdle() { clearTimeout(idleTimer); if (session.key) idleTimer=setTimeout(lock,300000); }
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) lock(); });
+window.addEventListener('blur',()=>{ if(session.key || editor || generatorValue || main.querySelector('#recovery-key')?.value) lock(); });
+window.addEventListener('pagehide',lock);
+window.addEventListener('pageshow',event=>{ if(event.persisted) lock(); });
+for (const event of ['pointerdown','keydown','input']) document.addEventListener(event,resetIdle,{passive:true});
+document.addEventListener('keydown',event=>{ if(event.key==='Escape' && session.key && !dialog.open && !searchOpen) lock(); });
+dialog.addEventListener('cancel',event=>{ if(editor){event.preventDefault();if(dialogKind==='editor'||dialogKind==='discard')cancelEditor();else renderEditor();}else closeDialog(); });
+function render() {
+  document.documentElement.lang=language==='zh'?'zh-Hans':'en';
+  $('privacy-link').textContent=t('privacy'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
+  tools.replaceChildren(button(t('generator'),()=>openGenerator(),'icon-button','generator'),button(t('settings'),openSettings,'icon-button','settings'));
+  if(session.key) tools.prepend(button(t('search'),()=>{searchOpen=!searchOpen;renderWorkspace(); if(searchOpen) $('search-input')?.focus();},'icon-button','search'));
+  if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
+  if(session.key) renderWorkspace(); else renderWelcome();
+}
+$('language').addEventListener('click',()=>{language=language==='zh'?'en':'zh';closeDialog();editor=null;render();});
+function renderWelcome() {
+  // Keep the Apple-authenticated button nodes while updating surrounding text.
+  const welcome=node('section','welcome'), intro=node('div');
+  intro.append(node('div','eyebrow',t('eyebrow')),node('h1','',t('heading')),node('p','intro',t('intro')));
+  const security=node('div','security-notes');security.append(icon('lock'),node('span','',t('security')));intro.append(security);
+  const card=node('section','unlock-card');card.append(node('h2','',t(signedIn?'unlock':'signIn')),node('p','',t('signInHelp')));
+  authIn.hidden=signedIn;authOut.hidden=!signedIn;card.append(authIn);
+  if(signedIn) {
+    const form=node('form'); const label=node('label','',t('key'));label.htmlFor='recovery-key';
+    const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
+    const submit=node('button','pill primary',t('unlock'));submit.type='submit';
+    form.append(label,input,submit);form.addEventListener('submit',async event=>{
+      event.preventDefault();const text=input.value;input.value='';setBusy(form,true);submit.textContent=t('connecting');
+      try { await session.unlock(text); if(document.hidden || !document.hasFocus()){lock();return;} selected=null;resetIdle();render(); }
+      catch(error){ if(error.code!=='locked') showError(form,error); }
+      finally {setBusy(form,false);submit.textContent=t('unlock');}
+    }); card.append(form,node('p','help',t('keyHelp')),authOut);
+  } else {
+    if(!authStarted) card.append(button(t(connecting?'connecting':'connect'),async()=>{
+      if(connecting)return;connecting=true;render();
+      try{await session.cloud.authenticate(()=>{signedIn=true;connecting=false;authStarted=true;lock();},()=>{signedIn=false;lock();notify(t('signedOut'));},language);authStarted=true;}
+      catch(error){showError(document.querySelector('.unlock-card'),error);}
+      finally{connecting=false;if(authStarted)render();else{const btn=document.querySelector('.unlock-card > button');if(btn)btn.textContent=t('connect');}}
+    },'pill primary'));
+    card.append(node('p','help',t('existingHelp')));
+  }
+  welcome.append(intro,card);main.replaceChildren(welcome);
+}
+function filteredEntries() {return session.vault.entries.filter(e=>(filter==='all'||(filter==='unfiled'?!e.folderID:e.folderID===filter))&&(`${e.title} ${e.account}`).toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((a,b)=>a.title.localeCompare(b.title,language));}
+function renderWorkspace() {
+  if(!session.vault)return;
+  const workspace=node('section',`workspace${selected?' has-detail':''}`),sidebar=node('aside','sidebar');
+  if(searchOpen){const wrap=node('div','search-wrap'),input=node('input');input.id='search-input';input.type='search';input.placeholder=t('placeholder');input.setAttribute('aria-label',t('search'));input.value=query;input.autocomplete='off';input.addEventListener('input',()=>{query=input.value;renderList();});wrap.append(input);sidebar.append(wrap);}
+  const filters=node('nav','filters');filters.setAttribute('aria-label',t('folders'));
+  for(const f of [{id:'all',name:t('all')},{id:'unfiled',name:t('unfiled')},...session.vault.folders]){
+    const btn=button(f.name,()=>{filter=f.id;renderWorkspace();},'filter');btn.setAttribute('aria-pressed',String(filter===f.id));btn.append(node('span','',String(session.vault.entries.filter(e=>f.id==='all'||(f.id==='unfiled'?!e.folderID:e.folderID===f.id)).length)));filters.append(btn);
+  }sidebar.append(filters);const list=node('ul','entry-list');list.id='entries';sidebar.append(list);
+  const actions=node('div','sidebar-actions');actions.append(button(t('folders'),openFolders,'icon-button','folder'),button(t('newPassword'),()=>openEditor(),'pill primary','plus'));sidebar.append(actions);
+  const detail=node('article','detail');detail.id='detail';workspace.append(sidebar,detail);main.replaceChildren(workspace);renderList();renderDetail();
+}
+function renderList(){
+  const list=$('entries');if(!list)return;list.replaceChildren();const entries=filteredEntries();
+  if(!entries.length){const empty=node('li','empty');empty.append(icon('notebook'),node('h2','',t(query?'noResults':'empty')),node('p','',t(query?'noResultsHelp':'emptyHelp')));list.append(empty);return;}
+  for(const entry of entries){const item=node('li'),btn=button(entry.title,()=>{selected=entry.id;revealed=false;renderWorkspace();},'entry-button');btn.replaceChildren();btn.setAttribute('aria-pressed',String(selected===entry.id));const info=node('span','entry-info');info.append(node('strong','',entry.title),node('small','',entry.account));btn.append(node('span','avatar',[...entry.title][0]?.toUpperCase()||'•'),info);item.append(btn);list.append(item);}
+}
+function renderDetail(){
+  const detail=$('detail');if(!detail)return;detail.replaceChildren();const entry=session.vault.entries.find(e=>e.id===selected);
+  if(!entry){selected=null;const empty=node('div','empty');empty.append(icon('notebook'),node('h2','',t('choose')),node('p','',t('chooseHelp')));detail.append(empty);return;}
+  detail.append(button(t('back'),()=>{selected=null;revealed=false;renderWorkspace();},'icon-button mobile-back','back'));
+  const top=node('div','detail-top');top.append(node('h1','',entry.title),button(t('edit'),()=>openEditor(entry),'pill'));detail.append(top,node('div','detail-folder',session.vault.folders.find(f=>f.id===entry.folderID)?.name||t('unfiled')));
+  for(const name of ['account','password','notes']){
+    const field=node('section','field');field.append(node('label','',t(name)));const value=node('div','field-value');
+    value.append(node('div',name==='password'?'field-text secret':'field-text',name==='password'?(revealed?entry.password:'••••••••••••'):(entry[name]||t('noNotes'))));
+    if(name!=='notes'){const actions=node('div','field-actions');if(name==='password')actions.append(button(t(revealed?'hide':'show'),()=>{revealed=!revealed;renderDetail();},'icon-button',revealed?'hide':'show'));actions.append(button(t('copy'),()=>copyText(entry[name]),'icon-button','copy'));value.append(actions);}field.append(value);detail.append(field);
+  }
+  const bottom=node('div','detail-bottom');bottom.append(button(t('delete'),()=>confirmDelete(t('deleteConfirm'),t('deleteHelp'),async()=>{const vault=structuredClone(session.vault);vault.entries=vault.entries.filter(e=>e.id!==entry.id);await saveVault(vault);selected=null;}),'icon-button','delete'));detail.append(bottom);
+}
+async function copyText(value){try{await navigator.clipboard.writeText(value);notify(t('copied'));}catch{notify(t('clipboard'));}}
+function showDialog(title,kind){closeDialog();dialogKind=kind;const inner=node('div','dialog-inner'),header=node('div','dialog-header');header.append(node('h2','',title),button(t('close'),()=>editor?(kind==='editor'||kind==='discard'?cancelEditor():renderEditor()):closeDialog(),'icon-button','close'));inner.append(header);dialog.append(inner);dialog.showModal();return inner;}
+async function saveVault(vault){const conflicts=await session.save(vault,t('conflictCopy'));notify(t(conflicts?'conflicts':'saved'));}
+function formField(label,value,type='text'){const wrap=node('div','form-field'),name=node('label','',t(label));name.htmlFor=`field-${label}`;const input=node(type==='textarea'?'textarea':'input');input.id=`field-${label}`;if(type!=='textarea')input.type=type;input.value=value;input.autocomplete='off';input.spellcheck=false;wrap.append(name,input);return{wrap,input};}
+function openEditor(entry){
+  if(!session.vault)return;editor=entry?{...entry}:{id:newID(),title:'',account:'',password:'',notes:''};renderEditor();
+}
+function renderEditor(){
+  const inner=showDialog(t(session.vault.entries.some(e=>e.id===editor.id)?'edit':'newPassword'),'editor'),form=node('form');
+  for(const name of ['title','account','password','notes']){const field=formField(name,editor[name],name==='notes'?'textarea':name==='password'?'password':'text');field.input.addEventListener('input',()=>editor[name]=field.input.value);
+    if(name==='password'){field.wrap.removeChild(field.input);const row=node('div','password-input');row.append(field.input,button(t('generator'),()=>openGenerator(true),'icon-button','generator'));field.wrap.append(row);}form.append(field.wrap);}
+  const group=node('div','form-field'),label=node('label','',t('folder')),select=node('select');label.htmlFor='folder-select';select.id='folder-select';
+  for(const f of [{id:'',name:t('unfiled')},...session.vault.folders]){const option=node('option','',f.name);option.value=f.id;select.append(option);}select.value=editor.folderID||'';select.addEventListener('change',()=>{if(select.value)editor.folderID=select.value;else delete editor.folderID;});
+  group.append(label,select,button(t('newFolder'),()=>openNewFolder(true),'text-button'));form.append(group);
+  const actions=node('div','form-actions'),submit=node('button','pill primary',t('save'));submit.type='submit';actions.append(button(t('cancel'),cancelEditor),submit);form.append(actions);
+  form.addEventListener('submit',async event=>{event.preventDefault();if(!editor.title.trim()||!editor.password){showError(form,{code:'required'});return;}const vault=structuredClone(session.vault),draft={...editor,title:editor.title.trim()},index=vault.entries.findIndex(e=>e.id===draft.id);if(index<0)vault.entries.push(draft);else vault.entries[index]=draft;setBusy(inner,true);submit.textContent=t('saving');
+    try{await saveVault(vault);selected=draft.id;editor=null;closeDialog();render();}catch(error){if(error.code!=='locked')showError(form,error);}finally{setBusy(inner,false);submit.textContent=t('save');}});
+  inner.append(form);$('field-title').focus();
+}
+function cancelEditor(){if(!editor)return closeDialog();const original=session.vault?.entries.find(e=>e.id===editor.id);const dirty=original?JSON.stringify(original)!==JSON.stringify(editor):['title','account','password','notes'].some(k=>editor[k]);if(!dirty){editor=null;closeDialog();return;}const inner=showDialog(t('discard'),'discard');inner.append(node('p','helper',t('discardHelp')));const actions=node('div','form-actions');actions.append(button(t('continueEditing'),renderEditor),button(t('discardButton'),()=>{editor=null;closeDialog();},'pill primary'));inner.append(actions);}
+function openNewFolder(fromEditor=false){
+  const inner=showDialog(t('newFolder'),'newFolder'),form=node('form'),field=formField('folderName','');field.input.required=true;form.append(field.wrap);const actions=node('div','form-actions');actions.append(button(t('cancel'),()=>fromEditor?renderEditor():openFolders()));const submit=node('button','pill primary',t('save'));submit.type='submit';actions.append(submit);form.append(actions);inner.append(form);
+  form.addEventListener('submit',async event=>{event.preventDefault();const name=field.input.value.trim();if(!name)return;const vault=structuredClone(session.vault),folder={id:newID(),name};vault.folders.push(folder);setBusy(inner,true);try{await saveVault(vault);if(fromEditor&&editor){editor.folderID=folder.id;renderEditor();}else{render();openFolders();}}catch(error){if(error.code!=='locked')showError(form,error);}finally{setBusy(inner,false);}});field.input.focus();
+}
+function openFolders(){if(!session.vault)return;const inner=showDialog(t('folders'),'folders');for(const folder of session.vault.folders){const row=node('div','folder-row');row.append(icon('folder'),node('strong','',folder.name),button(t('deleteFolder'),()=>confirmDelete(t('deleteFolder'),t('deleteFolderHelp'),async()=>{const vault=structuredClone(session.vault);vault.folders=vault.folders.filter(f=>f.id!==folder.id);vault.entries.forEach(e=>{if(e.folderID===folder.id)delete e.folderID;});await saveVault(vault);if(filter===folder.id)filter='all';}),'icon-button','delete'));inner.append(row);}inner.append(button(t('newFolder'),()=>openNewFolder(),'pill','plus'));}
+function confirmDelete(title,message,action){const inner=showDialog(title,'confirm');inner.append(node('p','helper',message));const actions=node('div','form-actions');actions.append(button(t('cancel'),closeDialog),button(t('confirm'),async()=>{setBusy(inner,true);try{await action();closeDialog();render();}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill primary'));inner.append(actions);}
+function openGenerator(fromEditor=false){
+  const inner=showDialog(t('generator'),'generator'),output=node('div','generated');output.setAttribute('aria-label',t('password'));output.tabIndex=0;inner.append(output);
+  const label=node('label','helper',t('length'));label.htmlFor='password-length';inner.append(label);const controls=node('div','generator-controls'),range=node('input'),number=node('input');range.type='range';range.min='8';range.max='24';range.value='16';range.setAttribute('aria-label',t('length'));number.id='password-length';number.type='number';number.min='8';number.max='4096';number.step='1';number.value='16';controls.append(range,number);inner.append(controls,node('p','helper',t('lengthHelp')));
+  const checks={};for(const key of ['upper','lower','digits','symbols']){const row=node('label','check-row',t(key)),check=node('input');check.type='checkbox';check.checked=true;checks[key]=check;row.append(check);inner.append(row);check.addEventListener('change',generate);}
+  function generate(){inner.querySelector('.error')?.remove();try{generatorValue=generatePassword(Number(number.value),Object.fromEntries(Object.entries(checks).map(([k,v])=>[k,v.checked])));output.textContent=generatorValue;}catch(error){generatorValue='';output.textContent='';showError(inner,error);}}
+  range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
+  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));inner.append(actions,node('p','helper',t('clipboardHelp')));generate();
+}
+function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>{language=select.value;render();openSettings();});row.append(label,select);inner.append(row);
+  if(session.key){inner.append(button(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill'),button(t('lock'),lock,'pill'));}
+}
+render();
