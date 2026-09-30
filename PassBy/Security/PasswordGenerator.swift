@@ -3,7 +3,7 @@ import Security
 
 struct PasswordOptions: Equatable {
     static let lengthRange = 8...24
-    var length = 20
+    var length = 16
     var lowercase = true
     var uppercase = true
     var digits = true
