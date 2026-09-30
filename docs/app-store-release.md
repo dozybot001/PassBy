@@ -107,7 +107,9 @@ Only an encrypted ciphertext asset and a format version are written to the priva
 - 买断 US$1.99，美国区显示预计收入 US$1.69；174 个海外地区，Mac / Vision Pro 不提供。
 - 审核联系人沿用 WeSaid，电话已按用户要求更新；私人联系信息不写入仓库。
 
-仍需完成：付费协议/收款配置状态核对、真实设备与跨设备恢复验收、真实应用截图、提交审核。
+- 商务页已核对：免费协议有效，付费协议状态为“新”；Apple 要求更新法律实体信息后才能签署付费协议。已请用户亲自完成法律实体、协议、银行与税务资料，不在仓库保存这些信息。
+
+仍需完成：用户完成付费协议/收款配置、真实设备与跨设备恢复验收、真实应用截图、提交审核。
 
 截图：iPhone 6.9 英寸可用 1320×2868 竖屏，其他允许尺寸以 [Apple 官方说明](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/) 为准。必须使用脱敏测试条目，不能上传用户的真实账户与恢复密钥。
 
