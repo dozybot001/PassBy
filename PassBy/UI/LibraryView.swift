@@ -36,42 +36,51 @@ struct LibraryView: View {
                     searchFocused = showSearch
                     if !showSearch { search = "" }
                 }, generator: { showGenerator = true }, settings: { showSettings = true })
-                if showSearch {
-                    NotebookSearchField(search: $search, focused: $searchFocused)
-                        .padding(.horizontal, 28).padding(.bottom, 4)
-                        .onAppear { searchFocused = true }
-                }
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        folderChip("All", count: session.vault.entries.count, value: .all)
-                        folderChip("Unfiled", count: session.vault.entries.filter { $0.folderID == nil }.count, value: .unfiled)
-                        ForEach(session.vault.folders) { folder in
-                            folderChip(folder.name,
-                                count: session.vault.entries.filter { $0.folderID == folder.id }.count,
-                                value: .folder(folder.id), literal: true)
-                        }
-                    }.padding(.horizontal, 28).padding(.vertical, 12)
-                }
-                if entries.isEmpty {
-                    ContentUnavailableView {
-                        Label(L(search.isEmpty ? "Your notebook starts here" : "No matching passwords"),
-                              systemImage: search.isEmpty ? "note.text" : "magnifyingglass")
-                    } description: {
-                        Text(L(search.isEmpty ? "Add an account and password. Keep the details in one place." : "Try a different title or account."))
-                    }
-                    .frame(maxHeight: .infinity)
-                } else {
-                    List {
-                        ForEach(entries) { entry in
-                            NavigationLink(value: entry.id) {
-                                LibraryEntryRow(entry: entry)
+                VStack(spacing: 0) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            folderChip("All", count: session.vault.entries.count, value: .all)
+                            folderChip("Unfiled", count: session.vault.entries.filter { $0.folderID == nil }.count, value: .unfiled)
+                            ForEach(session.vault.folders) { folder in
+                                folderChip(folder.name,
+                                    count: session.vault.entries.filter { $0.folderID == folder.id }.count,
+                                    value: .folder(folder.id), literal: true)
                             }
-                            .listRowBackground(Palette.paper)
-                            .listRowSeparatorTint(Palette.rule)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
-                        }
+                        }.padding(.horizontal, 28).padding(.vertical, 12)
                     }
-                    .listStyle(.plain).scrollContentBackground(.hidden)
+                    .opacity(showSearch ? 0 : 1)
+                    .accessibilityHidden(showSearch)
+                    if entries.isEmpty {
+                        ContentUnavailableView {
+                            Label(L(search.isEmpty ? "Your notebook starts here" : "No matching passwords"),
+                                  systemImage: search.isEmpty ? "note.text" : "magnifyingglass")
+                        } description: {
+                            Text(L(search.isEmpty ? "Add an account and password. Keep the details in one place." : "Try a different title or account."))
+                        }
+                        .frame(maxHeight: .infinity)
+                    } else {
+                        List {
+                            ForEach(entries) { entry in
+                                NavigationLink(value: entry.id) {
+                                    LibraryEntryRow(entry: entry)
+                                }
+                                .listRowBackground(Palette.paper)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
+                            }
+                        }
+                        .listStyle(.plain).scrollContentBackground(.hidden)
+                    }
+                }
+                .overlay(alignment: .top) {
+                    if showSearch {
+                        NotebookSearchOverlay(search: $search, focused: $searchFocused) {
+                            showSearch = false
+                            searchFocused = false
+                            search = ""
+                        }
+                        .onAppear { searchFocused = true }
+                    }
                 }
             }
             .background(Palette.paper)
@@ -137,7 +146,6 @@ struct LibraryEntryRow: View {
             }
         }
         .padding(.vertical, 10)
-        .alignmentGuide(.listRowSeparatorLeading) { _ in 44 + 14 }
         .privacySensitive()
     }
 }
@@ -182,24 +190,53 @@ struct NotebookSearchField: View {
     }
 }
 
+struct NotebookSearchOverlay: View {
+    @Binding var search: String
+    var focused: FocusState<Bool>.Binding
+    let dismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            NotebookSearchField(search: $search, focused: focused)
+            Button(action: dismiss) { Image(systemName: "xmark") }
+                .buttonStyle(IconButton()).accessibilityLabel("Close search")
+        }
+        .padding(.horizontal, 28).padding(.vertical, 12)
+    }
+}
+
 #Preview("Notebook controls") {
+    @Previewable @State var showSearch = false
+    @Previewable @State var search = ""
+    @Previewable @FocusState var focused: Bool
     NavigationStack {
         VStack(spacing: 0) {
-            NotebookHeader(search: {}, generator: {}, settings: {})
-            HStack(spacing: 8) {
-                Button("All") {}.buttonStyle(SecondaryButton(selected: true))
-                Button("Unfiled") {}.buttonStyle(SecondaryButton())
-                Spacer()
-            }.padding(.horizontal, 28).padding(.vertical, 12)
-            List {
-                ForEach([VaultEntry(title: "Mail", account: "name@example.com"),
-                         VaultEntry(title: "Travel", account: "traveler"),
-                         VaultEntry(title: "Work", account: "name@example.com")]) { entry in
-                    NavigationLink {} label: { LibraryEntryRow(entry: entry) }
-                        .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
-                        .listRowBackground(Palette.paper).listRowSeparatorTint(Palette.rule)
+            NotebookHeader(search: { showSearch.toggle() }, generator: {}, settings: {})
+            VStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Button("All") {}.buttonStyle(SecondaryButton(selected: true))
+                    Button("Unfiled") {}.buttonStyle(SecondaryButton())
+                    Spacer()
+                }.padding(.horizontal, 28).padding(.vertical, 12)
+                .opacity(showSearch ? 0 : 1)
+                List {
+                    ForEach([VaultEntry(title: "Mail", account: "name@example.com"),
+                             VaultEntry(title: "Travel", account: "traveler"),
+                             VaultEntry(title: "Work", account: "name@example.com")]) { entry in
+                        NavigationLink {} label: { LibraryEntryRow(entry: entry) }
+                            .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
+                            .listRowBackground(Palette.paper).listRowSeparator(.hidden)
+                    }
+                }.listStyle(.plain).scrollContentBackground(.hidden)
+            }
+            .overlay(alignment: .top) {
+                if showSearch {
+                    NotebookSearchOverlay(search: $search, focused: $focused) {
+                        showSearch = false
+                        search = ""
+                    }
                 }
-            }.listStyle(.plain).scrollContentBackground(.hidden)
+            }
             NotebookControls(folders: {}, newPassword: {})
         }
         .background(Palette.paper)
