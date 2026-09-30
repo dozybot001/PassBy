@@ -57,12 +57,14 @@ App ID：`cn.tenonai.apps.passby`。CloudKit 容器：`iCloud.cn.tenonai.apps.pa
 
 ## 发布前仍需验证
 
-- 生产 CloudKit schema；开发容器与签名已配置。
+- 生产 CloudKit schema 已部署；仍需验证生产签名版本的实际同步。
 - 真机 Face ID 成功、失败、取消、锁定、更改登记、后台与系统中断。
 - 两台设备同步、离线编辑、同时修改、账户切换与恢复流程。
 - 草稿生成密码、切换注册应用粘贴、返回解锁并保存的完整旅程。
 - UI 的小屏、大字号、深色模式、VoiceOver 与中文/英文。
-- 隐私政策、App Store 隐私标签、加密申报、截图与审核说明。
+- 隐私与支持页面已发布；App Store 隐私标签、加密申报、截图与其他商店必需项仍需完成。
+
+发布记录与当前进度见 [上架准备](docs/app-store-release.md)。
 
 当前是首版开发工程，测试通过不等同于完成安全审核或可以直接提交 App Store。
 

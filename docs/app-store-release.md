@@ -97,6 +97,11 @@ Only an encrypted ciphertext asset and a format version are written to the priva
 - App ID / 完整数据保护 / CloudKit 容器已启用。
 - 公共页面通过 `scripts/publish-site.sh` 从干净 Commit 发布，校验精确文件摘要，先验证 Caddy 再切换，公开 smoke 失败恢复旧配置。
 
-仍需完成：生产 CloudKit schema、公开页面实际发布、Connect 元数据/隐私/年龄问卷/地区与价格、构建上传及处理、真实设备与跨设备恢复验收、真实应用截图、审核联系方式、提交审核。
+- 公共隐私与支持页面已发布至 `https://tenon.asia/passby/`，公开访问和发布文件摘要已验证。
+- CloudKit schema 已部署生产环境：Notebook 仅有 ciphertext / format 自定义字段，未授予公共数据库读写或创建权限；应用继续使用私有数据库。
+- Connect 记录已创建：`6817881529`，名称 `PassBy — Password Notebook`，手机内显示名称仍为 PassBy。英文版本资料与审核说明已保存，选择手动发布。
+- 发布归档的应用已安装至连接的 iPhone。
+
+仍需完成：Connect 应用信息/中文资料/隐私/年龄问卷/地区与价格、构建上传及处理、真实设备与跨设备恢复验收、真实应用截图、审核联系方式、提交审核。
 
 截图：iPhone 6.9 英寸可用 1320×2868 竖屏，其他允许尺寸以 [Apple 官方说明](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/) 为准。必须使用脱敏测试条目，不能上传用户的真实账户与恢复密钥。
