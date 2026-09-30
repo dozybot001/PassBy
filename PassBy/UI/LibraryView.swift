@@ -7,10 +7,13 @@ private enum FolderFilter: Hashable {
 struct LibraryView: View {
     @EnvironmentObject private var session: VaultSession
     @State private var search = ""
+    @State private var showSearch = false
+    @FocusState private var searchFocused: Bool
     @State private var filter: FolderFilter = .all
     @State private var editor: VaultEntry?
     @State private var showFolders = false
     @State private var showSettings = false
+    @State private var showGenerator = false
 
     private var entries: [VaultEntry] {
         session.vault.entries.filter { entry in
@@ -28,6 +31,16 @@ struct LibraryView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                NotebookHeader(search: {
+                    showSearch.toggle()
+                    searchFocused = showSearch
+                    if !showSearch { search = "" }
+                }, generator: { showGenerator = true }, settings: { showSettings = true })
+                if showSearch {
+                    NotebookSearchField(search: $search, focused: $searchFocused)
+                        .padding(.horizontal, 28).padding(.bottom, 4)
+                        .onAppear { searchFocused = true }
+                }
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         folderChip("All", count: session.vault.entries.count, value: .all)
@@ -37,7 +50,7 @@ struct LibraryView: View {
                                 count: session.vault.entries.filter { $0.folderID == folder.id }.count,
                                 value: .folder(folder.id), literal: true)
                         }
-                    }.padding(.horizontal, 20).padding(.vertical, 12)
+                    }.padding(.horizontal, 28).padding(.vertical, 12)
                 }
                 if entries.isEmpty {
                     ContentUnavailableView {
@@ -51,37 +64,19 @@ struct LibraryView: View {
                     List {
                         ForEach(entries) { entry in
                             NavigationLink(value: entry.id) {
-                                HStack(spacing: 14) {
-                                    Text(String(entry.title.prefix(1)).uppercased())
-                                        .font(.title3.weight(.medium))
-                                        .foregroundStyle(Palette.accent)
-                                        .frame(width: 44, height: 44)
-                                        .background(Palette.rule.opacity(0.4), in: Circle())
-                                    VStack(alignment: .leading, spacing: 5) {
-                                        Text(entry.title).font(.body.weight(.semibold)).lineLimit(1)
-                                        Text(entry.account.isEmpty ? L("No account added") : entry.account)
-                                            .font(.subheadline).foregroundStyle(Palette.secondary).lineLimit(1)
-                                    }
-                                    .padding(.vertical, 10)
-                                }.privacySensitive()
+                                LibraryEntryRow(entry: entry)
                             }
                             .listRowBackground(Palette.paper)
                             .listRowSeparatorTint(Palette.rule)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
                         }
                     }
                     .listStyle(.plain).scrollContentBackground(.hidden)
                 }
             }
             .background(Palette.paper)
-            .navigationTitle("PassBy")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showSettings = true } label: { Image(systemName: "slider.horizontal.3") }
-                        .accessibilityLabel("Settings")
-                }
-            }
             .safeAreaInset(edge: .bottom) {
-                NotebookControls(search: $search, folders: { showFolders = true }, newPassword: {
+                NotebookControls(folders: { showFolders = true }, newPassword: {
                         let id: UUID?
                         if case .folder(let value) = filter { id = value } else { id = nil }
                         editor = VaultEntry(folderID: id)
@@ -93,6 +88,12 @@ struct LibraryView: View {
             }
             .sheet(isPresented: $showFolders) { FoldersView() }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showGenerator) {
+                PasswordGeneratorView(copyOnly: true) { password in
+                    session.copy(password, label: L("Password copied for 60 seconds"))
+                    return true
+                }
+            }
             .onChange(of: session.vault.folders) { _, folders in
                 if case .folder(let id) = filter, !folders.contains(where: { $0.id == id }) { filter = .all }
             }
@@ -120,51 +121,88 @@ struct LibraryView: View {
     }
 }
 
-struct NotebookControls: View {
-    @Binding var search: String
-    let folders: () -> Void
-    let newPassword: () -> Void
-    @ScaledMetric(relativeTo: .body) private var height = ControlMetrics.height
+struct LibraryEntryRow: View {
+    let entry: VaultEntry
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                Button(action: folders) {
-                    Image(systemName: "folder.badge.plus")
-                }
-                .buttonStyle(IconButton())
-                .accessibilityLabel("Manage folders")
+        HStack(spacing: 14) {
+            Text(String(entry.title.prefix(1)).uppercased())
+                .font(.title3.weight(.medium)).foregroundStyle(Palette.accent)
+                .frame(width: 44, height: 44)
+                .background(Palette.rule.opacity(0.4), in: Circle())
+            VStack(alignment: .leading, spacing: 5) {
+                Text(entry.title).font(.body.weight(.semibold)).lineLimit(1)
+                Text(entry.account.isEmpty ? L("No account added") : entry.account)
+                    .font(.subheadline).foregroundStyle(Palette.secondary).lineLimit(1)
+            }
+        }
+        .padding(.vertical, 10)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 44 + 14 }
+        .privacySensitive()
+    }
+}
 
-                Button(action: newPassword) {
-                    Label("New password", systemImage: "plus")
-                }
+struct NotebookControls: View {
+    let folders: () -> Void
+    let newPassword: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: folders) { Image(systemName: "folder.badge.plus") }
+                .buttonStyle(IconButton()).accessibilityLabel("Manage folders")
+            Button(action: newPassword) { Label("New password", systemImage: "plus") }
                 .buttonStyle(PrimaryButton())
-            }
-            HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass").foregroundStyle(Palette.secondary)
-                TextField("Search titles or accounts", text: $search)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                    .submitLabel(.search)
-                if !search.isEmpty {
-                    Button { search = "" } label: {
-                        Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.secondary)
-                    }.buttonStyle(.plain).accessibilityLabel("Clear search")
-                }
-            }
-            .padding(.horizontal, 18)
-            .frame(height: height)
-            .modifier(ControlSurface())
         }
         .foregroundStyle(Palette.ink)
-        .padding(.horizontal, 20).padding(.vertical, 12)
+        .padding(.horizontal, 28).padding(.vertical, 12)
         .background(Palette.paper)
     }
 }
 
-#Preview("Notebook controls") {
-    VStack {
-        Spacer()
-        NotebookControls(search: .constant(""), folders: {}, newPassword: {})
+struct NotebookSearchField: View {
+    @Binding var search: String
+    var focused: FocusState<Bool>.Binding
+    @ScaledMetric(relativeTo: .body) private var height = ControlMetrics.height
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass").foregroundStyle(Palette.secondary)
+            TextField("Search titles or accounts", text: $search)
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
+                .submitLabel(.search).focused(focused)
+            if !search.isEmpty {
+                Button { search = "" } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.secondary)
+                }.buttonStyle(.plain).accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, 18)
+        .frame(height: height)
+        .modifier(ControlSurface())
     }
-    .background(Palette.paper).tint(Palette.accent).preferredColorScheme(.dark)
+}
+
+#Preview("Notebook controls") {
+    NavigationStack {
+        VStack(spacing: 0) {
+            NotebookHeader(search: {}, generator: {}, settings: {})
+            HStack(spacing: 8) {
+                Button("All") {}.buttonStyle(SecondaryButton(selected: true))
+                Button("Unfiled") {}.buttonStyle(SecondaryButton())
+                Spacer()
+            }.padding(.horizontal, 28).padding(.vertical, 12)
+            List {
+                ForEach([VaultEntry(title: "Mail", account: "name@example.com"),
+                         VaultEntry(title: "Travel", account: "traveler"),
+                         VaultEntry(title: "Work", account: "name@example.com")]) { entry in
+                    NavigationLink {} label: { LibraryEntryRow(entry: entry) }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28))
+                        .listRowBackground(Palette.paper).listRowSeparatorTint(Palette.rule)
+                }
+            }.listStyle(.plain).scrollContentBackground(.hidden)
+            NotebookControls(folders: {}, newPassword: {})
+        }
+        .background(Palette.paper)
+    }
+    .tint(Palette.accent).preferredColorScheme(.dark)
 }

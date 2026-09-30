@@ -35,7 +35,7 @@ struct LockView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Text("PassBy").font(.title2.weight(.semibold)).padding(.bottom, 62)
+                NotebookTitle().padding(.bottom, 62)
                 NotebookMark(size: 76).padding(.bottom, 30)
                 Text(L(session.setup == .newNotebook ? "A place for your passwords." : "Your notebook.\nFor your eyes."))
                     .font(.largeTitle.weight(.semibold)).tracking(-0.7)

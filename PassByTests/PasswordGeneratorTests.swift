@@ -4,7 +4,7 @@ import XCTest
 
 final class PasswordGeneratorTests: XCTestCase {
     func testEveryEnabledTypeIsPresentAtEverySupportedLength() throws {
-        for length in 8...24 {
+        for length in Array(8...24) + [25, 64, 128, 256, 4096] {
             var options = PasswordOptions()
             options.length = length
             let generated = try PasswordGenerator.generate(options: options)
@@ -21,7 +21,7 @@ final class PasswordGeneratorTests: XCTestCase {
         XCTAssertThrowsError(try PasswordGenerator.generate(options: options))
         options.lowercase = true; options.length = 7
         XCTAssertThrowsError(try PasswordGenerator.generate(options: options))
-        options.length = 25
+        options.length = 4097
         XCTAssertThrowsError(try PasswordGenerator.generate(options: options))
     }
 

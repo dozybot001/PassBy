@@ -10,6 +10,33 @@ enum Palette {
     static let control = Color(white: 0.4)
 }
 
+struct NotebookTitle: View {
+    var body: some View {
+        Text("PassBy").font(.largeTitle.weight(.semibold)).tracking(-0.7)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+struct NotebookHeader: View {
+    let search: () -> Void
+    let generator: () -> Void
+    let settings: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            NotebookTitle()
+            Spacer(minLength: 12)
+            Button(action: search) { Image(systemName: "magnifyingglass") }
+                .buttonStyle(IconButton()).accessibilityLabel("Search passwords")
+            Button(action: generator) { Image(systemName: "dice") }
+                .buttonStyle(IconButton()).accessibilityLabel("Generate strong password")
+            Button(action: settings) { Image(systemName: "slider.horizontal.3") }
+                .buttonStyle(IconButton()).accessibilityLabel("Settings")
+        }
+        .padding(.horizontal, 28).padding(.top, 32).padding(.bottom, 12)
+    }
+}
+
 struct NotebookMark: View {
     var size: CGFloat = 64
     var body: some View {

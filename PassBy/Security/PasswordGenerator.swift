@@ -2,7 +2,8 @@ import Foundation
 import Security
 
 struct PasswordOptions: Equatable {
-    static let lengthRange = 8...24
+    static let commonLengthRange = 8...24
+    static let lengthRange = 8...4096
     var length = 16
     var lowercase = true
     var uppercase = true
