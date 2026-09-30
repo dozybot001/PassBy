@@ -41,7 +41,7 @@ struct PrimaryButton: PrimitiveButtonStyle {
             }
         }
         .buttonBorderShape(.capsule)
-        .controlSize(.large)
+        .controlSize(.regular)
         .tint(Palette.accent)
     }
 
@@ -49,7 +49,7 @@ struct PrimaryButton: PrimitiveButtonStyle {
         Button(action: configuration.trigger) {
             configuration.label
                 .font(.body.weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 30)
+                .frame(maxWidth: .infinity, minHeight: 24)
                 .foregroundStyle(Palette.paper)
         }
     }
@@ -65,7 +65,7 @@ struct SecondaryButton: PrimitiveButtonStyle {
             }
         }
         .buttonBorderShape(.capsule)
-        .controlSize(.large)
+        .controlSize(.regular)
         .tint(Palette.ink)
     }
 
@@ -73,7 +73,7 @@ struct SecondaryButton: PrimitiveButtonStyle {
         Button(action: configuration.trigger) {
             configuration.label
                 .font(.body.weight(.medium))
-                .frame(minHeight: 30)
+                .frame(minHeight: 24)
                 .foregroundStyle(Palette.ink)
         }
     }

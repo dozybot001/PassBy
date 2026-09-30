@@ -74,7 +74,6 @@ struct LibraryView: View {
             }
             .background(Palette.paper)
             .navigationTitle("PassBy")
-            .searchable(text: $search, prompt: "Search titles or accounts")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "slider.horizontal.3") }
@@ -82,17 +81,11 @@ struct LibraryView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                HStack(spacing: 12) {
-                    Button { showFolders = true } label: {
-                        Image(systemName: "folder.badge.plus").font(.title3).frame(width: 30)
-                    }.buttonStyle(SecondaryButton()).accessibilityLabel("Manage folders")
-                    Button {
+                NotebookControls(search: $search, folders: { showFolders = true }, newPassword: {
                         let id: UUID?
                         if case .folder(let value) = filter { id = value } else { id = nil }
                         editor = VaultEntry(folderID: id)
-                    } label: { Label("New password", systemImage: "plus") }
-                        .buttonStyle(PrimaryButton())
-                }.padding(.horizontal, 20).padding(.vertical, 12).background(Palette.paper)
+                })
             }
             .navigationDestination(for: UUID.self) { id in EntryDetailView(id: id) }
             .sheet(item: $editor) { entry in
@@ -128,4 +121,85 @@ struct LibraryView: View {
         }.buttonStyle(.plain)
             .accessibilityAddTraits(filter == value ? .isSelected : [])
     }
+}
+
+struct NotebookControls: View {
+    @Binding var search: String
+    let folders: () -> Void
+    let newPassword: () -> Void
+    @ScaledMetric(relativeTo: .body) private var height: CGFloat = 44
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                Button(action: folders) {
+                    Image(systemName: "folder.badge.plus")
+                        .font(.title3)
+                        .frame(width: height, height: height)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .modifier(ControlSurface(circle: true))
+                .accessibilityLabel("Manage folders")
+
+                Button(action: newPassword) {
+                    Label("New password", systemImage: "plus")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: height)
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Palette.paper)
+                .modifier(ControlSurface(prominent: true))
+            }
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass").foregroundStyle(Palette.secondary)
+                TextField("Search titles or accounts", text: $search)
+                    .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    .submitLabel(.search)
+                if !search.isEmpty {
+                    Button { search = "" } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.secondary)
+                    }.buttonStyle(.plain).accessibilityLabel("Clear search")
+                }
+            }
+            .padding(.horizontal, 18)
+            .frame(height: height)
+            .modifier(ControlSurface())
+        }
+        .foregroundStyle(Palette.ink)
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .background(Palette.paper)
+    }
+}
+
+private struct ControlSurface: ViewModifier {
+    var circle = false
+    var prominent = false
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            if circle {
+                content.glassEffect(.regular.interactive(), in: Circle())
+            } else if prominent {
+                content.glassEffect(.regular.tint(Palette.ink).interactive(), in: Capsule())
+            } else {
+                content.glassEffect(.regular, in: Capsule())
+            }
+        } else if circle {
+            content.background(Palette.rule.opacity(0.4), in: Circle())
+        } else {
+            content.background(prominent ? Palette.ink : Palette.rule.opacity(0.4), in: Capsule())
+        }
+    }
+}
+
+#Preview("Notebook controls") {
+    VStack {
+        Spacer()
+        NotebookControls(search: .constant(""), folders: {}, newPassword: {})
+    }
+    .background(Palette.paper).tint(Palette.accent).preferredColorScheme(.dark)
 }
