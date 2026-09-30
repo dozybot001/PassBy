@@ -1,0 +1,56 @@
+import Foundation
+
+struct LocalVaultState: Codable, Equatable {
+    var current: Vault
+    var base: Vault
+    var recoveryConfirmed: Bool = true
+    var draft: VaultEntry? = nil
+}
+
+struct MergeResult {
+    var vault: Vault
+    var conflictCount: Int
+}
+
+enum VaultMerge {
+    static func merge(base: Vault, local: Vault, remote: Vault) -> MergeResult {
+        let baseItems = Dictionary(uniqueKeysWithValues: base.entries.map { ($0.id, $0) })
+        let localItems = Dictionary(uniqueKeysWithValues: local.entries.map { ($0.id, $0) })
+        let remoteItems = Dictionary(uniqueKeysWithValues: remote.entries.map { ($0.id, $0) })
+        var result = Vault()
+        var conflicts = 0
+        let ids = Set(baseItems.keys).union(localItems.keys).union(remoteItems.keys)
+        for id in ids.sorted(by: { $0.uuidString < $1.uuidString }) {
+            let original = baseItems[id], ours = localItems[id], theirs = remoteItems[id]
+            if ours == original {
+                if let theirs { result.entries.append(theirs) }
+            } else if theirs == original || ours == theirs {
+                if let ours { result.entries.append(ours) }
+            } else if let ours, let theirs {
+                result.entries.append(theirs)
+                result.entries.append(VaultEntry(title: ours.title + L(" (Conflict copy)"),
+                    account: ours.account, password: ours.password, notes: ours.notes,
+                    folderID: ours.folderID))
+                conflicts += 1
+            } else if let surviving = ours ?? theirs {
+                // An edit wins over a concurrent deletion to prevent secret loss.
+                result.entries.append(surviving)
+                conflicts += 1
+            }
+        }
+        let b = Dictionary(uniqueKeysWithValues: base.folders.map { ($0.id, $0) })
+        let l = Dictionary(uniqueKeysWithValues: local.folders.map { ($0.id, $0) })
+        let r = Dictionary(uniqueKeysWithValues: remote.folders.map { ($0.id, $0) })
+        for id in Set(b.keys).union(l.keys).union(r.keys).sorted(by: { $0.uuidString < $1.uuidString }) {
+            let value = l[id] == b[id] ? r[id] : l[id]
+            if let value { result.folders.append(value) }
+        }
+        let folderIDs = Set(result.folders.map(\.id))
+        for index in result.entries.indices {
+            if let id = result.entries[index].folderID, !folderIDs.contains(id) {
+                result.entries[index].folderID = nil
+            }
+        }
+        return MergeResult(vault: result, conflictCount: conflicts)
+    }
+}

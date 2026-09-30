@@ -1,0 +1,131 @@
+import SwiftUI
+
+private enum FolderFilter: Hashable {
+    case all, unfiled, folder(UUID)
+}
+
+struct LibraryView: View {
+    @EnvironmentObject private var session: VaultSession
+    @State private var search = ""
+    @State private var filter: FolderFilter = .all
+    @State private var editor: VaultEntry?
+    @State private var showFolders = false
+    @State private var showSettings = false
+
+    private var entries: [VaultEntry] {
+        session.vault.entries.filter { entry in
+            let matches: Bool
+            switch filter {
+            case .all: matches = true
+            case .unfiled: matches = entry.folderID == nil
+            case .folder(let id): matches = entry.folderID == id
+            }
+            return matches && (search.isEmpty || entry.title.localizedCaseInsensitiveContains(search)
+                || entry.account.localizedCaseInsensitiveContains(search))
+        }.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        folderChip("All", count: session.vault.entries.count, value: .all)
+                        folderChip("Unfiled", count: session.vault.entries.filter { $0.folderID == nil }.count, value: .unfiled)
+                        ForEach(session.vault.folders) { folder in
+                            folderChip(folder.name,
+                                count: session.vault.entries.filter { $0.folderID == folder.id }.count,
+                                value: .folder(folder.id), literal: true)
+                        }
+                    }.padding(.horizontal, 20).padding(.vertical, 12)
+                }
+                if entries.isEmpty {
+                    ContentUnavailableView {
+                        Label(L(search.isEmpty ? "Your notebook starts here" : "No matching passwords"),
+                              systemImage: search.isEmpty ? "note.text" : "magnifyingglass")
+                    } description: {
+                        Text(L(search.isEmpty ? "Add an account and password. Keep the details in one place." : "Try a different title or account."))
+                    }
+                    .frame(maxHeight: .infinity)
+                } else {
+                    List {
+                        ForEach(entries) { entry in
+                            NavigationLink(value: entry.id) {
+                                HStack(spacing: 14) {
+                                    Text(String(entry.title.prefix(1)).uppercased())
+                                        .font(.title3.weight(.medium))
+                                        .foregroundStyle(Palette.accent)
+                                        .frame(width: 42, height: 46)
+                                        .background(Palette.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                                    VStack(alignment: .leading, spacing: 5) {
+                                        Text(entry.title).font(.body.weight(.semibold)).lineLimit(1)
+                                        Text(entry.account.isEmpty ? L("No account added") : entry.account)
+                                            .font(.subheadline).foregroundStyle(Palette.secondary).lineLimit(1)
+                                    }
+                                    .padding(.vertical, 10)
+                                }.privacySensitive()
+                            }
+                            .listRowBackground(Palette.paper)
+                            .listRowSeparatorTint(Palette.rule)
+                        }
+                    }
+                    .listStyle(.plain).scrollContentBackground(.hidden)
+                }
+            }
+            .background(Palette.paper)
+            .navigationTitle("PassBy")
+            .searchable(text: $search, prompt: "Search titles or accounts")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showSettings = true } label: { Image(systemName: "slider.horizontal.3") }
+                        .accessibilityLabel("Settings")
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                HStack(spacing: 18) {
+                    Button { showFolders = true } label: {
+                        Image(systemName: "folder.badge.plus").font(.title3).frame(width: 44, height: 54)
+                    }.accessibilityLabel("Manage folders")
+                    Button {
+                        let id: UUID?
+                        if case .folder(let value) = filter { id = value } else { id = nil }
+                        editor = VaultEntry(folderID: id)
+                    } label: { Label("New password", systemImage: "plus") }
+                        .buttonStyle(PrimaryButton())
+                }.padding(.horizontal, 20).padding(.vertical, 12).background(Palette.paper)
+            }
+            .navigationDestination(for: UUID.self) { id in EntryDetailView(id: id) }
+            .sheet(item: $editor) { entry in
+                EntryEditorView(entry: entry, isNew: !session.vault.entries.contains { $0.id == entry.id })
+            }
+            .sheet(isPresented: $showFolders) { FoldersView() }
+            .sheet(isPresented: $showSettings) { SettingsView() }
+            .onChange(of: session.vault.folders) { _, folders in
+                if case .folder(let id) = filter, !folders.contains(where: { $0.id == id }) { filter = .all }
+            }
+            .task {
+                if let draft = session.draft { editor = draft }
+                // Sync remote edits while the notebook is open. No sync task reads
+                // a decrypted notebook when the app is locked.
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(30))
+                    guard !Task.isCancelled else { return }
+                    await session.syncNow()
+                }
+            }
+        }
+    }
+
+    private func folderChip(_ name: String, count: Int, value: FolderFilter, literal: Bool = false) -> some View {
+        Button { filter = value } label: {
+            HStack(spacing: 7) {
+                Text(literal ? name : L(name)).font(.subheadline.weight(.medium))
+                Text("\(count)").font(.caption).monospacedDigit().opacity(0.7)
+            }
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .foregroundStyle(filter == value ? Color.white : Palette.secondary)
+            .background(filter == value ? Palette.ink : Palette.rule.opacity(0.35), in: Capsule())
+        }.buttonStyle(.plain)
+            .accessibilityAddTraits(filter == value ? .isSelected : [])
+    }
+}
