@@ -133,4 +133,7 @@ Only an encrypted ciphertext asset and a format version are written to the priva
 - 用户恢复推进付费上架，价格继续沿用已确认的 US$1.99 买断制。
 - 最新 main 源码成功生成 1.0（2）Release 归档；核对归档使用 Production CloudKit 与完整数据保护。发布导出仍须重新签名为 App Store 分发包。
 - 已尝试上传 build 2；Xcode 返回 Apple 账号会话过期，未上传成功。App Store Connect 网页也返回登录过期，已请用户分别恢复网页登录与 Xcode Accounts 登录。
-- 本文新增网页访问商店文案草案；尚未保存至 Connect。付费协议、银行和税务配置的最新状态仍需登录后核对，不沿用旧状态作为结论。
+- 网页登录恢复后，中英文推广文本与描述已保存至 Connect，包含 Apple 账号关联和网页访问说明。
+- 商务页最新状态：付费 App 协议“等待用户信息”；银行资料“正在处理”，页面提示更新可能需要 24 小时；外国受益所有人证明“使用中”，新加坡税收调查表“完成”，U.S. Form W-8BEN 仍“缺少税务信息”。已打开 W-8BEN，请用户亲自核对并提交法律声明，不记录私人银行或税务资料。
+- 网页登录不会刷新 Xcode 凭证：重新尝试上传仍返回账号会话过期，已请用户在 Xcode Settings / Accounts 重新认证。build 2 尚未上传，Connect 仍关联 build 1。
+- Connect 英语和中文截图均为 0；页面当前显示必填 iPhone 6.5 英寸截屏，可接受 1242×2688 或 1284×2778 及横向对应尺寸。更大机型的原始截图需经媒体管理页核对后上传，不应将旧尺寸笔记当作实时页面状态。
