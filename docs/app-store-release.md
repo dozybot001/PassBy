@@ -26,7 +26,7 @@ Keychain 隔离。`CKAccountChanged` 使会话立即锁定；每次同步重新�
 
 副标题：`Your private password notebook`
 
-推广文本：`A quiet password notebook for iPhone. Organize accounts, generate strong passwords, and sync an encrypted notebook through your own iCloud.`
+推广文本：`Your password notebook, linked to your Apple Account. Organize accounts, generate passwords, and access your encrypted notebook on iPhone or the web.`
 
 描述：
 
@@ -39,6 +39,8 @@ Your notebook locks whenever you leave PassBy. Face ID is required to reopen it.
 Your notebook is encrypted on your device using AES-256-GCM before syncing to your private iCloud database. PassBy uses the Apple Account already signed in to iCloud, with no separate app account or developer-operated password server.
 
 Save your recovery key outside PassBy. You need it to open the same notebook on a new iPhone or after your local key becomes unavailable. The developer cannot recover a lost key or decrypt your notebook.
+
+When your iPhone is not nearby, open tenon.asia/passby on a trusted computer. Continue with the same Apple Account and enter your recovery key to unlock your synced notebook. The key remains in the current page's memory; leaving the page locks it.
 
 Swipe down to keep an encrypted local draft while you switch apps. Tap New password to resume it. Save when you finish, or Cancel to discard the draft. PassBy supports English and Simplified Chinese, light and dark appearances, and adjustable text sizes.
 
@@ -63,6 +65,8 @@ PassBy 是一款简洁的 iPhone 密码本。每项记录包含标题、账户�
 密码本先在设备上使用 AES-256-GCM 加密，再同步至你的 iCloud 私有数据库。使用本机已登录 iCloud 的 Apple 账号，无需额外注册，开发者不运营密码服务器。
 
 请将恢复密钥保存在 PassBy 之外。新 iPhone 或本机密钥失效后，需要同一 iCloud 账号和恢复密钥才能打开密码本。开发者无法找回丢失的密钥或解密密码本。
+
+iPhone 不在身边时，可以在可信电脑打开 tenon.asia/passby，使用同一 Apple 账号和恢复密钥访问已同步的密码本。恢复密钥只保留在当前页面内存中，离开页面会锁定。
 
 下滑关闭编辑页会保留加密的本机草稿，点击“新建密码”恢复编辑；保存存入条目，取消丢弃草稿。支持中英文、深浅色外观及动态字号。
 
@@ -123,3 +127,10 @@ Only an encrypted ciphertext asset and a format version are written to the priva
 - App 图标、应用内矢量标志和网页标志由同一图形源生成。
 - 24 项原生单元测试、11 项网页/加密兼容性检查通过；build 2 真机签名构建完成并安装。实际恢复与正式同步由用户在手机验证，尚未确认。
 - App Store Connect 仍关联 build 1；此版本需上传新的 build 2，不能将旧包作为最新实现提交。其他暂停的截图和跨设备验收仍待完成。
+
+## 付费发布继续推进（2026-10-01）
+
+- 用户恢复推进付费上架，价格继续沿用已确认的 US$1.99 买断制。
+- 最新 main 源码成功生成 1.0（2）Release 归档；核对归档使用 Production CloudKit 与完整数据保护。发布导出仍须重新签名为 App Store 分发包。
+- 已尝试上传 build 2；Xcode 返回 Apple 账号会话过期，未上传成功。App Store Connect 网页也返回登录过期，已请用户分别恢复网页登录与 Xcode Accounts 登录。
+- 本文新增网页访问商店文案草案；尚未保存至 Connect。付费协议、银行和税务配置的最新状态仍需登录后核对，不沿用旧状态作为结论。
