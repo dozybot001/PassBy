@@ -105,13 +105,11 @@ function decorateAuthButtons() {
     const element = holder.querySelector('.apple-auth-button');
     if (!element) continue;
     element.setAttribute('role', 'button'); element.setAttribute('aria-label', label); element.tabIndex = 0;
-    // Preserve Apple's button and click handler; the secondary action uses a
-    // localized text label rather than an oversized sign-out graphic.
-    if (holder === authOut) {
-      let text = element.querySelector('.account-switch-label');
-      if (!text) { text = node('span', 'account-switch-label'); element.append(text); }
-      text.textContent = label;
-    }
+    // CloudKit JS v2's bundled button art is English-only. Keep Apple's
+    // element and gesture handler, and localize only its visible label.
+    let text = element.querySelector('.auth-button-label');
+    if (!text) { text = node('span', 'auth-button-label'); element.append(text); }
+    text.textContent = label;
     element.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); element.click(); } };
   }
 }
