@@ -57,7 +57,7 @@ struct EntryDetailView: View {
             Button("Delete password") {
                 if session.deleteEntry(id) { dismiss() }
             }
-        } message: { Text("This removes it from your notebook and syncs the deletion to iCloud.") }
+        } message: { Text("This removes it from your notebook on all synced devices.") }
         .onDisappear { revealed = false }
     }
 

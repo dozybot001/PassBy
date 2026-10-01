@@ -7,7 +7,7 @@ import UIKit
 @MainActor
 final class VaultSession: ObservableObject {
     static let shared = VaultSession()
-    enum Setup { case checking, newNotebook, recovery, ready, unavailable }
+    enum Setup { case checking, newNotebook, recovery, localRecovery, ready, unavailable }
     enum SyncStatus { case waiting, syncing, synced, failed }
 
     @Published private(set) var phase: SessionGate.Phase = .locked
@@ -15,6 +15,7 @@ final class VaultSession: ObservableObject {
     @Published private(set) var setup: Setup = .checking
     @Published private(set) var syncStatus: SyncStatus = .waiting
     @Published private(set) var syncMessage: String?
+    @Published private(set) var needsCloudRestore = false
     @Published private(set) var recoveryToSave: String?
     @Published var message: String?
     @Published private(set) var toast: String?
@@ -46,7 +47,8 @@ final class VaultSession: ObservableObject {
             let disk = VaultStorage(ownerID: owner)
             let initial: Setup
             if disk.exists { initial = .ready }
-            else { initial = try await cloud.fetch() == nil ? .newNotebook : .recovery }
+            else if try await cloud.fetch() != nil { initial = .recovery }
+            else { initial = try disk.otherSnapshots().isEmpty ? .newNotebook : .localRecovery }
             guard token == bindingGeneration else { return }
             storage = disk
             keyStore = KeyStore(ownerID: owner)
@@ -97,18 +99,26 @@ final class VaultSession: ObservableObject {
             let state: LocalVaultState
             if let recoveryText {
                 unlockedKey = try RecoveryKey.parse(recoveryText)
-                guard let record = try await cloud.fetch() else { throw CloudError.notebookChanged }
+                let record = try await cloud.fetch()
                 guard gate.accepts(token) else { return }
-                let remote: Vault
-                do { remote = try VaultCipher.open(cloud.ciphertext(in: record), key: unlockedKey) }
-                catch { throw RecoveryError.wrongNotebook }
-                if storage.exists {
-                    let previous = try storage.load(key: unlockedKey)
-                    state = LocalVaultState(current: VaultMerge.merge(base: previous.base,
-                        local: previous.current, remote: remote).vault, base: remote,
-                        recoveryConfirmed: true, draft: previous.draft)
+                if setup == .localRecovery {
+                    // Explicit on-device restore into an empty production book.
+                    // Leave the original encrypted snapshot untouched.
+                    guard record == nil else { setup = .recovery; throw CloudError.notebookChanged }
+                    state = try storage.recoverLocalState(key: unlockedKey)
                 } else {
-                    state = LocalVaultState(current: remote, base: remote, recoveryConfirmed: true)
+                    guard let record else { setup = .localRecovery; throw CloudError.notebookChanged }
+                    let remote: Vault
+                    do { remote = try VaultCipher.open(cloud.ciphertext(in: record), key: unlockedKey) }
+                    catch { throw RecoveryError.wrongNotebook }
+                    if storage.exists {
+                        let previous = try storage.load(key: unlockedKey)
+                        state = LocalVaultState(current: VaultMerge.merge(base: previous.base,
+                            local: previous.current, remote: remote).vault, base: remote,
+                            recoveryConfirmed: true, draft: previous.draft)
+                    } else {
+                        state = LocalVaultState(current: remote, base: remote, recoveryConfirmed: true)
+                    }
                 }
                 try storage.save(state, key: unlockedKey)
                 try keyStore.store(unlockedKey)
@@ -198,6 +208,7 @@ final class VaultSession: ObservableObject {
         syncTask = nil
         syncStatus = .waiting
         syncMessage = nil
+        needsCloudRestore = false
     }
 
     @discardableResult
@@ -318,7 +329,12 @@ final class VaultSession: ObservableObject {
         }
     }
 
-    func syncNow() async {
+    func enableWebAccess() async {
+        guard needsCloudRestore else { return }
+        await syncNow(restoringMissingNotebook: true)
+    }
+
+    func syncNow(restoringMissingNotebook: Bool = false) async {
         guard !syncRunning, recoveryToSave == nil, gate.phase == .unlocked,
               gate.isActive, let key, let storage else { return }
         syncRunning = true
@@ -337,20 +353,22 @@ final class VaultSession: ObservableObject {
                 let record = try await cloud.fetch()
                 guard gate.generation == token, gate.phase == .unlocked,
                       gate.isActive, var state = localState else { return }
-                let remote = try record.map { try VaultCipher.open(cloud.ciphertext(in: $0), key: key) } ?? Vault()
-                guard record != nil || state.base == Vault() else {
+                let remote = try record.map { try VaultCipher.open(cloud.ciphertext(in: $0), key: key) }
+                guard record != nil || state.base == Vault() || restoringMissingNotebook else {
+                    needsCloudRestore = true
                     throw CloudError.notebookChanged
                 }
-                let merge = VaultMerge.merge(base: state.base, local: state.current, remote: remote)
+                needsCloudRestore = false
+                let merge = try state.integratingCloud(remote, restoringMissingNotebook: restoringMissingNotebook)
                 state.current = merge.vault
                 // The remote changes are now integrated locally. Advance the
                 // base even if upload fails, so retries do not merge them twice.
-                state.base = remote
+                state.base = remote ?? Vault()
                 try storage.save(state, key: key)
                 localState = state
                 vault = state.current
                 let uploaded = state.current
-                if record != nil, uploaded == remote {
+                if let remote, uploaded == remote {
                     state.base = remote
                     try storage.save(state, key: key)
                     localState = state

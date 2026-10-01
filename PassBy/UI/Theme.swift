@@ -42,19 +42,9 @@ struct NotebookHeader: View {
 struct NotebookMark: View {
     var size: CGFloat = 64
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.22)
-                .fill(Palette.accent.opacity(0.10))
-            HStack(spacing: size * 0.09) {
-                RoundedRectangle(cornerRadius: size * 0.035)
-                    .fill(Palette.accent).frame(width: size * 0.065, height: size * 0.46)
-                VStack(alignment: .leading, spacing: size * 0.07) {
-                    Capsule().fill(Palette.accent).frame(width: size * 0.28, height: size * 0.065)
-                    Capsule().fill(Palette.accent).frame(width: size * 0.22, height: size * 0.065)
-                    Capsule().fill(Palette.accent.opacity(0.4)).frame(width: size * 0.15, height: size * 0.065)
-                }
-            }
-        }
+        Image("BrandMark")
+            .renderingMode(.template).resizable().scaledToFit()
+            .foregroundStyle(Palette.accent)
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }

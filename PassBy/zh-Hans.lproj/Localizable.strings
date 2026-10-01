@@ -23,9 +23,9 @@
 "Done" = "完成";
 "Edit" = "编辑";
 "Edit password" = "编辑密码";
-"Encrypted before iCloud sync" = "先加密，再同步到 iCloud";
+"Encrypted before syncing" = "同步前在设备加密";
 "Encrypted on device and in iCloud" = "本机和 iCloud 均加密保存";
-"Enter your recovery key to open the notebook from iCloud." = "输入恢复密钥，打开 iCloud 中的密码本。";
+"Enter your recovery key to open your Apple-linked notebook." = "输入恢复密钥，打开绑定 Apple 账号的密码本。";
 "Face ID did not unlock the notebook. Please try again." = "Face ID 未能解锁密码本，请重试。";
 "Face ID is temporarily locked. Unlock your iPhone with its passcode, then try again." = "Face ID 暂时锁定，请先用设备密码解锁 iPhone，再重试。";
 "Face ID, every time" = "每次打开，都通过 Face ID";
@@ -58,7 +58,7 @@
 "Password copied for 60 seconds" = "已复制密码，60 秒后清除";
 "Password hidden" = "密码已隐藏";
 "Password removed" = "密码已删除";
-"Passwords stay encrypted on this iPhone and in your iCloud." = "密码在本机与 iCloud 中均以密文保存。";
+"Your notebook stays encrypted and linked to your Apple Account." = "密码本始终加密，绑定你的 Apple 账号。";
 "Privacy" = "隐私保护";
 "Recovery" = "恢复";
 "Recovery key" = "恢复密钥";
@@ -80,8 +80,8 @@
 "The notebook changed on another device. Please try again." = "另一台设备上的密码本已发生变化，请重试。";
 "The notebook could not be verified. Your saved file has been kept unchanged." = "无法验证密码本，已有文件未被修改。";
 "This notebook was saved by a newer version of PassBy. Update the app to open it." = "密码本由更新版本的 PassBy 保存，请更新应用后打开。";
-"This recovery key does not unlock your iCloud notebook." = "这份恢复密钥无法打开你的 iCloud 密码本。";
-"This removes it from your notebook and syncs the deletion to iCloud." = "这条密码将从密码本中删除，并同步到 iCloud。";
+"This recovery key does not unlock your notebook." = "此恢复密钥无法解锁你的密码本。";
+"This removes it from your notebook on all synced devices." = "这会从所有已同步设备的密码本中删除此条目。";
 "Title" = "标题";
 "Try a different title or account." = "试试其他标题或账户。";
 "Try again" = "重试";
@@ -92,7 +92,7 @@
 "Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys." = "更换设备或重设 Face ID 后，请使用创建密码本时保存的恢复密钥。PassBy 无法找回丢失的密钥。";
 "Username or email" = "用户名或邮箱";
 "Waiting to sync" = "等待同步";
-"Write it down or save it in a secure place outside this app. Anyone with this key and access to your iCloud notebook can read your passwords." = "请抄写下来，或保存到此应用之外的安全位置。拥有这份密钥并能访问你的 iCloud 密码本的人，可以读取其中的密码。";
+"Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords." = "请写下来，或保存在应用之外的安全位置。拥有此密钥并可访问你 Apple 账号密码本的人能够读取密码。";
 "Your Apple Account. No extra account." = "绑定 Apple 账户，无需另建账户";
 "Your changes could not be saved. Check available storage and try again." = "修改未能保存，请检查本机剩余空间后重试。";
 "Your iCloud storage is full. Free up space to resume syncing." = "iCloud 储存空间已满，释放空间后即可继续同步。";
@@ -132,7 +132,7 @@
 "Apple Account unavailable" = "Apple 账号不可用";
 "Apple Account" = "Apple 账号";
 "PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email." = "PassBy 使用本机登录 iCloud 的 Apple 账号，不会索取你的 Apple 密码、姓名或邮箱。";
-"Changing the iCloud account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key." = "更换 iCloud 账号会锁定当前密码本。不同账号的数据独立加密，新设备还需恢复密钥才能打开。";
+"Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key." = "更换 Apple 账号会锁定密码本。每个账号拥有独立的加密数据，新设备还需要恢复密钥。";
 "About PassBy" = "关于 PassBy";
 "Privacy policy" = "隐私政策";
 "Support" = "支持";
@@ -156,3 +156,11 @@
 
 "Language" = "语言 / Language";
 "Choose English or Simplified Chinese in iOS Settings for PassBy. If Language is missing, add the language in General > Language & Region first." = "在 iOS 的 PassBy 设置中选择英文或简体中文。如果没有语言选项，请先在“通用 > 语言与地区”中添加该语言。";
+
+"Restore the encrypted notebook already on this iPhone to your current Apple Account. Your original local copy will be kept. Enter its recovery key to continue." = "将这台 iPhone 已有的加密密码本恢复至当前 Apple 账号，原有本地副本会保留。请输入它的恢复密钥继续。";
+"Restore with Face ID" = "通过 Face ID 恢复";
+"Enable web access" = "启用网页访问";
+"Enable web access?" = "启用网页访问？";
+"Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same." = "将这台 iPhone 的加密密码本同步至当前 Apple 账号，以便在网页打开。条目和恢复密钥保持不变。";
+
+"Sync" = "同步";

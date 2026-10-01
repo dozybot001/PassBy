@@ -57,6 +57,7 @@ struct FoldersView: View {
 }
 
 struct SettingsView: View {
+    @State private var confirmWebAccess = false
     @EnvironmentObject private var session: VaultSession
     @Environment(\.dismiss) private var dismiss
     private var status: String {
@@ -76,13 +77,17 @@ struct SettingsView: View {
                           systemImage: "person.crop.circle.badge.checkmark")
                     Text("PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
-                    Text("Changing the iCloud account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.")
+                    Text("Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
                 } header: { Text("Apple Account") }
-                Section("iCloud") {
+                Section("Sync") {
                     LabeledContent("Status", value: status)
                     Button("Sync now") { Task { await session.syncNow() } }
                         .disabled(session.syncStatus == .syncing)
+                    if session.needsCloudRestore {
+                        Button("Enable web access") { confirmWebAccess = true }
+                            .disabled(session.syncStatus == .syncing)
+                    }
                     if let message = session.syncMessage {
                         Text(message).font(.footnote).foregroundStyle(Palette.secondary)
                     }
@@ -126,6 +131,12 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden).background(Palette.paper)
             .navigationTitle("Settings").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .alert("Enable web access?", isPresented: $confirmWebAccess) {
+                Button("Cancel", role: .cancel) {}
+                Button("Enable web access") { Task { await session.enableWebAccess() } }
+            } message: {
+                Text("Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same.")
+            }
         }
     }
 }

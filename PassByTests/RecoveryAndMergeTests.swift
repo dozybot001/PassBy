@@ -80,4 +80,14 @@ final class RecoveryAndMergeTests: XCTestCase {
         XCTAssertNil(result.vault.entries.first?.folderID)
         XCTAssertNoThrow(try result.vault.validated())
     }
+    func testMissingCloudRestorePreservesPreviouslySyncedEntries() throws {
+        let vault = Vault(entries: [VaultEntry(title: "Existing test", password: "test-only")])
+        let state = LocalVaultState(current: vault, base: vault)
+        XCTAssertThrowsError(try state.integratingCloud(nil))
+        XCTAssertEqual(try state.integratingCloud(nil, restoringMissingNotebook: true).vault, vault)
+        // A real, existing empty cloud book represents deletions. Explicit
+        // restore permission must not resurrect those deleted entries.
+        XCTAssertTrue(try state.integratingCloud(Vault(), restoringMissingNotebook: true).vault.entries.isEmpty)
+    }
+
 }

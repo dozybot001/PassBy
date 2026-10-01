@@ -58,6 +58,32 @@ struct VaultStorage {
             .appendingPathComponent(ownerID ?? "local", isDirectory: true)
     }
 
+    // Only enumerate encrypted snapshots inside this app's own container.
+    // No keys or plaintext are read until Face ID and recovery authentication.
+    func otherSnapshots() throws -> [VaultStorage] {
+        let root = directory.deletingLastPathComponent()
+        guard FileManager.default.fileExists(atPath: root.path) else { return [] }
+        return try FileManager.default.contentsOfDirectory(at: root,
+            includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            .filter { url in
+                let attributes = try url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+                return url != directory && attributes.isDirectory == true && attributes.isSymbolicLink != true
+                    && (url.lastPathComponent == "local" ||
+                        (url.lastPathComponent.count == 64 && url.lastPathComponent.allSatisfy { $0.isHexDigit }))
+            }
+            .map { VaultStorage(directory: $0) }.filter { $0.exists }
+    }
+
+    func recoverLocalState(key: SymmetricKey) throws -> LocalVaultState {
+        let candidates = exists ? [self] : try otherSnapshots()
+        let matches = candidates.compactMap { try? $0.load(key: key) }
+        guard let first = matches.first else { throw RecoveryError.wrongNotebook }
+        // Never choose an arbitrary version if two local books use this key.
+        guard matches.allSatisfy({ $0 == first }) else { throw CloudError.notebookChanged }
+        return LocalVaultState(current: first.current, base: Vault(),
+            recoveryConfirmed: true, draft: first.draft)
+    }
+
     func load(key: SymmetricKey) throws -> LocalVaultState {
         try VaultCipher.openLocal(Data(contentsOf: fileURL), key: key)
     }

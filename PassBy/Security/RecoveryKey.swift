@@ -39,7 +39,7 @@ enum RecoveryError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalid: return L("Check the recovery key. Its length or checksum is incorrect.")
-        case .wrongNotebook: return L("This recovery key does not unlock your iCloud notebook.")
+        case .wrongNotebook: return L("This recovery key does not unlock your notebook.")
         }
     }
 }

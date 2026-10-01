@@ -114,3 +114,12 @@ Only an encrypted ciphertext asset and a format version are written to the priva
 截图：iPhone 6.9 英寸可用 1320×2868 竖屏，其他允许尺寸以 [Apple 官方说明](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/) 为准。必须使用脱敏测试条目，不能上传用户的真实账户与恢复密钥。
 
 用户于 2026-10-01 暂缓提供截图和跨设备恢复验证，当前未提交审核。
+
+## Build 2：网页访问与品牌统一（2026-10-01）
+
+- 开发安装版显式签名 Production CloudKit entitlement，与网页和 App Store 使用同一环境。
+- 旧版本机密文通过 Face ID 与原恢复密钥恢复；保留原快照与草稿。当前身份不变时，缺少正式云端记录会在设置提供“启用网页访问”确认操作。已有云端记录继续使用三方合并。
+- Apple 账号作为主界面身份；同步设置与隐私政策仍说明 iCloud 存储。网页自动准备 Apple 登录，移除额外的 iCloud 入口，支持可选保持 Apple 登录。
+- App 图标、应用内矢量标志和网页标志由同一图形源生成。
+- 24 项原生单元测试、11 项网页/加密兼容性检查通过；build 2 真机签名构建完成并安装。实际恢复与正式同步由用户在手机验证，尚未确认。
+- App Store Connect 仍关联 build 1；此版本需上传新的 build 2，不能将旧包作为最新实现提交。其他暂停的截图和跨设备验收仍待完成。

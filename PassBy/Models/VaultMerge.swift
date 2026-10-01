@@ -5,6 +5,16 @@ struct LocalVaultState: Codable, Equatable {
     var base: Vault
     var recoveryConfirmed: Bool = true
     var draft: VaultEntry? = nil
+
+    func integratingCloud(_ remote: Vault?, restoringMissingNotebook: Bool = false) throws -> MergeResult {
+        guard remote != nil || base == Vault() || restoringMissingNotebook else {
+            throw CloudError.notebookChanged
+        }
+        // A confirmed restore is an initial upload, not a remote deletion of
+        // every previously synced item. Existing remote books use normal merge.
+        return VaultMerge.merge(base: remote == nil ? Vault() : base,
+            local: current, remote: remote ?? Vault())
+    }
 }
 
 struct MergeResult {

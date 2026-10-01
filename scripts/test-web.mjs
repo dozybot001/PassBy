@@ -71,3 +71,36 @@ test('CloudKit transport accepts only Apple HTTPS assets, and uses encrypted Blo
     cloud.database.saveRecords=async()=>({hasErrors:true,errors:[{ckErrorCode:'CONFLICT'}]});await assert.rejects(cloud.save({},sealed),{code:'conflict'});
   }finally{globalThis.fetch=originalFetch;}
 });
+
+test('metadata precheck needs neither a recovery key nor an asset download',async()=>{
+  const cloud=new CloudNotebook(),originalFetch=globalThis.fetch;
+  const record={recordName:'notebook-v1',recordType:'Notebook',fields:{format:{value:1}}};
+  cloud.database={fetchRecords:async()=>({records:[record]})};
+  globalThis.fetch=()=>{throw new Error('Metadata must not download a vault');};
+  try { assert.equal(await cloud.fetchRecord(),record); }
+  finally { globalThis.fetch=originalFetch; }
+});
+test('Apple persistence is opt-in and obsolete auth callbacks are ignored',async()=>{
+  const original=globalThis.CloudKit;
+  const configurations=[],containers=[];
+  let firstSignIn,firstSignOut;
+  globalThis.CloudKit={
+    configure:config=>{
+      configurations.push(config);
+      const container={privateCloudDatabase:{},setUpAuth:async()=>null,
+        whenUserSignsIn:()=>new Promise(resolve=>{if(containers.length===1)firstSignIn=resolve;}),
+        whenUserSignsOut:()=>new Promise(resolve=>{if(containers.length===1)firstSignOut=resolve;})};
+      containers.push(container);
+    },getDefaultContainer:()=>containers.at(-1),
+  };
+  try{
+    const cloud=new CloudNotebook();let users=0,signOuts=0;
+    await cloud.authenticate(()=>users++,()=>signOuts++,'en');
+    assert.equal(configurations[0].containers[0].apiTokenAuth.persist,false);
+    firstSignIn({});await new Promise(resolve=>setImmediate(resolve));assert.equal(users,1);
+    await cloud.authenticate(()=>users++,()=>signOuts++,'zh',{remember:true,theme:'white'});
+    assert.equal(configurations[1].containers[0].apiTokenAuth.persist,true);
+    assert.equal(configurations[1].containers[0].apiTokenAuth.signInButton.theme,'white');
+    firstSignOut();await new Promise(resolve=>setImmediate(resolve));assert.equal(signOuts,0);
+  }finally{globalThis.CloudKit=original;}
+});

@@ -1,30 +1,45 @@
 import { NotebookError } from './crypto.mjs';
 import { cloudConfig } from './config.mjs';
 export class CloudNotebook {
-  async authenticate(onUser, onSignOut, language) {
+  async authenticate(onUser, onSignOut, language, { remember = false, theme = 'black', onError = () => {} } = {}) {
     if (!cloudConfig.apiToken) throw new NotebookError('notConfigured');
+    const generation = this.authGeneration = (this.authGeneration || 0) + 1;
     if (!globalThis.CloudKit) {
-      await new Promise((resolve, reject) => {
+      if (!this.sdkLoading) this.sdkLoading = new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'https://cdn.apple-cloudkit.com/ck/2/cloudkit.js';
-        script.onload = resolve; script.onerror = () => reject(new NotebookError('service'));
+        script.onload = resolve;
+        script.onerror = () => { this.sdkLoading = null; script.remove(); reject(new NotebookError('service')); };
         document.head.append(script);
       });
+      await this.sdkLoading;
     }
+    if (generation !== this.authGeneration) return;
     CloudKit.configure({ locale: language === 'zh' ? 'zh-cn' : 'en-us', containers: [{
       containerIdentifier: cloudConfig.containerIdentifier, environment: cloudConfig.environment,
-      apiTokenAuth: { apiToken: cloudConfig.apiToken, persist: false,
-        signInButton: { id: 'apple-sign-in-button', theme: 'black' },
-        signOutButton: { id: 'apple-sign-out-button', theme: 'black' } },
+      apiTokenAuth: { apiToken: cloudConfig.apiToken, persist: remember === true,
+        signInButton: { id: 'apple-sign-in-button', theme },
+        signOutButton: { id: 'apple-sign-out-button', theme } },
     }] });
-    this.container = CloudKit.getDefaultContainer();
-    this.database = this.container.privateCloudDatabase;
-    const watchIn = () => this.container.whenUserSignsIn().then(user => { onUser(user); watchOut(); });
-    const watchOut = () => this.container.whenUserSignsOut().then(() => { onSignOut(); watchIn(); });
-    const user = await this.container.setUpAuth();
+    const container = CloudKit.getDefaultContainer();
+    this.container = container;
+    this.database = container.privateCloudDatabase;
+    const active = () => generation === this.authGeneration;
+    const failed = () => { if (active()) onError(new NotebookError('service')); };
+    const watchIn = () => container.whenUserSignsIn().then(user => {
+      if (!active()) return;
+      onUser(user); watchOut();
+    }).catch(failed);
+    const watchOut = () => container.whenUserSignsOut().then(() => {
+      if (!active()) return;
+      onSignOut(); watchIn();
+    }).catch(failed);
+    const user = await container.setUpAuth();
+    if (!active()) return;
     if (user) { onUser(user); watchOut(); } else watchIn();
   }
-  async fetch() {
+  async fetchRecord() {
+    if (!this.database) throw new NotebookError('service');
     const response = await this.database.fetchRecords('notebook-v1');
     if (response.hasErrors) {
       if (response.errors?.some(e => ['UNKNOWN_ITEM','NOT_FOUND'].includes(e.ckErrorCode))) throw new NotebookError('noNotebook');
@@ -33,6 +48,10 @@ export class CloudNotebook {
     const record = response.records?.[0];
     if (!record) throw new NotebookError('noNotebook');
     if (record.recordType !== 'Notebook' || record.fields?.format?.value !== 1) throw new NotebookError('version');
+    return record;
+  }
+  async fetch() {
+    const record = await this.fetchRecord();
     const url = record.fields?.ciphertext?.value?.downloadURL;
     if (typeof url !== 'string') throw new NotebookError('invalidNotebook');
     const assetURL = new URL(url.replace('${f}', 'notebook.enc'));

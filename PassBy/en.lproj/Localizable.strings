@@ -23,9 +23,9 @@
 "Done" = "Done";
 "Edit" = "Edit";
 "Edit password" = "Edit password";
-"Encrypted before iCloud sync" = "Encrypted before iCloud sync";
+"Encrypted before syncing" = "Encrypted before syncing";
 "Encrypted on device and in iCloud" = "Encrypted on device and in iCloud";
-"Enter your recovery key to open the notebook from iCloud." = "Enter your recovery key to open the notebook from iCloud.";
+"Enter your recovery key to open your Apple-linked notebook." = "Enter your recovery key to open your Apple-linked notebook.";
 "Face ID did not unlock the notebook. Please try again." = "Face ID did not unlock the notebook. Please try again.";
 "Face ID is temporarily locked. Unlock your iPhone with its passcode, then try again." = "Face ID is temporarily locked. Unlock your iPhone with its passcode, then try again.";
 "Face ID, every time" = "Face ID, every time";
@@ -58,7 +58,7 @@
 "Password copied for 60 seconds" = "Password copied for 60 seconds";
 "Password hidden" = "Password hidden";
 "Password removed" = "Password removed";
-"Passwords stay encrypted on this iPhone and in your iCloud." = "Passwords stay encrypted on this iPhone and in your iCloud.";
+"Your notebook stays encrypted and linked to your Apple Account." = "Your notebook stays encrypted and linked to your Apple Account.";
 "Privacy" = "Privacy";
 "Recovery" = "Recovery";
 "Recovery key" = "Recovery key";
@@ -80,8 +80,8 @@
 "The notebook changed on another device. Please try again." = "The notebook changed on another device. Please try again.";
 "The notebook could not be verified. Your saved file has been kept unchanged." = "The notebook could not be verified. Your saved file has been kept unchanged.";
 "This notebook was saved by a newer version of PassBy. Update the app to open it." = "This notebook was saved by a newer version of PassBy. Update the app to open it.";
-"This recovery key does not unlock your iCloud notebook." = "This recovery key does not unlock your iCloud notebook.";
-"This removes it from your notebook and syncs the deletion to iCloud." = "This removes it from your notebook and syncs the deletion to iCloud.";
+"This recovery key does not unlock your notebook." = "This recovery key does not unlock your notebook.";
+"This removes it from your notebook on all synced devices." = "This removes it from your notebook on all synced devices.";
 "Title" = "Title";
 "Try a different title or account." = "Try a different title or account.";
 "Try again" = "Try again";
@@ -92,7 +92,7 @@
 "Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys." = "Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys.";
 "Username or email" = "Username or email";
 "Waiting to sync" = "Waiting to sync";
-"Write it down or save it in a secure place outside this app. Anyone with this key and access to your iCloud notebook can read your passwords." = "Write it down or save it in a secure place outside this app. Anyone with this key and access to your iCloud notebook can read your passwords.";
+"Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords." = "Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords.";
 "Your Apple Account. No extra account." = "Your Apple Account. No extra account.";
 "Your changes could not be saved. Check available storage and try again." = "Your changes could not be saved. Check available storage and try again.";
 "Your iCloud storage is full. Free up space to resume syncing." = "Your iCloud storage is full. Free up space to resume syncing.";
@@ -132,7 +132,7 @@
 "Apple Account unavailable" = "Apple Account unavailable";
 "Apple Account" = "Apple Account";
 "PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email." = "PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email.";
-"Changing the iCloud account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key." = "Changing the iCloud account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.";
+"Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key." = "Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.";
 "About PassBy" = "About PassBy";
 "Privacy policy" = "Privacy policy";
 "Support" = "Support";
@@ -156,3 +156,11 @@
 
 "Language" = "Language / 语言";
 "Choose English or Simplified Chinese in iOS Settings for PassBy. If Language is missing, add the language in General > Language & Region first." = "Choose English or Simplified Chinese in iOS Settings for PassBy. If Language is missing, add the language in General > Language & Region first.";
+
+"Restore the encrypted notebook already on this iPhone to your current Apple Account. Your original local copy will be kept. Enter its recovery key to continue." = "Restore the encrypted notebook already on this iPhone to your current Apple Account. Your original local copy will be kept. Enter its recovery key to continue.";
+"Restore with Face ID" = "Restore with Face ID";
+"Enable web access" = "Enable web access";
+"Enable web access?" = "Enable web access?";
+"Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same." = "Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same.";
+
+"Sync" = "Sync";

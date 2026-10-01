@@ -30,6 +30,7 @@ struct LockView: View {
     @EnvironmentObject private var session: VaultSession
     @State private var recovery = ""
     @State private var understood = false
+    private var needsRecovery: Bool { session.setup == .recovery || session.setup == .localRecovery }
     private var working: Bool { session.phase == .authenticating || session.setup == .checking }
 
     var body: some View {
@@ -45,7 +46,7 @@ struct LockView: View {
                 if session.setup == .newNotebook {
                     VStack(alignment: .leading, spacing: 18) {
                         securityLine("Face ID, every time", icon: "faceid")
-                        securityLine("Encrypted before iCloud sync", icon: "icloud")
+                        securityLine("Encrypted before syncing", icon: "icloud")
                         securityLine("Your Apple Account. No extra account.", icon: "person.crop.circle")
                     }.padding(.bottom, 30)
                     Text("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key.")
@@ -53,8 +54,10 @@ struct LockView: View {
                     Toggle("I understand how recovery works", isOn: $understood).tint(Palette.control)
                         .font(.subheadline).padding(.bottom, 24)
                 }
-                if session.setup == .recovery {
-                    Text("Enter your recovery key to open the notebook from iCloud.")
+                if needsRecovery {
+                    Text(L(session.setup == .localRecovery
+                        ? "Restore the encrypted notebook already on this iPhone to your current Apple Account. Your original local copy will be kept. Enter its recovery key to continue."
+                        : "Enter your recovery key to open your Apple-linked notebook."))
                         .font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 12)
                     SecureField("Recovery key", text: $recovery)
                         .textInputAutocapitalization(.characters).autocorrectionDisabled()
@@ -70,17 +73,17 @@ struct LockView: View {
                     Button("Try again") { Task { await session.prepare() } }.buttonStyle(PrimaryButton())
                 } else {
                     Button {
-                        let text = session.setup == .recovery ? recovery : nil
+                        let text = needsRecovery ? recovery : nil
                         Task { await session.unlock(recoveryText: text) }
                     } label: {
                         if working { ProgressView().tint(Palette.paper) }
-                        else { Label(session.setup == .newNotebook ? L("Create my notebook") : L("Unlock with Face ID"), systemImage: "faceid") }
+                        else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? L("Restore with Face ID") : L("Unlock with Face ID"), systemImage: "faceid") }
                     }
                     .buttonStyle(PrimaryButton())
                     .disabled(working || (session.setup == .newNotebook && !understood)
-                        || (session.setup == .recovery && recovery.isEmpty))
+                        || (needsRecovery && recovery.isEmpty))
                 }
-                Text("Passwords stay encrypted on this iPhone and in your iCloud.")
+                Text("Your notebook stays encrypted and linked to your Apple Account.")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                     .padding(.top, 22).frame(maxWidth: .infinity, alignment: .center)
             }
@@ -109,7 +112,7 @@ struct RecoverySetupView: View {
             VStack(alignment: .leading, spacing: 24) {
                 NotebookMark(size: 54)
                 Text("Keep your recovery key.").font(.largeTitle.weight(.semibold))
-                Text("Write it down or save it in a secure place outside this app. Anyone with this key and access to your iCloud notebook can read your passwords.")
+                Text("Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords.")
                     .foregroundStyle(Palette.secondary)
                 Text(recovery).font(.system(.body, design: .monospaced)).lineSpacing(8)
                     .padding(20).frame(maxWidth: .infinity, alignment: .leading)

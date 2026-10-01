@@ -5,26 +5,46 @@ import { newID } from './model.mjs';
 
 const copy = {
   en: {
-    eyebrow:'YOUR PASSWORD NOTEBOOK', heading:'Your passwords.\nWithin reach.', intro:'The same notebook, even when your iPhone is somewhere else.',
-    security:'Encrypted before syncing to iCloud. Your recovery key stays in this page’s memory.', signIn:'Open your notebook', signInHelp:'Sign in to the Apple Account you use with PassBy on iPhone.',
-    unlock:'Unlock notebook', key:'Recovery key', keyPlaceholder:'Paste your recovery key', keyHelp:'Use a trusted computer. Leaving this window locks your notebook and clears unfinished edits. Nothing is saved in browser storage.',
-    connect:'Continue with iCloud', connecting:'Connecting…', lock:'Lock notebook', locked:'Notebook locked', settings:'Settings', search:'Search', generator:'Password generator', privacy:'Privacy', support:'Support',
-    all:'All', unfiled:'Unfiled', newPassword:'New password', newFolder:'New folder', folders:'Folders', empty:'Your notebook starts here', emptyHelp:'Add an account and password. Keep the details in one place.', noResults:'No matching entries', noResultsHelp:'Try another title or account.', choose:'A little space for your passwords.', chooseHelp:'Choose an entry to see its details.', placeholder:'Search titles or accounts', edit:'Edit', save:'Save', saving:'Saving…', cancel:'Cancel', close:'Close', back:'Back', account:'Account', password:'Password', title:'Title', notes:'Notes', folder:'Folder', noNotes:'No notes added', copy:'Copy', copied:'Copied', show:'Show password', hide:'Hide password', delete:'Delete entry', deleteConfirm:'Delete this entry?', deleteHelp:'It will be removed from your iCloud notebook. This cannot be undone.', deleteFolder:'Delete folder', deleteFolderHelp:'Its passwords will move to Unfiled. This cannot be undone.', confirm:'Delete', saved:'Saved to iCloud', refreshed:'Notebook refreshed', refresh:'Sync now', conflictCopy:' (Conflict copy)', conflicts:'Concurrent changes were kept as conflict copies.', length:'Length', upper:'Uppercase letters', lower:'Lowercase letters', digits:'Numbers', symbols:'Symbols', another:'Generate another', use:'Use & copy', copyPassword:'Copy password', lengthHelp:'Choose 8–24 with the slider, or enter up to 4096 characters.', clipboardHelp:'Copied passwords follow your browser and operating system’s clipboard rules. They are not automatically cleared.', language:'Language', automaticLock:'Automatic lock', automaticLockHelp:'Switching tabs, leaving the window or 5 minutes without activity locks this notebook.', browserHelp:'The web app cannot use iPhone Face ID or block screenshots. Unlock again with your recovery key.', discard:'Discard changes?', discardHelp:'This unfinished entry has not been saved.', discardButton:'Discard', continueEditing:'Keep editing', required:'Enter a title and password.', folderName:'Folder name', signedOut:'Signed out', existingHelp:'Create your notebook in PassBy on iPhone first, then wait for iCloud sync.',
-    invalidKey:'Check the recovery key. Its length or checksum is incorrect.', wrongKey:'This recovery key does not unlock your notebook.', invalidNotebook:'The notebook could not be verified. Your iCloud data has not been changed.', version:'This notebook uses an unsupported format. Update PassBy.', service:'Unable to reach iCloud. Please try again.', noNotebook:'No notebook found in this iCloud account. Create one in PassBy on iPhone and let it sync first.', notConfigured:'Web access is being configured. Your iPhone notebook is unchanged.', invalidLength:'Choose a whole number from 8 to 4096.', selectCharacters:'Select at least one character type.', conflict:'The notebook changed again. Please try saving again.', clipboard:'Copy was blocked by the browser. Select the value and copy it manually.', lockedError:'Unlock your notebook again.', generic:'Something went wrong. Please try again.',
+    security:'Encrypted on your device. Linked to your Apple Account.', signIn:'Open your notebook', signInHelp:'Sign in to the Apple Account you use with PassBy on iPhone.',
+    unlock:'Unlock notebook', key:'Recovery key', keyPlaceholder:'Paste your recovery key', keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
+    connect:'Continue with Apple', connecting:'Connecting…', lock:'Lock notebook', locked:'Notebook locked', settings:'Settings', search:'Search', generator:'Password generator', privacy:'Privacy', support:'Support',
+    all:'All', unfiled:'Unfiled', newPassword:'New password', newFolder:'New folder', folders:'Folders', empty:'Your notebook starts here', emptyHelp:'Add an account and password. Keep the details in one place.', noResults:'No matching entries', noResultsHelp:'Try another title or account.', choose:'A little space for your passwords.', chooseHelp:'Choose an entry to see its details.', placeholder:'Search titles or accounts', edit:'Edit', save:'Save', saving:'Saving…', cancel:'Cancel', close:'Close', back:'Back', account:'Account', password:'Password', title:'Title', notes:'Notes', folder:'Folder', noNotes:'No notes added', copy:'Copy', copied:'Copied', show:'Show password', hide:'Hide password', delete:'Delete entry', deleteConfirm:'Delete this entry?', deleteHelp:'It will be removed from your notebook. This cannot be undone.', deleteFolder:'Delete folder', deleteFolderHelp:'Its passwords will move to Unfiled. This cannot be undone.', confirm:'Delete', saved:'Notebook synced', refreshed:'Notebook refreshed', refresh:'Sync now', conflictCopy:' (Conflict copy)', conflicts:'Concurrent changes were kept as conflict copies.', length:'Length', upper:'Uppercase letters', lower:'Lowercase letters', digits:'Numbers', symbols:'Symbols', another:'Generate another', use:'Use & copy', copyPassword:'Copy password', lengthHelp:'Choose 8–24 with the slider, or enter up to 4096 characters.', clipboardHelp:'Copied passwords follow your browser and operating system’s clipboard rules. They are not automatically cleared.', language:'Language', automaticLock:'Automatic lock', automaticLockHelp:'Switching tabs, leaving the window or 5 minutes without activity locks this notebook.', browserHelp:'The web app cannot use iPhone Face ID or block screenshots. Unlock again with your recovery key.', discard:'Discard changes?', discardHelp:'This unfinished entry has not been saved.', discardButton:'Discard', continueEditing:'Keep editing', required:'Enter a title and password.', folderName:'Folder name', signedOut:'Signed out', existingHelp:'Create your notebook in PassBy on iPhone first, then wait for iCloud sync.',
+    invalidKey:'Check the recovery key. Its length or checksum is incorrect.', wrongKey:'This recovery key does not unlock your notebook.', invalidNotebook:'The notebook could not be verified. Your iCloud data has not been changed.', version:'This notebook uses an unsupported format. Update PassBy.', service:'Unable to sync your notebook. Please try again.', noNotebook:'No notebook found in this iCloud account. Create one in PassBy on iPhone and let it sync first.', notConfigured:'Web access is being configured. Your iPhone notebook is unchanged.', invalidLength:'Choose a whole number from 8 to 4096.', selectCharacters:'Select at least one character type.', conflict:'The notebook changed again. Please try saving again.', clipboard:'Copy was blocked by the browser. Select the value and copy it manually.', lockedError:'Unlock your notebook again.', generic:'Something went wrong. Please try again.',
   },
   zh: {
-    eyebrow:'你的私人密码本',heading:'密码，\n随时在手边。',intro:'即使 iPhone 不在身边，也能打开同一本密码本。',security:'先加密，再同步至 iCloud。恢复密钥只留在当前页面内存中。',signIn:'打开密码本',signInHelp:'登录你在 iPhone PassBy 中使用的 Apple 账号。',unlock:'解锁密码本',key:'恢复密钥',keyPlaceholder:'粘贴恢复密钥',keyHelp:'请使用可信的电脑。离开窗口会锁定密码本并清除未保存的编辑，浏览器存储中不会保存数据。',connect:'通过 iCloud 继续',connecting:'连接中…',lock:'锁定密码本',locked:'密码本已锁定',settings:'设置',search:'搜索',generator:'密码生成器',privacy:'隐私',support:'支持',all:'全部',unfiled:'未分类',newPassword:'新建密码',newFolder:'新建文件夹',folders:'文件夹',empty:'密码本从这里开始',emptyHelp:'添加账号和密码，将细节保存在一起。',noResults:'没有匹配的条目',noResultsHelp:'试试其他标题或账号。',choose:'为你的密码，留一个位置。',chooseHelp:'选择条目，查看它的详细内容。',placeholder:'搜索标题或账号',edit:'编辑',save:'保存',saving:'保存中…',cancel:'取消',close:'关闭',back:'返回',account:'账号',password:'密码',title:'标题',notes:'备注',folder:'文件夹',noNotes:'没有备注',copy:'复制',copied:'已复制',show:'显示密码',hide:'隐藏密码',delete:'删除条目',deleteConfirm:'删除这个条目？',deleteHelp:'将从 iCloud 密码本中删除，无法撤销。',deleteFolder:'删除文件夹',deleteFolderHelp:'其中的密码将移至未分类，无法撤销。',confirm:'删除',saved:'已保存至 iCloud',refreshed:'密码本已刷新',refresh:'立即同步',conflictCopy:'（冲突副本）',conflicts:'同时修改的内容已保留为冲突副本。',length:'长度',upper:'大写字母',lower:'小写字母',digits:'数字',symbols:'符号',another:'再生成一个',use:'使用并复制',copyPassword:'复制密码',lengthHelp:'滑块可选 8～24 位，也可手动输入最多 4096 位。',clipboardHelp:'已复制的密码遵循浏览器与系统的剪贴板规则，不会自动清除。',language:'语言',automaticLock:'自动锁定',automaticLockHelp:'切换标签页、离开窗口或 5 分钟无操作后，密码本会锁定。',browserHelp:'网页无法使用 iPhone 的 Face ID 或阻止截图，请用恢复密钥重新解锁。',discard:'放弃修改？',discardHelp:'这个未完成的条目尚未保存。',discardButton:'放弃',continueEditing:'继续编辑',required:'请填写标题和密码。',folderName:'文件夹名称',signedOut:'已退出登录',existingHelp:'请先在 iPhone PassBy 创建密码本，并等待 iCloud 同步。',invalidKey:'恢复密钥的长度或校验码不正确，请检查。',wrongKey:'此恢复密钥无法解锁这个密码本。',invalidNotebook:'无法验证密码本，iCloud 数据未被更改。',version:'密码本格式不受支持，请更新 PassBy。',service:'无法连接 iCloud，请重试。',noNotebook:'当前 iCloud 账号没有密码本，请先在 iPhone 创建并完成同步。',notConfigured:'网页版访问正在配置中，iPhone 密码本不受影响。',invalidLength:'请输入 8～4096 之间的整数。',selectCharacters:'至少选择一种字符类型。',conflict:'密码本又被修改了，请重试保存。',clipboard:'浏览器阻止了复制，请选中内容手动复制。',lockedError:'请重新解锁密码本。',generic:'操作未完成，请重试。',
+    security:'设备端加密，绑定你的 Apple 账号。',signIn:'打开密码本',signInHelp:'登录你在 iPhone PassBy 中使用的 Apple 账号。',unlock:'解锁密码本',key:'恢复密钥',keyPlaceholder:'粘贴恢复密钥',keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',connect:'通过 Apple 继续',connecting:'连接中…',lock:'锁定密码本',locked:'密码本已锁定',settings:'设置',search:'搜索',generator:'密码生成器',privacy:'隐私',support:'支持',all:'全部',unfiled:'未分类',newPassword:'新建密码',newFolder:'新建文件夹',folders:'文件夹',empty:'密码本从这里开始',emptyHelp:'添加账号和密码，将细节保存在一起。',noResults:'没有匹配的条目',noResultsHelp:'试试其他标题或账号。',choose:'为你的密码，留一个位置。',chooseHelp:'选择条目，查看它的详细内容。',placeholder:'搜索标题或账号',edit:'编辑',save:'保存',saving:'保存中…',cancel:'取消',close:'关闭',back:'返回',account:'账号',password:'密码',title:'标题',notes:'备注',folder:'文件夹',noNotes:'没有备注',copy:'复制',copied:'已复制',show:'显示密码',hide:'隐藏密码',delete:'删除条目',deleteConfirm:'删除这个条目？',deleteHelp:'将从密码本中删除，无法撤销。',deleteFolder:'删除文件夹',deleteFolderHelp:'其中的密码将移至未分类，无法撤销。',confirm:'删除',saved:'密码本已同步',refreshed:'密码本已刷新',refresh:'立即同步',conflictCopy:'（冲突副本）',conflicts:'同时修改的内容已保留为冲突副本。',length:'长度',upper:'大写字母',lower:'小写字母',digits:'数字',symbols:'符号',another:'再生成一个',use:'使用并复制',copyPassword:'复制密码',lengthHelp:'滑块可选 8～24 位，也可手动输入最多 4096 位。',clipboardHelp:'已复制的密码遵循浏览器与系统的剪贴板规则，不会自动清除。',language:'语言',automaticLock:'自动锁定',automaticLockHelp:'切换标签页、离开窗口或 5 分钟无操作后，密码本会锁定。',browserHelp:'网页无法使用 iPhone 的 Face ID 或阻止截图，请用恢复密钥重新解锁。',discard:'放弃修改？',discardHelp:'这个未完成的条目尚未保存。',discardButton:'放弃',continueEditing:'继续编辑',required:'请填写标题和密码。',folderName:'文件夹名称',signedOut:'已退出登录',existingHelp:'请先在 iPhone PassBy 创建密码本，并等待 iCloud 同步。',invalidKey:'恢复密钥的长度或校验码不正确，请检查。',wrongKey:'此恢复密钥无法解锁这个密码本。',invalidNotebook:'无法验证密码本，iCloud 数据未被更改。',version:'密码本格式不受支持，请更新 PassBy。',service:'无法同步密码本，请重试。',noNotebook:'当前 iCloud 账号没有密码本，请先在 iPhone 创建并完成同步。',notConfigured:'网页版访问正在配置中，iPhone 密码本不受影响。',invalidLength:'请输入 8～4096 之间的整数。',selectCharacters:'至少选择一种字符类型。',conflict:'密码本又被修改了，请重试保存。',clipboard:'浏览器阻止了复制，请选中内容手动复制。',lockedError:'请重新解锁密码本。',generic:'操作未完成，请重试。',
   },
 };
 let language = navigator.language.startsWith('zh') ? 'zh' : 'en';
+Object.assign(copy.en, {
+  connected:'Apple Account connected', connect:'Continue with Apple', checking:'Checking your notebook…',
+  remember:'Keep Apple signed in on this trusted computer', rememberHelp:'Optional. Your recovery key is still required every time you unlock.',
+  keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
+  switchAccount:'Change Apple Account', retry:'Try again', missingTitle:'Your notebook is not available on the web yet',
+  missingHelp:'On your iPhone, update PassBy and finish syncing your notebook. If Settings offers “Enable web access”, choose it, then check again here.',
+  noNotebook:'Your notebook is not available on the web yet. Finish syncing in PassBy on iPhone, then try again.',
+  security:'Encrypted on your device. Linked to your Apple Account.',
+});
+Object.assign(copy.zh, {
+  connected:'Apple 账号已连接', connect:'通过 Apple 继续', checking:'正在检查密码本…',
+  remember:'在这台可信电脑上保持 Apple 登录', rememberHelp:'可选。每次解锁仍需输入恢复密钥。',
+  keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',
+  switchAccount:'更换 Apple 账号', retry:'重试', missingTitle:'密码本尚未同步至网页版',
+  missingHelp:'请在 iPhone 更新 PassBy，并完成密码本同步。如果设置中出现“启用网页访问”，请点选，然后在这里重新检查。',
+  noNotebook:'密码本尚未同步至网页版，请在 iPhone PassBy 完成同步后重试。',
+  security:'设备端加密，绑定你的 Apple 账号。',
+});
 const t = key => copy[language][key] || copy.en[key] || key;
 const $ = id => document.getElementById(id);
 const main = $('main'), tools = $('tools'), dialog = $('dialog');
 const session = new NotebookSession(new CloudNotebook());
 const authIn = document.createElement('div'), authOut = document.createElement('div');
 authIn.id = 'apple-sign-in-button'; authOut.id = 'apple-sign-out-button';
-authIn.className = authOut.className = 'auth-holder';
-let signedIn = false, connecting = false, filter = 'all', selected = null, query = '', searchOpen = false, revealed = false, authStarted = false;
+authIn.className = 'auth-holder'; authOut.className = 'auth-holder account-switch';
+let signedIn = false, connecting = true, filter = 'all', selected = null, query = '', searchOpen = false, revealed = false;
+let authError = null, notebookState = 'checking', notebookError = null, notebookGeneration = 0, authenticationGeneration = 0;
+let rememberApple = false;
+try { rememberApple = localStorage.getItem('passby.rememberApple') === 'true'; } catch {}
 let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTimer;
 const paths = {
   search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
@@ -75,42 +95,101 @@ function render() {
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
   if(session.key) renderWorkspace(); else renderWelcome();
 }
-$('language').addEventListener('click',()=>{language=language==='zh'?'en':'zh';closeDialog();editor=null;render();});
+function changeLanguage(value) {
+  language=value;closeDialog();editor=null;render();
+  if(!signedIn) { authIn.replaceChildren();authOut.replaceChildren();void prepareApple(); }
+}
+$('language').addEventListener('click',()=>changeLanguage(language==='zh'?'en':'zh'));
 function decorateAuthButtons() {
-  for (const [holder, label] of [[authIn, t('connect')], [authOut, language === 'zh' ? '退出 iCloud' : 'Sign out of iCloud']]) {
+  for (const [holder, label] of [[authIn, t('connect')], [authOut, t('switchAccount')]]) {
     const element = holder.querySelector('.apple-auth-button');
     if (!element) continue;
     element.setAttribute('role', 'button'); element.setAttribute('aria-label', label); element.tabIndex = 0;
+    // Preserve Apple's button and click handler; the secondary action uses a
+    // localized text label rather than an oversized sign-out graphic.
+    if (holder === authOut) {
+      let text = element.querySelector('.account-switch-label');
+      if (!text) { text = node('span', 'account-switch-label'); element.append(text); }
+      text.textContent = label;
+    }
     element.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); element.click(); } };
   }
 }
-function renderWelcome() {
-  // Keep the Apple-authenticated button nodes while updating surrounding text.
-  const welcome=node('section','welcome'), intro=node('div');
-  intro.append(node('div','eyebrow',t('eyebrow')),node('h1','',t('heading')),node('p','intro',t('intro')));
-  const security=node('div','security-notes');security.append(icon('lock'),node('span','',t('security')));intro.append(security);
-  const card=node('section','unlock-card');card.append(node('h2','',t(signedIn?'unlock':'signIn')),node('p','',t('signInHelp')));
-  authIn.hidden=signedIn;authOut.hidden=!signedIn;card.append(authIn,authOut);
-  if(signedIn) {
-    const form=node('form'); const label=node('label','',t('key'));label.htmlFor='recovery-key';
-    const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
-    const submit=node('button','pill primary',t('unlock'));submit.type='submit';
-    form.append(label,input,submit);form.addEventListener('submit',async event=>{
-      event.preventDefault();const text=input.value;input.value='';setBusy(form,true);submit.textContent=t('connecting');
-      try { await session.unlock(text); if(document.hidden || !document.hasFocus()){lock();return;} selected=null;resetIdle();render(); }
-      catch(error){ if(error.code!=='locked') showError(form,error); }
-      finally {setBusy(form,false);submit.textContent=t('unlock');}
-    }); card.append(form,node('p','help',t('keyHelp')),authOut);
-  } else {
-    if(!authStarted) card.append(button(t(connecting?'connecting':'connect'),async()=>{
-      if(connecting)return;connecting=true;render();
-      try{await session.cloud.authenticate(()=>{signedIn=true;connecting=false;authStarted=true;lock();},()=>{signedIn=false;lock();notify(t('signedOut'));},language);authStarted=true;decorateAuthButtons();}
-      catch(error){showError(document.querySelector('.unlock-card'),error);}
-      finally{connecting=false;if(authStarted)render();else{const btn=document.querySelector('.unlock-card > button');if(btn)btn.textContent=t('connect');}}
-    },'pill primary'));
-    card.append(node('p','help',t('existingHelp')));
+async function checkNotebook() {
+  const generation = ++notebookGeneration;
+  notebookState = 'checking'; notebookError = null; render();
+  try {
+    await session.cloud.fetchRecord();
+    if (!signedIn || generation !== notebookGeneration) return;
+    notebookState = 'available';
+  } catch (error) {
+    if (!signedIn || generation !== notebookGeneration) return;
+    notebookState = error.code === 'noNotebook' ? 'missing' : 'failed'; notebookError = error;
   }
-  welcome.append(intro,card);main.replaceChildren(welcome);decorateAuthButtons();
+  render();
+}
+async function prepareApple() {
+  const generation = ++authenticationGeneration;
+  connecting = true; authError = null; render();
+  try {
+    await session.cloud.authenticate(() => {
+      if (generation !== authenticationGeneration) return;
+      signedIn = true; connecting = false; lock(); void checkNotebook();
+    }, () => {
+      if (generation !== authenticationGeneration) return;
+      signedIn = false; ++notebookGeneration; notebookState = 'checking'; lock(); notify(t('signedOut'));
+    }, language, { remember: rememberApple, theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'white' : 'black',
+      onError: error => { if (generation === authenticationGeneration) { authError = error; signedIn = false; ++notebookGeneration; lock(); } },
+    });
+  } catch (error) { if (generation === authenticationGeneration) authError = error; }
+  finally { if (generation === authenticationGeneration) { connecting = false; render(); } }
+}
+function renderWelcome() {
+  const welcome = node('section', 'welcome'), card = node('section', 'unlock-card');
+  const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
+  card.append(mark, node('h1', '', t(signedIn ? 'unlock' : 'signIn')));
+  card.append(node('p', signedIn ? 'connected' : '', t(signedIn ? 'connected' : 'signInHelp')));
+  authIn.hidden = signedIn || connecting || !!authError; authOut.hidden = !signedIn;
+  // Both mount points must exist before CloudKit setUpAuth runs. Reuse them
+  // across renders so that Apple's listeners and popup gesture are preserved.
+  card.append(authIn, authOut);
+  if (signedIn) {
+    if (notebookState === 'available') {
+      const form=node('form'), label=node('label','',t('key'));label.htmlFor='recovery-key';
+      const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
+      const submit=node('button','pill primary',t('unlock'));submit.type='submit';
+      form.append(label,input,submit);form.addEventListener('submit',async event=>{
+        event.preventDefault();const text=input.value;input.value='';setBusy(form,true);submit.textContent=t('connecting');
+        try { await session.unlock(text); if(document.hidden || !document.hasFocus()){lock();return;} selected=null;resetIdle();render(); }
+        catch(error){ if(error.code==='noNotebook') { notebookState='missing'; render(); } else if(error.code!=='locked') showError(form,error); }
+        finally {setBusy(form,false);submit.textContent=t('unlock');}
+      });
+      card.append(form,node('p','help',t('keyHelp')));
+    } else {
+      const state=node('div','access-state');state.setAttribute('aria-live','polite');
+      if (notebookState === 'checking') state.append(node('p','',t('checking')));
+      else {
+        if (notebookState === 'missing') state.append(node('h2','',t('missingTitle')),node('p','',t('missingHelp')));
+        else showError(state, notebookError);
+        state.append(button(t('retry'),checkNotebook,'pill'));
+      }
+      card.append(state);
+    }
+    card.append(authOut);
+  } else {
+    if (connecting) { const loading=node('p','access-loading',t('connecting'));loading.setAttribute('role','status');card.append(loading); }
+    if (authError) { showError(card,authError);card.append(button(t('retry'),prepareApple,'pill primary')); }
+    const remember=node('label','remember-row'), check=node('input'), text=node('span','',t('remember'));
+    check.type='checkbox';check.checked=rememberApple;check.disabled=connecting;remember.append(check,text);
+    check.addEventListener('change',()=>{
+      rememberApple=check.checked;
+      try { if(rememberApple)localStorage.setItem('passby.rememberApple','true');else localStorage.removeItem('passby.rememberApple'); } catch {}
+      authIn.replaceChildren();authOut.replaceChildren();void prepareApple();
+    });
+    card.append(remember,node('p','help remember-help',t('rememberHelp')));
+  }
+  const security=node('div','security-notes');security.append(icon('lock'),node('span','',t('security')));
+  welcome.append(card,security);main.replaceChildren(welcome);decorateAuthButtons();
 }
 function filteredEntries() {return session.vault.entries.filter(e=>(filter==='all'||(filter==='unfiled'?!e.folderID:e.folderID===filter))&&(`${e.title} ${e.account}`).toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((a,b)=>a.title.localeCompare(b.title,language));}
 function renderWorkspace() {
@@ -175,7 +254,8 @@ function openGenerator(fromEditor=false){
   range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
   const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));inner.append(actions,node('p','helper',t('clipboardHelp')));generate();
 }
-function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>{language=select.value;render();openSettings();});row.append(label,select);inner.append(row);
+function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>{changeLanguage(select.value);openSettings();});row.append(label,select);inner.append(row);
   if(session.key){inner.append(button(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill'),button(t('lock'),lock,'pill'));}
 }
 render();
+void prepareApple();

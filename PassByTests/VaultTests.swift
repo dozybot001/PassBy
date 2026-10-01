@@ -72,4 +72,39 @@ final class VaultTests: XCTestCase {
         try storage.erase()
         XCTAssertFalse(storage.exists)
     }
+    func testLocalRecoveryKeepsOriginalCiphertextAndDraft() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = VaultStorage(directory: root.appendingPathComponent(String(repeating: "a", count: 64)))
+        let destination = VaultStorage(directory: root.appendingPathComponent(String(repeating: "b", count: 64)))
+        let key = SymmetricKey(size: .bits256)
+        let vault = Vault(entries: [VaultEntry(title: "Local test", password: "test-only")])
+        let draft = VaultEntry(title: "Draft", password: "draft-only")
+        let state = LocalVaultState(current: vault, base: vault, recoveryConfirmed: true, draft: draft)
+        try original.save(state, key: key)
+        let originalBytes = try Data(contentsOf: original.fileURL)
+        XCTAssertEqual(try destination.otherSnapshots().count, 1)
+        XCTAssertThrowsError(try destination.recoverLocalState(key: SymmetricKey(size: .bits256)))
+        let restored = try destination.recoverLocalState(key: key)
+        XCTAssertEqual(restored.current, vault)
+        XCTAssertEqual(restored.base, Vault())
+        XCTAssertEqual(restored.draft, draft)
+        try destination.save(restored, key: key)
+        XCTAssertEqual(try Data(contentsOf: original.fileURL), originalBytes)
+        XCTAssertEqual(try original.load(key: key), state)
+    }
+
+    func testLocalRecoveryRejectsAmbiguousSnapshots() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let key = SymmetricKey(size: .bits256)
+        for (name, title) in [("a", "First"), ("b", "Second")] {
+            let store = VaultStorage(directory: root.appendingPathComponent(String(repeating: name, count: 64)))
+            try store.save(LocalVaultState(current: Vault(entries: [VaultEntry(title: title)]), base: Vault()), key: key)
+        }
+        let destination = VaultStorage(directory: root.appendingPathComponent(String(repeating: "c", count: 64)))
+        XCTAssertThrowsError(try destination.recoverLocalState(key: key))
+        XCTAssertFalse(destination.exists)
+    }
+
 }
