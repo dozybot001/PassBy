@@ -175,3 +175,5 @@
 "Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key." = "已有加密密码本仍可通过 Face ID 访问。Tenon 不持有它的恢复密钥。";
 "Tenon sign-in could not be completed. Please try again." = "Tenon 登录未完成，请重试。";
 "Tenon: %@" = "Tenon：%@";
+
+"Made by Tenon" = "Tenon 出品";

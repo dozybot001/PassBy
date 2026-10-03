@@ -130,11 +130,21 @@ struct SettingsView: View {
                 } footer: {
                     Text("Choose English or Simplified Chinese in iOS Settings for PassBy. If Language is missing, add the language in General > Language & Region first.")
                 }
-                Section("About PassBy") {
+                Section {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
                     Link("Support", destination: URL(string: "https://tenon.asia/passby/support")!)
                     Link("Email support", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Support")!)
                     LabeledContent("Version", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"))")
+                } header: {
+                    Text("About PassBy")
+                } footer: {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("Made by Tenon")
+                        Text("·").accessibilityHidden(true)
+                        Link("tenon.asia", destination: URL(string: "https://tenon.asia/")!)
+                            .fixedSize()
+                    }
+                    .font(.footnote).foregroundStyle(Palette.secondary)
                 }
                 Section {
                     Button("Lock notebook") { session.lock() }

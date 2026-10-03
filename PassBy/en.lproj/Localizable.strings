@@ -175,3 +175,5 @@
 "Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key." = "Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key.";
 "Tenon sign-in could not be completed. Please try again." = "Tenon sign-in could not be completed. Please try again.";
 "Tenon: %@" = "Tenon: %@";
+
+"Made by Tenon" = "Made by Tenon";

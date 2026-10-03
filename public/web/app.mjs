@@ -273,6 +273,11 @@ function openGenerator(fromEditor=false){
 function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>{changeLanguage(select.value);openSettings();});row.append(label,select);inner.append(row);
   if(tenonIdentity)inner.append(node('h3','',language==='zh'?'Tenon 账号':'Tenon Account'),node('p','helper',tenonIdentity.name),button(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'pill'));
   if(session.key){inner.append(button(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill'),button(t('lock'),lock,'pill'));}
+  const about=node('section','about-passby');
+  about.append(node('h3','',language==='zh'?'关于 PassBy':'About PassBy'));
+  const attribution=node('p','helper'),website=node('a','', 'tenon.asia');website.href='https://tenon.asia/';
+  attribution.append(document.createTextNode(language==='zh'?'Tenon 出品 · ':'Made by Tenon · '),website);
+  about.append(attribution);inner.append(about);
 }
 render();
 async function prepareTenon() {
