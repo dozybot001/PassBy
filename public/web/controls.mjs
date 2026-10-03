@@ -24,3 +24,23 @@ export function choice(options,value,label,onChange,id){
   panel.addEventListener('toggle',()=>trigger.setAttribute('aria-expanded',String(panel.matches(':popover-open'))));wrap.append(trigger,panel);update();return wrap;
 }
 export function switchInput(input){input.classList.add('capsule-switch');input.setAttribute('role','switch');return input;}
+
+// Let the dialog body carry long notes, rather than scrolling inside the field.
+export function autoGrow(input){
+  function resize(){
+    if(!input.isConnected || !input.clientWidth)return;
+    input.style.height='auto';
+    const style=getComputedStyle(input);
+    const border=parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth);
+    input.style.height=`${Math.ceil(input.scrollHeight+border)}px`;
+  }
+  let width;
+  const observer=new ResizeObserver(entries=>{
+    const next=entries[0].contentRect.width;
+    if(next!==width){width=next;resize();}
+  });
+  observer.observe(input);
+  input.addEventListener('input',resize);
+  const frame=requestAnimationFrame(resize);
+  return()=>{cancelAnimationFrame(frame);observer.disconnect();input.removeEventListener('input',resize);};
+}

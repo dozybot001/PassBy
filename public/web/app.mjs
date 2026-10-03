@@ -1,4 +1,4 @@
-import { info, choice, switchInput } from './controls.mjs';
+import { info, choice, switchInput, autoGrow } from './controls.mjs';
 import { CloudNotebook } from './cloud.mjs';
 import { NotebookSession } from './session.mjs';
 import { generatePassword } from './crypto.mjs';
@@ -58,6 +58,7 @@ let tenonIdentity = null, tenonLoading = true, tenonError = false, tenonExpiry, 
 const tenonCallbackFailed = new URLSearchParams(location.search).has('auth_error');
 try { rememberApple = localStorage.getItem('passby.rememberApple') === 'true'; } catch {}
 let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTimer;
+let dialogCleanups = [];
 let busyOperations = 0, deletion = null;
 const busyControls = new WeakMap();
 const paths = {
@@ -111,7 +112,7 @@ function setBusy(parent, busy) {
   $('language').disabled=busyOperations>0;
   const select=$('app-language');if(select)select.disabled=busyOperations>0;
 }
-function closeDialog() { dialog.close(); dialog.replaceChildren(); dialogKind=null; generatorValue=''; deletion=null; }
+function closeDialog() { dialogCleanups.forEach(cleanup=>cleanup());dialogCleanups=[];dialog.close(); dialog.replaceChildren(); dialogKind=null; generatorValue=''; deletion=null; }
 function lock() {
   if(!validTenon()){trustedKey=null;trustBinding=null;}
   const hadSecrets = !!session.key || !!editor || !!generatorValue;
@@ -138,6 +139,8 @@ function render() {
   document.documentElement.lang=language==='zh'?'zh-Hans':'en';
   document.querySelector('.header .wordmark').setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品，首页':'PassBy, by Tenon, home');
   $('privacy-link').textContent=t('privacy'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
+  $('page-actions').replaceChildren();
+  if(session.key){const create=button(t('newPassword'),()=>openEditor(),'pill primary new-password','plus');create.replaceChildren(icon('plus'),node('span','',t('newPassword')));$('page-actions').append(create);}
   tools.replaceChildren(button(t('generator'),()=>openGenerator(),'icon-button','generator'),button(t('settings'),openSettings,'icon-button','settings'));
   if(session.key) tools.prepend(button(t('search'),()=>openSearch(),'icon-button','search'));
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
@@ -344,7 +347,6 @@ function renderWorkspace() {
   const picker=choice(folderOptions().map(f=>({id:f.id,name:`${f.name} (${folderCount(f.id)})`})),filter,t('folders'),value=>{filter=value;renderWorkspace();},'folder-navigation-select');picker.classList.add('folder-picker');navigation.append(filters,picker);
   const heading=node('div','library-heading');heading.append(node('h2','',folderOptions().find(f=>f.id===filter)?.name||t('all')),node('span','library-count',String(filteredEntries().length)));sidebar.append(heading);
   const list=node('ul','entry-list');list.id='entries';sidebar.append(list);
-  const actions=node('div','sidebar-actions');actions.append(button(t('newPassword'),()=>openEditor(),'pill primary','plus'));sidebar.append(actions);
   const detail=node('article','detail');detail.id='detail';workspace.append(navigation,sidebar,detail);main.replaceChildren(workspace);renderList();renderDetail();
 }
 function openSearch(retainedQuery=''){
@@ -382,7 +384,7 @@ function showDialog(title,kind){closeDialog();dialogKind=kind;dialog.dataset.kin
 function dialogActions(body,actions,form){if(form){form.id='dialog-form';actions.querySelectorAll('button[type=submit]').forEach(el=>el.setAttribute('form',form.id));}body.parentElement.querySelector('.dialog-footer').append(actions);}
 function hint(text,label){return info(text,`${label} — ${language==='zh'?'说明':'Help'}`);}
 async function saveVault(vault){if(!validTenon()){tenonIdentity=null;lock();throw {code:'locked'};}const conflicts=await session.save(vault,t('conflictCopy'));notify(t(conflicts?'conflicts':'saved'));}
-function formField(label,value,type='text'){const wrap=node('div','form-field'),name=node('label','',t(label));name.htmlFor=`field-${label}`;const input=node(type==='textarea'?'textarea':'input');input.id=`field-${label}`;if(type!=='textarea')input.type=type;input.value=value;input.autocomplete='off';input.spellcheck=false;wrap.append(name,input);return{wrap,input};}
+function formField(label,value,type='text'){const wrap=node('div','form-field'),name=node('label','',t(label));name.htmlFor=`field-${label}`;const input=node(type==='textarea'?'textarea':'input');input.id=`field-${label}`;if(type!=='textarea')input.type=type;else input.rows=3;input.value=value;input.autocomplete='off';input.spellcheck=false;wrap.append(name,input);if(type==='textarea')dialogCleanups.push(autoGrow(input));return{wrap,input};}
 function openEditor(entry){
   if(!session.vault)return;editor=entry?{...entry}:{id:newID(),title:'',account:'',password:'',notes:''};renderEditor();
 }
