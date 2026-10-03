@@ -74,3 +74,6 @@
 .settings-identity{margin:0;padding:20px 24px 4px;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
 .settings-action.is-loading .settings-action-icon{display:none}
 @media(max-width:680px){#dialog[data-kind=settings] .dialog-inner{padding:24px}#dialog[data-kind=settings] .dialog-header{margin-bottom:28px}.settings-block{margin-bottom:24px}.settings-policy{padding:20px}.settings-language-row,.settings-action{padding:18px 20px}.settings-identity{padding:18px 20px 4px}}
+
+#dialog[data-kind=settings] .dialog-header{position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0}
+.settings-action:focus-visible{outline-offset:-3px}

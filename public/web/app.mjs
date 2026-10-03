@@ -379,13 +379,13 @@ function openGenerator(fromEditor=false, retained=null){
   range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
   const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));inner.append(actions,node('p','helper',t('clipboardHelp')));if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
 }
-function settingsAction(label,action,symbol,description=''){
+function settingsAction(label,action,symbol,description='',navigation=false){
   const el=button(label,action,'settings-action');
   const mark=node('span','settings-action-icon');mark.append(icon(symbol));
   const content=node('span','settings-action-content');content.append(node('span','settings-action-title',label));
   if(description)content.append(node('span','settings-action-help',description));
   const arrow=node('span','settings-action-arrow','›');arrow.setAttribute('aria-hidden','true');
-  el.replaceChildren(mark,content,arrow);return el;
+  el.replaceChildren(mark,content);if(navigation)el.append(arrow);return el;
 }
 function openSettings(){
   const inner=showDialog(t('settings'),'settings');
@@ -417,7 +417,7 @@ function openSettings(){
     account.append(node('p','settings-identity',tenonIdentity.name),settingsAction(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'account'));
   }
   const product=section(language==='zh'?'产品':'Product');
-  product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook'));
+  product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook','',true));
 }
 
 function openAbout(){
