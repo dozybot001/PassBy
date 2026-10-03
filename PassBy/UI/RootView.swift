@@ -87,6 +87,8 @@ struct LockView: View {
                     Button("Try again") { Task { await session.prepare() } }.buttonStyle(PrimaryButton())
                 } else {
                     Button {
+                        account.checkExpiry()
+                        guard session.setup != .newNotebook || account.identity != nil else { return }
                         let text = needsRecovery ? recovery : nil
                         Task { await session.unlock(recoveryText: text) }
                     } label: {

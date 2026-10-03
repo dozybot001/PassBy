@@ -169,10 +169,11 @@ struct PrivacyPolicyView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Privacy policy").font(.largeTitle.weight(.semibold))
-                Text("Effective October 1, 2026 · Zeng Deyang")
+                Text("Effective October 3, 2026 · Zeng Deyang")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                 policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
-                policySection("Apple Account and Face ID", "Your system iCloud account identifies the notebook. PassBy does not receive your Apple password, name or email. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.")
+                policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 15 minutes; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service.")
+                policySection("Apple Account and Face ID", "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.")
                 policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")
                 policySection("Clipboard and drafts", "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.")
                 policySection("Retention and deletion", "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.")

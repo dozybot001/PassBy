@@ -61,4 +61,63 @@ final class SessionGateTests: XCTestCase {
         XCTAssertEqual(options[.localOnly] as? Bool, true)
         XCTAssertEqual(options[.expirationDate] as? Date, now.addingTimeInterval(60))
     }
+    @MainActor
+    private func savedTenonSession(store: TenonSessionStore, time: Date, expires: Double? = nil) throws {
+        let identity = TenonAccount.Identity(issuer: "https://account.tenon.asia/api/auth", sub: "fixture-user",
+            name: "Example", role: "user", expires: expires ?? (time.timeIntervalSince1970 * 1000 + 900000))
+        try store.write(JSONEncoder().encode(TenonAccount.Grant(token: String(repeating: "t", count: 43), identity: identity)))
+    }
+    @MainActor
+    func testTenonSignInSurvivesAColdRestartWithoutUnlockingNotebook() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        try savedTenonSession(store: store, time: now)
+        let first = TenonAccount(store: store, now: { now })
+        let reopened = TenonAccount(store: store, now: { now.addingTimeInterval(30) })
+        XCTAssertEqual(first.identity?.sub, "fixture-user")
+        XCTAssertEqual(reopened.identity?.sub, first.identity?.sub)
+        XCTAssertEqual(reopened.identity?.expires, first.identity?.expires)
+        XCTAssertNotEqual(VaultSession.shared.phase, .unlocked)
+    }
+    @MainActor
+    func testExpiredOrInvalidStoredTenonSessionCannotBeRestored() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        for expiry in [now.timeIntervalSince1970 * 1000, now.timeIntervalSince1970 * 1000 + 900001] {
+            try savedTenonSession(store: store, time: now, expires: expiry)
+            XCTAssertNil(TenonAccount(store: store, now: { now }).identity)
+            XCTAssertNil(try store.read())
+        }
+        try store.write(Data("invalid-session".utf8))
+        XCTAssertNil(TenonAccount(store: store, now: { now }).identity)
+        XCTAssertNil(try store.read())
+    }
+    @MainActor
+    func testSigningOutClearsTheSavedTenonSession() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        try savedTenonSession(store: store, time: now)
+        let account = TenonAccount(store: store, now: { now }, transport: { _ in throw URLError(.notConnectedToInternet) })
+        account.signOut()
+        XCTAssertNil(account.identity)
+        XCTAssertNil(try store.read())
+        XCTAssertNil(TenonAccount(store: store, now: { now }).identity)
+    }
+    @MainActor
+    func testRevokedServerSessionClearsColdStartCredentials() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        try savedTenonSession(store: store, time: now)
+        let account = TenonAccount(store: store, now: { now }, transport: { request in
+            (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        })
+        await account.validateRestoredSession()
+        XCTAssertNil(account.identity)
+        XCTAssertNil(try store.read())
+    }
+
 }

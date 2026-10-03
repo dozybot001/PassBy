@@ -16,7 +16,10 @@ It does not store notebooks, keys, provider credentials, or central access token
   Sessions live in memory for at most 15 minutes. No silent renewal or fallback.
 - The iPhone uses ASWebAuthenticationSession. Its held PKCE verifier binds a
   60-second one-use ticket returned to the fixed `passby://auth` URL. The native
-  session token is kept only in memory. A backend secret is never in the app.
+  session token and identity are kept in the device-only Keychain and restored
+  after a cold start. Backend validation rejects revoked sessions; offline
+  restoration never extends the original expiry. Sign-out removes the saved credential; expiry is cleared on the next
+  launch or resume. A backend secret is never in the app.
 - Central logout does not revoke an already valid independent product session.
   Product logout removes its own session; restart expires all in-memory sessions.
 - No business user table is introduced; `(issuer, sub)` is the identity tuple.

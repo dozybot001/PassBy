@@ -177,3 +177,9 @@
 "Tenon: %@" = "Tenon: %@";
 
 "Made by Tenon" = "Made by Tenon";
+
+"Could not clear the saved sign-in. Please try again." = "Could not clear the saved sign-in. Please try again.";
+
+"Effective October 3, 2026 · Zeng Deyang" = "Effective October 3, 2026 · Zeng Deyang";
+"Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 15 minutes; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service." = "Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 15 minutes; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service.";
+"Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.";
