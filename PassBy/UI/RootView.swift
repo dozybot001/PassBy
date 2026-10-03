@@ -90,7 +90,7 @@ struct LockView: View {
                         guard !retrying else { return }
                         retrying = true
                         Task { defer { retrying = false }; await session.prepare() }
-                    } label: { OperationLabel(title: "Try again", working: retrying) }
+                    } label: { OperationLabel(title: "Try again", working: retrying).tint(Palette.paper) }
                     .buttonStyle(PrimaryButton()).disabled(retrying)
                 } else {
                     Button {
