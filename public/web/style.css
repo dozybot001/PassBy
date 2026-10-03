@@ -46,6 +46,7 @@
 .entry-mode .unlock-card .help{margin:24px 0 0;line-height:1.8}
 .entry-mode .unlock-card.tenon-entry .help{margin-top:0}
 .entry-mode .tenon-actions{margin-top:32px;margin-bottom:28px}
+.entry-mode .tenon-entry>.pill{margin:32px 0 28px}
 .entry-mode .account-switch{margin-top:30px}
 .entry-mode .security-notes{margin-top:24px;line-height:1.7}
 .entry-mode footer{flex-direction:column;align-items:center;margin:0;padding:0;gap:16px;text-align:center}
