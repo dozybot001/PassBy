@@ -28,15 +28,15 @@ export class CloudNotebook {
     const failed = () => { if (active()) onError(new NotebookError('service')); };
     const watchIn = () => container.whenUserSignsIn().then(user => {
       if (!active()) return;
-      onUser(user); watchOut();
+      this.userRecordName = user.userRecordName; onUser(user); watchOut();
     }).catch(failed);
     const watchOut = () => container.whenUserSignsOut().then(() => {
       if (!active()) return;
-      onSignOut(); watchIn();
+      this.userRecordName = null; onSignOut(); watchIn();
     }).catch(failed);
     const user = await container.setUpAuth();
     if (!active()) return;
-    if (user) { onUser(user); watchOut(); } else watchIn();
+    if (user) { this.userRecordName = user.userRecordName; onUser(user); watchOut(); } else watchIn();
   }
   async fetchRecord() {
     if (!this.database) throw new NotebookError('service');

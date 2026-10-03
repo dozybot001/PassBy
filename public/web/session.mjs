@@ -6,7 +6,11 @@ export class NotebookSession {
   check(generation) { if (generation !== this.generation) throw new NotebookError('locked'); }
   async unlock(text) {
     const generation = ++this.generation;
-    const key = await recoveryKey(text);
+    return this.unlockWithKey(await recoveryKey(text), generation);
+  }
+  async unlockWithKey(key, generation = ++this.generation) {
+    this.check(generation);
+    if (!key || key.extractable || key.algorithm?.name !== "AES-GCM") throw new NotebookError("invalidKey");
     const data = await this.cloud.fetch(); this.check(generation);
     const vault = validateVault(await openNotebook(data.bytes, key)); this.check(generation);
     this.key = key; this.vault = vault; this.base = structuredClone(vault); this.record = data.record;

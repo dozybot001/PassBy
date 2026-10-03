@@ -82,3 +82,11 @@ iPhone 17 Pro Max。密码生成器中文预览已检查，首次真机解锁与
 - 登录、恢复、同步、保存、删除及复制的等待操作提供按钮内进度，并防止重复提交。保持黑白灰、原生胶囊和列表按钮各自既有样式。
 - 只保留 Tenon 产品登录。CloudKit 是独立存储授权，Face ID 与密码本恢复密钥保持原职责；没有更改现有会话期限或业务数据。
 - 按用户明确决定保留纯 PassBy 应用与软件内图标；完整字标继续携带 Tenon 标识，保持原产品字体。
+
+## 浏览器首次授权与一分钟会话
+
+Tenon 产品会话最长 60 秒，从授权成功时计算，不静默续期；这不改变 Tenon 中央会话。手机仍使用 Face ID 保护端侧密码本。
+
+网页版首次用恢复密钥解密后，在 IndexedDB 保存不可导出的 AES-GCM CryptoKey，按 Tenon `(issuer, sub)` 与 Apple `userRecordName` 隔离。之后获得有效的 Tenon 会话与 Apple 存储授权时可自动打开；离开窗口、退出或到期清除内存密码本。设置提供撤销本浏览器授权。密钥原文、恢复字符串、密码本明文及 Tenon 令牌均不写入浏览器持久存储，也不上传解密密钥。
+
+这是可信浏览器授权，不是硬件密钥保护：具有该浏览器配置或同源脚本权限的代码仍可能使用不可导出的密钥，Tenon 校验是应用层门禁。适用于个人电脑，不能把它描述为与 iPhone Face ID 等价的保护。Apple 存储身份字段依据官方 CloudKit UserIdentity 文档： https://developer.apple.com/documentation/cloudkitjs/cloudkit.useridentity/userrecordname 。

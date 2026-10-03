@@ -113,3 +113,21 @@ test('Apple persistence is opt-in and obsolete auth callbacks are ignored',async
     firstSignOut();await new Promise(resolve=>setImmediate(resolve));assert.equal(signOuts,0);
   }finally{globalThis.CloudKit=original;}
 });
+
+
+test('authorized browser key opens ciphertext without a recovery phrase and remains non-exportable',async()=>{
+  const cloud={fetch:async()=>({record:{},bytes:await sealNotebook(vault(),key)})};
+  const session=new NotebookSession(cloud);
+  await session.unlockWithKey(structuredClone(key));
+  assert.deepEqual(session.vault,vault());
+  await assert.rejects(crypto.subtle.exportKey('raw',session.key));
+  session.lock();assert.equal(session.key,null);assert.equal(session.vault,null);
+});
+test('trusted browser authorization uses Tenon subject and Apple storage owner, never email',async()=>{
+  const {bindingID}=await import('../public/web/trusted-browser.mjs');
+  const a={issuer:'https://account.tenon.asia/api/auth',sub:'user-a',email:'same@example.test'};
+  assert.notEqual(bindingID(a,'apple-a'),bindingID({...a,sub:'user-b'},'apple-a'));
+  assert.notEqual(bindingID(a,'apple-a'),bindingID(a,'apple-b'));
+  assert.throws(()=>bindingID(a,null),{code:'locked'});
+  assert.throws(()=>bindingID({...a,issuer:'https://invalid.example'},'apple-a'),{code:'locked'});
+});

@@ -13,7 +13,7 @@ It does not store notebooks, keys, provider credentials, or central access token
 - Separate production clients use exact HTTPS callbacks
   `/passby/api/auth/callback` and `/passby/api/auth/ios/callback`.
 - Web sessions use Secure / HttpOnly / SameSite=Strict cookies scoped to the API.
-  Sessions live in memory for at most 15 minutes. No silent renewal or fallback.
+  Sessions live in memory for at most 1 minute. No silent renewal or fallback.
 - The iPhone uses ASWebAuthenticationSession. Its held PKCE verifier binds a
   60-second one-use ticket returned to the fixed `passby://auth` URL. The native
   session token and identity are kept in the device-only Keychain and restored

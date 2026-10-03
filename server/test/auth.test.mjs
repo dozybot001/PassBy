@@ -79,3 +79,5 @@ test('API rejects CSRF logout, unexpected methods and password/vault endpoints',
   assert.equal((await fetch(origin + '/passby/api/auth/exchange', { method: 'POST', body: 'invalid' })).status, 415);
   assert.equal((await fetch(origin + '/passby/api/vault', { method: 'POST', body: 'test-only' })).status, 404);
 });
+
+test('product sessions have a one-minute maximum lifetime', () => { assert.equal(TTL, 60000); });

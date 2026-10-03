@@ -3,7 +3,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const ISSUER = 'https://account.tenon.asia/api/auth';
 export const ROLE = 'https://tenon.asia/claims/platform_role';
-export const TTL = 15 * 60 * 1000;
+export const TTL = 60 * 1000;
 const token = () => randomBytes(32).toString('base64url');
 export const digest = value => createHash('sha256').update(value).digest('base64url');
 const equal = (a, b) => typeof a === 'string' && typeof b === 'string' && a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));

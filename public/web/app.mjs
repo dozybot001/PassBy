@@ -2,6 +2,7 @@ import { CloudNotebook } from './cloud.mjs';
 import { NotebookSession } from './session.mjs';
 import { generatePassword } from './crypto.mjs';
 import { newID } from './model.mjs';
+import { TrustedBrowser, bindingID } from './trusted-browser.mjs';
 
 const copy = {
   en: {
@@ -34,10 +35,18 @@ Object.assign(copy.zh, {
   noNotebook:'密码本尚未同步至网页版，请在 iPhone PassBy 完成同步后重试。',
   security:'设备端加密，绑定你的 Apple 账号。',
 });
+copy.en.browserStorage='Browser authorization could not be saved or removed. Check browser storage permissions and try again.';
+copy.zh.browserStorage='无法保存或撤销浏览器授权，请检查浏览器存储权限后重试。';
+copy.en.keyHelp='Passwords remain in page memory. This authorized browser stores a non-exportable decryption key.';
+copy.zh.keyHelp='密码只在页面内存中。这台已授权浏览器保存不可导出的解密密钥。';
 const t = key => copy[language][key] || copy.en[key] || key;
 const $ = id => document.getElementById(id);
 const main = $('main'), tools = $('tools'), dialog = $('dialog');
 const session = new NotebookSession(new CloudNotebook());
+const trustedBrowser = new TrustedBrowser();
+let trustedKey = null, trustBinding = null;
+function validTenon(){return tenonIdentity && tenonIdentity.expires>Date.now();}
+function currentBinding(){return validTenon()?bindingID(tenonIdentity,session.cloud.userRecordName):null;}
 const authIn = document.createElement('div'), authOut = document.createElement('div');
 authIn.id = 'apple-sign-in-button'; authOut.id = 'apple-sign-out-button';
 authIn.className = 'auth-holder'; authOut.className = 'auth-holder account-switch';
@@ -70,6 +79,7 @@ function button(label, action, className='pill', symbol) {
   if (symbol) el.append(icon(symbol)); if (className !== 'icon-button' && !className.includes('icon-button')) el.append(document.createTextNode(label));
   el.addEventListener('click', event => {
     if (el.disabled || el.hasAttribute('aria-busy')) return;
+    if(session.key && !validTenon()){tenonIdentity=null;lock();return;}
     const result = action(event);
     if (result?.then) {
       el.disabled = true; el.setAttribute('aria-busy','true'); el.classList.add('is-loading');
@@ -98,6 +108,7 @@ function setBusy(parent, busy) {
 }
 function closeDialog() { dialog.close(); dialog.replaceChildren(); dialogKind=null; generatorValue=''; deletion=null; }
 function lock() {
+  if(!validTenon()){trustedKey=null;trustBinding=null;}
   const hadSecrets = !!session.key || !!editor || !!generatorValue;
   session.lock(); editor=null; revealed=false; selected=null; query=''; searchOpen=false;
   closeDialog(); clearTimeout(idleTimer); $('status').hidden=true; $('status').textContent='';
@@ -110,6 +121,10 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden) lock(); }
 window.addEventListener('blur',()=>{ if(session.key || editor || generatorValue || main.querySelector('#recovery-key')?.value) lock(); });
 window.addEventListener('pagehide',lock);
 window.addEventListener('pageshow',event=>{ if(event.persisted) lock(); });
+for(const event of ['pointerdown','keydown','submit'])document.addEventListener(event,e=>{
+  if(tenonIdentity && !validTenon()){tenonIdentity=null;lock();e.preventDefault();e.stopImmediatePropagation();}
+},{capture:true});
+window.addEventListener('focus',()=>{if(tenonIdentity && !validTenon()){tenonIdentity=null;lock();}});
 for (const event of ['pointerdown','keydown','input']) document.addEventListener(event,resetIdle,{passive:true});
 document.addEventListener('keydown',event=>{ if(event.key==='Escape' && session.key && !dialog.open && !searchOpen) lock(); });
 dialog.addEventListener('cancel',event=>{ if(editor){event.preventDefault();if(dialogKind==='editor'||dialogKind==='discard')cancelEditor();else renderEditor();}else closeDialog(); });
@@ -169,10 +184,20 @@ async function checkNotebook() {
   try {
     await session.cloud.fetchRecord();
     if (!signedIn || generation !== notebookGeneration) return;
+    const binding=currentBinding();
+    const cached=binding ? await trustedBrowser.get(binding).catch(()=>null) : null;
+    if(!signedIn || generation!==notebookGeneration || !validTenon())return;
+    trustBinding=binding;trustedKey=cached;
     notebookState = 'available';
+    if(trustedKey && document.hasFocus() && !document.hidden){
+      const binding=trustBinding;await session.unlockWithKey(trustedKey);
+      if(!validTenon() || binding!==currentBinding() || generation!==notebookGeneration || document.hidden || !document.hasFocus()){lock();return;}
+      selected=null;resetIdle();
+    }
   } catch (error) {
     if (!signedIn || generation !== notebookGeneration) return;
-    notebookState = error.code === 'noNotebook' ? 'missing' : 'failed'; notebookError = error;
+    if(error.code==='wrongKey' && trustBinding){await trustedBrowser.forget(trustBinding).catch(()=>{});trustedKey=null;notebookState='available';}
+    else {notebookState = error.code === 'noNotebook' ? 'missing' : 'failed'; notebookError = error;}
   }
   render();
 }
@@ -228,16 +253,38 @@ function renderWelcome() {
   card.append(authIn, authOut);
   if (signedIn) {
     if (notebookState === 'available') {
-      const form=node('form'), label=node('label','',t('key'));label.htmlFor='recovery-key';
-      const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
-      const submit=node('button','pill primary',t('unlock'));submit.type='submit';
-      form.append(label,input,submit);form.addEventListener('submit',async event=>{
-        event.preventDefault();const text=input.value;input.value='';setBusy(form,true);submit.textContent=t('connecting');
-        try { await session.unlock(text); if(document.hidden || !document.hasFocus()){lock();return;} selected=null;resetIdle();render(); }
-        catch(error){ if(error.code==='noNotebook') { notebookState='missing'; render(); } else if(error.code!=='locked') showError(form,error); }
-        finally {setBusy(form,false);submit.textContent=t('unlock');}
-      });
-      card.append(form,node('p','help',t('keyHelp')));
+      if(trustedKey && trustBinding){
+        card.append(node('p','help',language==='zh'?'这台浏览器已授权。无需再次输入恢复密钥。':'This browser is authorized. No recovery key is needed.'));
+        const open=button(t('unlock'),async()=>{
+          if(!validTenon()){tenonIdentity=null;lock();return;}
+          const key=trustedKey,binding=currentBinding();setBusy(card,true);
+          try{
+            await session.unlockWithKey(key);
+            if(!validTenon() || binding!==currentBinding() || document.hidden || !document.hasFocus()){lock();return;}
+            selected=null;resetIdle();render();
+          }catch(error){
+            if(error.code==='wrongKey'){await trustedBrowser.forget(binding);trustedKey=null;render();}
+            else if(error.code!=='locked')showError(card,error);
+          }finally{setBusy(card,false);}
+        },'pill primary');open.classList.add('trusted-open');card.append(open);
+      }else{
+        const form=node('form'),label=node('label','',t('key'));label.htmlFor='recovery-key';
+        const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
+        const help=node('p','help',language==='zh'?'首次授权这台浏览器后，以后可在 Tenon 登录有效时直接打开。只保存不可导出的解密密钥，不保存恢复密钥原文。':'Authorize this browser once to open it during a valid Tenon session. Only a non-exportable decryption key is saved, never your recovery phrase.');
+        const submit=node('button','pill primary',language==='zh'?'授权并打开密码本':'Authorize and open notebook');submit.type='submit';
+        form.append(label,input,submit);form.addEventListener('submit',async event=>{
+          event.preventDefault();if(!validTenon()){tenonIdentity=null;lock();return;}
+          const text=input.value,binding=currentBinding();input.value='';setBusy(form,true);
+          try{
+            await session.unlock(text);
+            if(!validTenon() || binding!==currentBinding() || document.hidden || !document.hasFocus()){lock();return;}
+            await trustedBrowser.save(binding,session.key);
+            if(!validTenon() || binding!==currentBinding() || !session.key){lock();return;}
+            trustBinding=binding;trustedKey=session.key;selected=null;resetIdle();render();
+          }catch(error){if(error.code==='browserStorage'){lock();notify(t('browserStorage'));}else if(error.code!=='locked')showError(form,error);}
+          finally{setBusy(form,false);}
+        });card.append(form,help);
+      }
     } else {
       const state=node('div','access-state');state.setAttribute('aria-live','polite');
       if (notebookState === 'checking') {
@@ -297,7 +344,7 @@ function renderDetail(){
 }
 async function copyText(value){try{await navigator.clipboard.writeText(value);notify(t('copied'));}catch{notify(t('clipboard'));}}
 function showDialog(title,kind){closeDialog();dialogKind=kind;dialog.dataset.kind=kind;const inner=node('div','dialog-inner'),header=node('div','dialog-header');header.append(node('h2','',title),button(t('close'),()=>editor?(kind==='editor'||kind==='discard'?cancelEditor():renderEditor()):closeDialog(),'icon-button','close'));inner.append(header);dialog.append(inner);dialog.showModal();return inner;}
-async function saveVault(vault){const conflicts=await session.save(vault,t('conflictCopy'));notify(t(conflicts?'conflicts':'saved'));}
+async function saveVault(vault){if(!validTenon()){tenonIdentity=null;lock();throw {code:'locked'};}const conflicts=await session.save(vault,t('conflictCopy'));notify(t(conflicts?'conflicts':'saved'));}
 function formField(label,value,type='text'){const wrap=node('div','form-field'),name=node('label','',t(label));name.htmlFor=`field-${label}`;const input=node(type==='textarea'?'textarea':'input');input.id=`field-${label}`;if(type!=='textarea')input.type=type;input.value=value;input.autocomplete='off';input.spellcheck=false;wrap.append(name,input);return{wrap,input};}
 function openEditor(entry){
   if(!session.vault)return;editor=entry?{...entry}:{id:newID(),title:'',account:'',password:'',notes:''};renderEditor();
@@ -332,6 +379,9 @@ function openGenerator(fromEditor=false, retained=null){
 function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>changeLanguage(select.value));row.append(label,select);inner.append(row);
   if(tenonIdentity)inner.append(node('h3','',language==='zh'?'Tenon 账号':'Tenon Account'),node('p','helper',tenonIdentity.name),button(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'pill'));
   if(session.key){inner.append(button(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill'),button(t('lock'),lock,'pill'));}
+  if(trustBinding)inner.append(button(language==='zh'?'撤销这台浏览器的授权':'Forget this browser',async()=>{
+    try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
+  },'pill'));
   inner.append(button(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'pill'));
 }
 function openAbout(){
@@ -356,7 +406,7 @@ async function prepareTenon() {
     if(response.status===401){tenonIdentity=null;tenonError=tenonCallbackFailed;return;}
     if(!response.ok)throw Error('Service unavailable');
     const {identity}=await response.json();
-    if(identity?.issuer!=='https://account.tenon.asia/api/auth'||typeof identity.sub!=='string'||!Number.isFinite(identity.expires)||identity.expires<=Date.now())throw Error('Invalid identity');
+    if(identity?.issuer!=='https://account.tenon.asia/api/auth'||typeof identity.sub!=='string'||!Number.isFinite(identity.expires)||identity.expires<=Date.now() || identity.expires>Date.now()+60000)throw Error('Invalid identity');
     tenonIdentity=identity;clearTimeout(tenonExpiry);
     tenonExpiry=setTimeout(()=>{tenonIdentity=null;lock();},Math.max(0,identity.expires-Date.now()));
     if(!signedIn)void prepareApple();
@@ -369,7 +419,7 @@ async function signOutTenon() {
   try {
     const response=await fetch('./api/auth/logout',{method:'POST',credentials:'same-origin'});
     if(!response.ok)throw Error('Service unavailable');
-    tenonIdentity=null;clearTimeout(tenonExpiry);render();
+    tenonIdentity=null;trustedKey=null;trustBinding=null;clearTimeout(tenonExpiry);render();
   }catch{notify(language==='zh'?'退出未完成，请重试。密码本已锁定。':'Sign-out failed. Try again. Your notebook is locked.');}
   finally{tenonSigningOut=false;render();}
 }

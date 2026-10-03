@@ -77,7 +77,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
             && !grant.identity.sub.isEmpty && ["admin", "user"].contains(grant.identity.role)
             && grant.token.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil
             && grant.identity.expires.isFinite && grant.identity.expires > time
-            && grant.identity.expires <= time + 15 * 60 * 1000
+            && grant.identity.expires <= time + 60 * 1000
     }
     func validateRestoredSession() async {
         guard restored, let previous = token else { return }

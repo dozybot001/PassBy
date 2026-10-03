@@ -64,7 +64,7 @@ final class SessionGateTests: XCTestCase {
     @MainActor
     private func savedTenonSession(store: TenonSessionStore, time: Date, expires: Double? = nil) throws {
         let identity = TenonAccount.Identity(issuer: "https://account.tenon.asia/api/auth", sub: "fixture-user",
-            name: "Example", role: "user", expires: expires ?? (time.timeIntervalSince1970 * 1000 + 900000))
+            name: "Example", role: "user", expires: expires ?? (time.timeIntervalSince1970 * 1000 + 60000))
         try store.write(JSONEncoder().encode(TenonAccount.Grant(token: String(repeating: "t", count: 43), identity: identity)))
     }
     @MainActor
@@ -85,7 +85,7 @@ final class SessionGateTests: XCTestCase {
         let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
         defer { try? store.clear() }
         let now = Date(timeIntervalSince1970: 1000)
-        for expiry in [now.timeIntervalSince1970 * 1000, now.timeIntervalSince1970 * 1000 + 900001] {
+        for expiry in [now.timeIntervalSince1970 * 1000, now.timeIntervalSince1970 * 1000 + 60001] {
             try savedTenonSession(store: store, time: now, expires: expiry)
             XCTAssertNil(TenonAccount(store: store, now: { now }).identity)
             XCTAssertNil(try store.read())

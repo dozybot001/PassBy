@@ -53,3 +53,5 @@
 .entry-mode footer nav{order:-1;justify-content:center;gap:24px;flex-wrap:wrap}
 @media(max-width:680px){.app.entry-mode{padding:32px 20px;gap:28px}.entry-mode .header{gap:16px}.entry-mode .unlock-card{padding:30px 26px}.entry-mode .security-notes{padding:0}.entry-mode footer{gap:14px}}
 @media(max-width:380px){.entry-mode .unlock-card{padding:28px 24px}}
+
+.trusted-open{margin-top:28px}

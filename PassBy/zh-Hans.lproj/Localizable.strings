@@ -181,7 +181,7 @@
 "Could not clear the saved sign-in. Please try again." = "无法清除保存的登录状态，请重试。";
 
 "Effective October 3, 2026 · Zeng Deyang" = "生效日期：2026 年 10 月 3 日 · Zeng Deyang";
-"Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 15 minutes; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service." = "Tenon 管理登录方式。PassBy 验证你的身份，并将当前产品会话存入这台 iPhone 的本机钥匙串。关闭应用不会结束有效会话，会话最长 15 分钟，主动退出会移除。打开密码本仍需 Face ID，账号服务不接收密码或恢复密钥。";
+"Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 1 minute; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service." = "Tenon 管理登录方式。PassBy 验证你的身份，并将当前产品会话存入这台 iPhone 的本机钥匙串。关闭应用不会结束有效会话，会话最长 1 分钟，主动退出会移除。打开密码本仍需 Face ID，账号服务不接收密码或恢复密钥。";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "本机 Apple 账号用于识别私有密码本存储。PassBy 不接收你的 Apple 密码。选择 Apple 登录时，它可能向 Tenon 提供身份信息。Face ID 由 iOS 处理，PassBy 只接收验证结果，不接收面部数据。";
 
 "Working…" = "处理中…";
