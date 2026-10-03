@@ -1,3 +1,4 @@
+import { info, choice, switchInput } from './controls.mjs';
 import { CloudNotebook } from './cloud.mjs';
 import { NotebookSession } from './session.mjs';
 import { generatePassword } from './crypto.mjs';
@@ -95,6 +96,7 @@ function notify(message) { clearTimeout(statusTimer); $('status').textContent=me
 function errorMessage(error) { return t(error?.code === 'locked' ? 'lockedError' : error?.code || 'generic'); }
 function showError(parent, error) { parent.querySelector('.error')?.remove(); const el=node('p','error',errorMessage(error)); el.setAttribute('role','alert'); parent.append(el); }
 function setBusy(parent, busy) {
+  parent=parent.closest('.dialog-inner') || parent;
   if (busy && !busyControls.has(parent)) {
     const controls = [...parent.querySelectorAll('button,input,textarea,select')].map(el => [el,el.disabled]);
     const submit = parent.querySelector('button[type=submit]') || (parent.contains(document.activeElement) && document.activeElement?.closest('button')) || parent.querySelector('.primary');
@@ -305,7 +307,7 @@ function renderWelcome() {
     if (connecting) { const loading=button(t('connecting'),()=>{},'pill primary');loading.disabled=true;loading.classList.add('is-loading');loading.setAttribute('aria-busy','true');card.append(loading); }
     if (authError) { showError(card,authError);card.append(button(t('retry'),prepareApple,'pill primary')); }
     const remember=node('label','remember-row'), check=node('input'), text=node('span','',t('remember'));
-    check.type='checkbox';check.checked=rememberApple;check.disabled=connecting;remember.append(check,text);
+    check.type='checkbox';switchInput(check);check.checked=rememberApple;check.disabled=connecting;remember.append(check,text);
     check.addEventListener('change',()=>{
       rememberApple=check.checked;
       try { if(rememberApple)localStorage.setItem('passby.rememberApple','true');else localStorage.removeItem('passby.rememberApple'); } catch {}
@@ -346,7 +348,9 @@ function renderDetail(){
   const bottom=node('div','detail-bottom');bottom.append(button(t('delete'),()=>confirmDelete(t('deleteConfirm'),t('deleteHelp'),async()=>{const vault=structuredClone(session.vault);vault.entries=vault.entries.filter(e=>e.id!==entry.id);await saveVault(vault);selected=null;}),'icon-button','delete'));detail.append(bottom);
 }
 async function copyText(value){try{await navigator.clipboard.writeText(value);notify(t('copied'));}catch{notify(t('clipboard'));}}
-function showDialog(title,kind){closeDialog();dialogKind=kind;dialog.dataset.kind=kind;const inner=node('div','dialog-inner'),header=node('div','dialog-header');header.append(node('h2','',title),button(t('close'),()=>editor?(kind==='editor'||kind==='discard'?cancelEditor():renderEditor()):closeDialog(),'icon-button','close'));inner.append(header);dialog.append(inner);dialog.showModal();return inner;}
+function showDialog(title,kind){closeDialog();dialogKind=kind;dialog.dataset.kind=kind;const inner=node('div','dialog-inner'),header=node('div','dialog-header'),body=node('div','dialog-body'),footer=node('div','dialog-footer');header.append(node('h2','',title),button(t('close'),()=>editor?(kind==='editor'||kind==='discard'?cancelEditor():renderEditor()):closeDialog(),'icon-button','close'));inner.append(header,body,footer);dialog.append(inner);dialog.showModal();return body;}
+function dialogActions(body,actions,form){if(form){form.id='dialog-form';actions.querySelectorAll('button[type=submit]').forEach(el=>el.setAttribute('form',form.id));}body.parentElement.querySelector('.dialog-footer').append(actions);}
+function hint(text,label){return info(text,`${label} — ${language==='zh'?'说明':'Help'}`);}
 async function saveVault(vault){if(!validTenon()){tenonIdentity=null;lock();throw {code:'locked'};}const conflicts=await session.save(vault,t('conflictCopy'));notify(t(conflicts?'conflicts':'saved'));}
 function formField(label,value,type='text'){const wrap=node('div','form-field'),name=node('label','',t(label));name.htmlFor=`field-${label}`;const input=node(type==='textarea'?'textarea':'input');input.id=`field-${label}`;if(type!=='textarea')input.type=type;input.value=value;input.autocomplete='off';input.spellcheck=false;wrap.append(name,input);return{wrap,input};}
 function openEditor(entry){
@@ -356,36 +360,36 @@ function renderEditor(){
   const inner=showDialog(t(session.vault.entries.some(e=>e.id===editor.id)?'edit':'newPassword'),'editor'),form=node('form');
   for(const name of ['title','account','password','notes']){const field=formField(name,editor[name],name==='notes'?'textarea':name==='password'?'password':'text');field.input.addEventListener('input',()=>editor[name]=field.input.value);
     if(name==='password'){field.wrap.removeChild(field.input);const row=node('div','password-input');row.append(field.input,button(t('generator'),()=>openGenerator(true),'icon-button','generator'));field.wrap.append(row);}form.append(field.wrap);}
-  const group=node('div','form-field'),label=node('label','',t('folder')),select=node('select');label.htmlFor='folder-select';select.id='folder-select';
-  for(const f of [{id:'',name:t('unfiled')},...session.vault.folders]){const option=node('option','',f.name);option.value=f.id;select.append(option);}select.value=editor.folderID||'';select.addEventListener('change',()=>{if(select.value)editor.folderID=select.value;else delete editor.folderID;});
+  const group=node('div','form-field'),label=node('label','',t('folder'));label.htmlFor='folder-select';
+  const select=choice([{id:'',name:t('unfiled')},...session.vault.folders],editor.folderID||'',t('folder'),value=>{if(value)editor.folderID=value;else delete editor.folderID;},'folder-select');
   group.append(label,select,button(t('newFolder'),()=>openNewFolder(true),'text-button'));form.append(group);
-  const actions=node('div','form-actions'),submit=node('button','pill primary',t('save'));submit.type='submit';actions.append(button(t('cancel'),cancelEditor),submit);form.append(actions);
+  const actions=node('div','form-actions'),submit=node('button','pill primary',t('save'));submit.type='submit';actions.append(button(t('cancel'),cancelEditor),submit);dialogActions(inner,actions,form);
   form.addEventListener('submit',async event=>{event.preventDefault();if(!editor.title.trim()||!editor.password){showError(form,{code:'required'});return;}const vault=structuredClone(session.vault),draft={...editor,title:editor.title.trim()},index=vault.entries.findIndex(e=>e.id===draft.id);if(index<0)vault.entries.push(draft);else vault.entries[index]=draft;setBusy(inner,true);submit.textContent=t('saving');
     try{await saveVault(vault);selected=draft.id;editor=null;closeDialog();render();}catch(error){if(error.code!=='locked')showError(form,error);}finally{setBusy(inner,false);submit.textContent=t('save');}});
   inner.append(form);$('field-title').focus();
 }
-function cancelEditor(){if(!editor)return closeDialog();const original=session.vault?.entries.find(e=>e.id===editor.id);const dirty=original?JSON.stringify(original)!==JSON.stringify(editor):['title','account','password','notes'].some(k=>editor[k]);if(!dirty){editor=null;closeDialog();return;}const inner=showDialog(t('discard'),'discard');inner.append(node('p','helper',t('discardHelp')));const actions=node('div','form-actions');actions.append(button(t('continueEditing'),renderEditor),button(t('discardButton'),()=>{editor=null;closeDialog();},'pill primary'));inner.append(actions);}
+function cancelEditor(){if(!editor)return closeDialog();const original=session.vault?.entries.find(e=>e.id===editor.id);const dirty=original?JSON.stringify(original)!==JSON.stringify(editor):['title','account','password','notes'].some(k=>editor[k]);if(!dirty){editor=null;closeDialog();return;}const inner=showDialog(t('discard'),'discard');inner.append(node('p','helper',t('discardHelp')));const actions=node('div','form-actions');actions.append(button(t('continueEditing'),renderEditor),button(t('discardButton'),()=>{editor=null;closeDialog();},'pill primary'));dialogActions(inner,actions);}
 function openNewFolder(fromEditor=false){
-  const inner=showDialog(t('newFolder'),'newFolder'),form=node('form'),field=formField('folderName','');field.input.required=true;form.append(field.wrap);const actions=node('div','form-actions');actions.append(button(t('cancel'),()=>fromEditor?renderEditor():openFolders()));const submit=node('button','pill primary',t('save'));submit.type='submit';actions.append(submit);form.append(actions);inner.append(form);
+  const inner=showDialog(t('newFolder'),'newFolder'),form=node('form'),field=formField('folderName','');field.input.required=true;form.append(field.wrap);const actions=node('div','form-actions');actions.append(button(t('cancel'),()=>fromEditor?renderEditor():openFolders()));const submit=node('button','pill primary',t('save'));submit.type='submit';actions.append(submit);dialogActions(inner,actions,form);inner.append(form);
   form.addEventListener('submit',async event=>{event.preventDefault();const name=field.input.value.trim();if(!name)return;const vault=structuredClone(session.vault),folder={id:newID(),name};vault.folders.push(folder);setBusy(inner,true);try{await saveVault(vault);if(fromEditor&&editor){editor.folderID=folder.id;renderEditor();}else{render();openFolders();}}catch(error){if(error.code!=='locked')showError(form,error);}finally{setBusy(inner,false);}});field.input.focus();
 }
 function openFolders(){if(!session.vault)return;const inner=showDialog(t('folders'),'folders');for(const folder of session.vault.folders){const row=node('div','folder-row');row.append(icon('folder'),node('strong','',folder.name),button(t('deleteFolder'),()=>confirmDelete(t('deleteFolder'),t('deleteFolderHelp'),async()=>{const vault=structuredClone(session.vault);vault.folders=vault.folders.filter(f=>f.id!==folder.id);vault.entries.forEach(e=>{if(e.folderID===folder.id)delete e.folderID;});await saveVault(vault);if(filter===folder.id)filter='all';}),'icon-button','delete'));inner.append(row);}inner.append(button(t('newFolder'),()=>openNewFolder(),'pill','plus'));}
-function confirmDelete(title,message,action){const inner=showDialog(title,'confirm');deletion={title,message,action};inner.append(node('p','helper',message));const actions=node('div','form-actions');actions.append(button(t('cancel'),closeDialog),button(t('confirm'),async()=>{setBusy(inner,true);try{await action();closeDialog();render();}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill primary'));inner.append(actions);}
+function confirmDelete(title,message,action){const inner=showDialog(title,'confirm');deletion={title,message,action};inner.append(node('p','helper',message));const actions=node('div','form-actions');actions.append(button(t('cancel'),closeDialog),button(t('confirm'),async()=>{setBusy(inner,true);try{await action();closeDialog();render();}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill primary'));dialogActions(inner,actions);}
 function openGenerator(fromEditor=false, retained=null){
   const inner=showDialog(t('generator'),'generator'),output=node('div','generated');output.setAttribute('aria-label',t('password'));output.tabIndex=0;inner.append(output);
-  const label=node('label','helper',t('length'));label.htmlFor='password-length';inner.append(label);const controls=node('div','generator-controls'),range=node('input'),number=node('input');range.type='range';range.min='8';range.max='24';range.value='16';range.setAttribute('aria-label',t('length'));number.id='password-length';number.type='number';number.min='8';number.max='4096';number.step='1';number.value=retained?.length || '16';range.value=String(Math.min(24,Math.max(8,Number(number.value))));controls.append(range,number);inner.append(controls,node('p','helper',t('lengthHelp')));
-  const checks={};for(const key of ['upper','lower','digits','symbols']){const row=node('label','check-row',t(key)),check=node('input');check.type='checkbox';check.id=`generator-${key}`;check.checked=retained?.characters[key] ?? true;checks[key]=check;row.append(check);inner.append(row);check.addEventListener('change',generate);}
+  const label=node('label','helper',t('length'));label.htmlFor='password-length';inner.append(label);const controls=node('div','generator-controls'),range=node('input'),number=node('input');range.type='range';range.min='8';range.max='24';range.value='16';range.setAttribute('aria-label',t('length'));number.id='password-length';number.type='number';number.min='8';number.max='4096';number.step='1';number.value=retained?.length || '16';range.value=String(Math.min(24,Math.max(8,Number(number.value))));controls.append(range,number);label.append(hint(t('lengthHelp'),t('length')));inner.append(controls);
+  const checks={};for(const key of ['upper','lower','digits','symbols']){const row=node('label','check-row',t(key)),check=node('input');check.type='checkbox';switchInput(check);check.id=`generator-${key}`;check.checked=retained?.characters[key] ?? true;checks[key]=check;row.append(check);inner.append(row);check.addEventListener('change',generate);}
   function generate(){inner.querySelector('.error')?.remove();try{generatorValue=generatePassword(Number(number.value),Object.fromEntries(Object.entries(checks).map(([k,v])=>[k,v.checked])));output.textContent=generatorValue;}catch(error){generatorValue='';output.textContent='';showError(inner,error);}}
   range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
-  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));inner.append(actions,node('p','helper',t('clipboardHelp')));if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
+  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));dialogActions(inner,actions);actions.append(hint(t('clipboardHelp'),t('copyPassword')));if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
 }
 function settingsAction(label,action,symbol,description='',navigation=false){
   const el=button(label,action,'settings-action');
   const mark=node('span','settings-action-icon');mark.append(icon(symbol));
   const content=node('span','settings-action-content');content.append(node('span','settings-action-title',label));
-  if(description)content.append(node('span','settings-action-help',description));
+
   const arrow=node('span','settings-action-arrow','›');arrow.setAttribute('aria-hidden','true');
-  el.replaceChildren(mark,content);if(navigation)el.append(arrow);return el;
+  el.replaceChildren(mark,content);if(navigation)el.append(arrow);if(!description)return el;const row=node('div','settings-action-row');row.append(el,hint(description,label));return row;
 }
 function openSettings(){
   const inner=showDialog(t('settings'),'settings');
@@ -394,14 +398,12 @@ function openSettings(){
     const list=node('div','settings-list');block.append(list);inner.append(block);return list;
   }
   const security=section(language==='zh'?'安全':'Security');
-  const policy=node('div','settings-policy');policy.append(node('strong','',t('automaticLock')),
-    node('p','',language==='zh'?'切换标签页或离开窗口，密码本会立即锁定。Tenon 登录有效 1 分钟，到期需重新登录。':'Switching tabs or leaving the window locks your notebook. Your Tenon session lasts one minute; sign in again when it expires.'),
-    node('p','',language==='zh'?'网页版无法使用 iPhone 的 Face ID 或阻止截图。已授权的浏览器无需重复输入恢复密钥，新浏览器仍需首次授权。':'The web app cannot use iPhone Face ID or block screenshots. An authorized browser needs no recovery key; a new browser still needs initial authorization.'));
-  security.append(policy);
+  const policy=node('div','settings-policy'),policyTitle=node('div','settings-policy-title');
+  policyTitle.append(node('strong','',t('automaticLock')),hint(language==='zh'?'切换标签页或离开窗口，密码本会立即锁定。Tenon 登录有效 1 分钟，到期需重新登录。网页版无法使用 iPhone 的 Face ID 或阻止截图。已授权的浏览器无需重复输入恢复密钥，新浏览器仍需首次授权。':'Switching tabs or leaving the window locks your notebook. Your Tenon session lasts one minute. The web app cannot use iPhone Face ID or block screenshots. Authorized browsers need no recovery key; new browsers need initial authorization.',t('automaticLock')));
+  policy.append(policyTitle,node('span','settings-policy-value',language==='zh'?'离开即锁定':'Locks when you leave'));security.append(policy);
   const preferences=section(language==='zh'?'偏好':'Preferences');
-  const row=node('div','settings-language-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';
-  for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}
-  select.value=language;select.addEventListener('change',()=>changeLanguage(select.value));row.append(label,select);preferences.append(row);
+  const row=node('div','settings-language-row'),label=node('label','',t('language'));label.htmlFor='app-language';
+  row.append(label,choice([{id:'en',name:'English'},{id:'zh',name:'简体中文'}],language,t('language'),changeLanguage,'app-language'));preferences.append(row);
   if(session.key || trustBinding){
     const notebook=section(language==='zh'?'密码本':'Notebook');
     if(session.key){
@@ -431,7 +433,7 @@ function openAbout(){
   const publisher=node('div','about-publisher'),publisherMark=node('img');publisherMark.src='./web/tenon-mark.svg';publisherMark.alt='';
   publisher.append(node('p','helper',language==='zh'?'出品方':'Publisher'),publisherMark,node('span','','榫卯 Tenon AI'));
   const website=node('a','about-website','tenon.asia');website.href='https://tenon.asia/';
-  inner.append(publisher,website,button(t('back'),openSettings,'pill'));
+  inner.append(publisher,website);const actions=node('div','form-actions');actions.append(button(t('back'),openSettings,'pill'));dialogActions(inner,actions);
 }
 
 render();
