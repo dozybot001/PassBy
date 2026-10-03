@@ -5,6 +5,7 @@ assert re.fullmatch('[0-9a-f]{40}',sha)
 base=pathlib.Path('/opt/passby-auth'); base.mkdir(exist_ok=True)
 lock=pathlib.Path('/opt/passby-site/.publish-lock'); lock.mkdir()
 site=pathlib.Path('/etc/caddy/sites-enabled/tenon-ai.caddy'); before=site.read_bytes()
+web_site=pathlib.Path('/etc/caddy/sites-enabled/passby.caddy'); web_before=web_site.read_bytes() if web_site.exists() else None
 active=base/'active.json'; previous=json.loads(active.read_text()) if active.exists() else {}
 port=7281 if previous.get('port')==7280 else 7280
 name=f'passby-auth-{sha[:12]}-{port}'
@@ -39,19 +40,30 @@ try:
   except Exception:
    if attempt==19:raise
    time.sleep(.25)
+ request(f'http://127.0.0.1:{port}/api/health',200)
+ request(f'http://127.0.0.1:{port}/api/auth/session',401)
  route=f'\t# BEGIN PASSBY AUTH\n\thandle /passby/api/* {{\n\t\theader {{\n\t\t\tCache-Control \"no-store\"\n\t\t\tReferrer-Policy \"no-referrer\"\n\t\t}}\n\t\treverse_proxy 127.0.0.1:{port}\n\t}}\n\t# END PASSBY AUTH\n'
  content=re.sub(r'\t# BEGIN PASSBY AUTH\n.*?\t# END PASSBY AUTH\n','',before.decode(),flags=re.S)
  assert content.count('\t# BEGIN PASSBY\n')==1
  content=content.replace('\t# BEGIN PASSBY\n','\t# BEGIN PASSBY\n'+route,1)
  candidate=base/'candidate-sites';shutil.rmtree(candidate,ignore_errors=True);shutil.copytree('/etc/caddy/sites-enabled',candidate)
  (candidate/'tenon-ai.caddy').write_text(content)
+ web_content=None
+ if web_before is not None:
+  web_content=re.sub(r'reverse_proxy 127\.0\.0\.1:728[01]',f'reverse_proxy 127.0.0.1:{port}',web_before.decode())
+  assert web_content!=web_before.decode() or previous.get('port')==port
+  (candidate/'passby.caddy').write_text(web_content)
  root='import '+str(candidate)+'/*.caddy\n'
  check=base/'candidate-Caddyfile';check.write_text(root)
  run(['caddy','validate','--config',str(check),'--adapter','caddyfile'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  assert site.read_bytes()==before,'Ingress changed during release'
  (release/'ingress-before.caddy').write_bytes(before)
  temp=site.with_suffix('.candidate');temp.write_text(content);os.replace(temp,site);changed=True
+ if web_content is not None:
+  temp=web_site.with_suffix('.candidate');temp.write_text(web_content);os.replace(temp,web_site)
  run(['systemctl','reload','caddy'])
+ if web_content is not None:
+  request('https://passby.tenon.asia/api/health',200);request('https://passby.tenon.asia/api/auth/session',401)
  request('https://tenon.asia/passby/api/health',200);request('https://tenon.asia/passby/api/auth/session',401)
  (base/'current-route.caddy').write_text(route)
  state={'commit':sha,'port':port,'container':name,'image':image}
@@ -59,7 +71,10 @@ try:
  if previous.get('container'):subprocess.run(['docker','stop',previous['container']],stdout=subprocess.DEVNULL)
  print('PassBy identity service deployed and public health/session checks passed: '+sha)
 except BaseException:
- if changed:site.write_bytes(before);run(['systemctl','reload','caddy'])
+ if changed:
+  site.write_bytes(before)
+  if web_before is not None:web_site.write_bytes(web_before)
+  run(['systemctl','reload','caddy'])
  if started:subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  raise
 finally:

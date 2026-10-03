@@ -13,10 +13,12 @@ const failure = status => Object.assign(new Error('Authentication unavailable'),
 // Central tokens are discarded after the callback; opaque product sessions expire.
 export class TenonAuth {
   constructor({ origin = 'https://tenon.asia', clientId, clientSecret, iosClientId, iosClientSecret, protocol = oidc, now = Date.now }) {
-    if (origin !== 'https://tenon.asia' || !clientId || !clientSecret) throw Error('Incomplete authentication configuration');
+    if (!['https://tenon.asia', 'https://passby.tenon.asia'].includes(origin) || !clientId || !clientSecret) throw Error('Incomplete authentication configuration');
     Object.assign(this, { origin, clientId, clientSecret, iosClientId, iosClientSecret, protocol, now });
-    this.callback = origin + '/passby/api/auth/callback';
-    this.iosCallback = origin + '/passby/api/auth/ios/callback';
+    this.basePath = origin === 'https://tenon.asia' ? '/passby/' : '/';
+    this.apiPath = this.basePath + 'api';
+    this.callback = origin + this.apiPath + '/auth/callback';
+    this.iosCallback = origin + this.apiPath + '/auth/ios/callback';
     this.attempts = new Map(); this.sessions = new Map(); this.tickets = new Map();
   }
   sweep() {
@@ -34,7 +36,7 @@ export class TenonAuth {
     return this[slot];
   }
   cookie(name, value, age, sameSite = 'Strict') {
-    return `__Secure-passby_${name}=${value}; Path=/passby/api; HttpOnly; Secure; SameSite=${sameSite}; Max-Age=${age}`;
+    return `__Secure-passby_${name}=${value}; Path=${this.apiPath}; HttpOnly; Secure; SameSite=${sameSite}; Max-Age=${age}`;
   }
   cookieValue(req, name) {
     return req.headers.cookie?.match(new RegExp(`(?:^|;\\s*)__Secure-passby_${name}=([A-Za-z0-9_-]{43})(?:;|$)`))?.[1];
@@ -60,7 +62,9 @@ export class TenonAuth {
       code_challenge: await this.protocol.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256' });
     this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState });
     res.setHeader('Set-Cookie', this.cookie('attempt', browser, 600, 'Lax'));
-    res.writeHead(303, { Location: location.href }).end();
+    if (url.searchParams.get('format') === 'json') {
+      res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ url: location.href }));
+    } else res.writeHead(303, { Location: location.href }).end();
   }
   async complete(req, res, url) {
     const key = digest(this.cookieValue(req, 'attempt') || ''), attempt = this.attempts.get(key);
@@ -86,7 +90,7 @@ export class TenonAuth {
     } else {
       const sessionToken = token(); this.sessions.set(digest(sessionToken), session);
       res.setHeader('Set-Cookie', [this.cookie('attempt', '', 0, 'Lax'), this.cookie('session', sessionToken, Math.floor((expires - this.now()) / 1000))]);
-      res.writeHead(303, { Location: '/passby/' }).end();
+      res.writeHead(303, { Location: this.basePath }).end();
     }
   }
   exchange(body) {

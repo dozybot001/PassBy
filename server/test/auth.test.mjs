@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { TenonAuth, ISSUER, ROLE, digest, TTL } from '../auth.mjs';
 import { createApp } from '../server.mjs';
 
-function fixture() {
+function fixture(options = {}) {
   let now = 1000000, grants = 0;
   const info = { sub: 'test-user', name: 'Example', email_verified: true, [ROLE]: 'user' };
   const claims = { iss: ISSUER, sub: info.sub, exp: now / 1000 + 3600, [ROLE]: info[ROLE] };
@@ -11,14 +11,14 @@ function fixture() {
     discovery: async () => ({ serverMetadata: () => ({ issuer: ISSUER }) }), ClientSecretBasic: () => {},
     randomPKCECodeVerifier: () => 'verifier', randomState: () => 'state', randomNonce: () => 'nonce',
     calculatePKCECodeChallenge: async () => 'challenge',
-    buildAuthorizationUrl: (_, params) => { assert.equal(params.code_challenge_method, 'S256'); return new URL('https://account.tenon.asia/authorize'); },
+    buildAuthorizationUrl: (_, params) => { assert.equal(params.code_challenge_method, 'S256'); const target = new URL('https://account.tenon.asia/authorize');target.search = new URLSearchParams(params).toString();return target; },
     authorizationCodeGrant: async (_, url, checks) => {
       grants++; assert.deepEqual(checks, { pkceCodeVerifier: 'verifier', expectedState: 'state', expectedNonce: 'nonce', idTokenExpected: true });
       if (url.searchParams.get('state') !== checks.expectedState) throw Error('Invalid state');
       return { claims: () => claims, access_token: 'test-only', expires_in: 3600 };
     }, fetchUserInfo: async () => info,
   };
-  const auth = new TenonAuth({ clientId: 'test', clientSecret: 'test-only', iosClientId: 'native-test', iosClientSecret: 'native-test-only', protocol, now: () => now });
+  const auth = new TenonAuth({ clientId: 'test', clientSecret: 'test-only', iosClientId: 'native-test', iosClientSecret: 'native-test-only', protocol, now: () => now, ...options });
   const req = { headers: {} }, res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, writeHead(s, h) { this.status = s; Object.assign(this.headers, h); return this; }, end() {} };
   return { auth, req, res, info, claims, advance: ms => { now += ms; }, grants: () => grants };
 }
@@ -81,3 +81,40 @@ test('API rejects CSRF logout, unexpected methods and password/vault endpoints',
 });
 
 test('product sessions have a one-minute maximum lifetime', () => { assert.equal(TTL, 60000); });
+
+
+test('dedicated web origin uses exact callbacks, host-only cookies and isolated sessions', async t => {
+  const legacy = fixture(), web = fixture({ origin: 'https://passby.tenon.asia' });
+  assert.equal(web.auth.callback, 'https://passby.tenon.asia/api/auth/callback');
+  await web.auth.start(web.req, web.res, new URL('https://passby.tenon.asia/api/auth/start?format=json'));
+  assert.equal(web.res.status, 200);
+  assert.match(web.res.headers['Set-Cookie'], /Path=\/api; HttpOnly; Secure/);
+  assert.doesNotMatch(web.res.headers['Set-Cookie'], /Domain=/);
+  web.req.headers.cookie = web.res.headers['Set-Cookie'].split(';')[0];
+  await assert.rejects(web.auth.complete(web.req, web.res, callback()), { status: 401 });
+  await web.auth.start(web.req, web.res, new URL('https://passby.tenon.asia/api/auth/start'));
+  web.req.headers.cookie = web.res.headers['Set-Cookie'].split(';')[0];
+  await web.auth.complete(web.req, web.res, new URL('https://passby.tenon.asia/api/auth/callback?code=test&state=state'));
+  assert.equal(web.res.headers.Location, '/');
+  web.req.headers.cookie = web.res.headers['Set-Cookie'][1].split(';')[0];
+  assert.equal(web.auth.identity(web.req).session.sub, 'test-user');
+  assert.throws(() => legacy.auth.identity(web.req), { status: 401 });
+  const server = createApp(legacy.auth, web.auth);
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => server.close());
+  const base = `http://127.0.0.1:${server.address().port}`;
+  for (const path of ['/api/health', '/passby/api/health']) assert.equal((await fetch(base + path)).status, 200);
+  const start = await fetch(base + '/api/auth/start?format=json');
+  assert.equal(start.status, 200);
+  const destination = new URL((await start.json()).url);
+  assert.equal(destination.origin, 'https://account.tenon.asia');
+  assert.equal(destination.searchParams.get('redirect_uri'), 'https://passby.tenon.asia/api/auth/callback');
+  assert.equal(destination.searchParams.get('code_challenge_method'), 'S256');
+  assert.match(start.headers.get('set-cookie'), /Path=\/api; HttpOnly; Secure; SameSite=Lax/);
+  assert.equal((await fetch(base + '/api/auth/session', { headers: web.req.headers })).status, 200);
+  assert.equal((await fetch(base + '/passby/api/auth/session', { headers: web.req.headers })).status, 401);
+  assert.equal((await fetch(base + '/api/auth/logout', { method: 'POST', headers: { ...web.req.headers, origin: 'https://tenon.asia' } })).status, 403);
+  assert.equal((await fetch(base + '/api/auth/logout', { method: 'POST', headers: { ...web.req.headers, origin: 'https://passby.tenon.asia' } })).status, 200);
+  assert.equal((await fetch(base + '/api/auth/session', { headers: web.req.headers })).status, 401);
+  assert.throws(() => new TenonAuth({ origin: 'https://attacker.invalid', clientId: 'test', clientSecret: 'test-only' }));
+});
