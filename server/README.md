@@ -47,3 +47,13 @@ Local static preview has no authentication backend and intentionally reports
 account service unavailable. Real authentication uses the exact production
 HTTPS origin; no production secrets or insecure callback bypass are added to
 local previews.
+
+## 2026-10-03 validation
+
+Two production clients were registered with a consistent server-private SQLite
+backup and the central operator audit. The identity service was deployed from
+`11708185214a92e9ab3769e0cbb8735a7cdd5f6f`; its 6 tests passed on the pinned
+Linux runtime, public health returned 200 and anonymous session returned 401.
+Native simulator tests passed 24/24, and the signed iPhone build succeeded.
+Real personal browser/iPhone sign-in and private notebook authorization still
+require user acceptance; no personal credentials or recovery keys are test fixtures.
