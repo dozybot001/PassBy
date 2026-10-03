@@ -63,9 +63,13 @@ export class CloudNotebook {
     return { record, bytes: await asset.arrayBuffer() };
   }
   async save(record, ciphertext) {
+    // The SDK POSTs this Blob unchanged to Apple's asset upload URL. An
+    // octet-stream Content-Type triggers an OPTIONS preflight that this endpoint
+    // rejects. text/plain is CORS-safelisted; Blob bytes remain binary ciphertext
+    // (never convert them to a string), compatible with native CKAsset reads.
     const response = await this.database.saveRecords({
       recordName: record.recordName, recordType: 'Notebook', recordChangeTag: record.recordChangeTag,
-      fields: { format: { value: 1 }, ciphertext: { value: new Blob([ciphertext], { type: 'application/octet-stream' }) } },
+      fields: { format: { value: 1 }, ciphertext: { value: new Blob([ciphertext], { type: 'text/plain' }) } },
     });
     if (response.hasErrors) {
       if (response.errors?.some(e => e.ckErrorCode === 'CONFLICT')) throw new NotebookError('conflict');

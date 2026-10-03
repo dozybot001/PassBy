@@ -66,7 +66,16 @@ test('CloudKit transport accepts only Apple HTTPS assets, and uses encrypted Blo
     url='http://cvws.icloud-content.com/file';await assert.rejects(cloud.fetch(),{code:'invalidNotebook'});
     const sealed=await sealNotebook(vault(),key);await cloud.save({recordName:'notebook-v1',recordChangeTag:'expected-tag'},sealed);
     assert.equal(saved.recordChangeTag,'expected-tag');assert.equal(saved.fields.format.value,1);
+    // A browser POST must not introduce the octet-stream OPTIONS preflight.
+    const upload = new Request('https://cws.icloud-content.com/test-only', {
+      method: 'POST', body: saved.fields.ciphertext.value,
+    });
+    assert.equal(upload.headers.get('content-type'),'text/plain');
+    assert.deepEqual(new Uint8Array(await upload.arrayBuffer()),new Uint8Array(sealed));
     assert.deepEqual(await openNotebook(await saved.fields.ciphertext.value.arrayBuffer(),key),vault());
+    const native=spawnSync('swift',['scripts/web-interop.swift','open'],{input:Buffer.from(await saved.fields.ciphertext.value.arrayBuffer())});
+    assert.equal(native.status,0,native.stderr.toString());
+    assert.deepEqual(JSON.parse(native.stdout.toString()),vault());
     cloud.database.fetchRecords=async()=>({hasErrors:true,errors:[{ckErrorCode:'NOT_FOUND'}]});await assert.rejects(cloud.fetch(),{code:'noNotebook'});
     cloud.database.saveRecords=async()=>({hasErrors:true,errors:[{ckErrorCode:'CONFLICT'}]});await assert.rejects(cloud.save({},sealed),{code:'conflict'});
   }finally{globalThis.fetch=originalFetch;}
