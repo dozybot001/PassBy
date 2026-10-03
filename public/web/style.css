@@ -21,4 +21,11 @@
 .tenon-entry>p.help{font-size:12px;line-height:1.7;margin:0;color:var(--muted)}
 @media(max-width:680px){.tenon-entry h1{font-size:26px}.welcome:has(.tenon-entry){padding:32px 0 48px}}
 
-.about-passby .helper a{text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+
+/* In-place feedback keeps the action recognizable while it waits. */
+.is-loading::before{content:"";display:inline-block;width:16px;height:16px;flex:none;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.is-loading>svg{display:none}.is-loading{cursor:wait}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.is-loading::before{animation:none;border-style:dotted}}
+#dialog[data-kind=about] .wordmark{margin:8px 0 18px}
+.about-description{font-size:15px;line-height:1.7}.about-publisher{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:28px 0 12px}.about-publisher .helper{flex-basis:100%;margin:0}.about-publisher img{width:24px;height:24px}.about-website{display:block;text-decoration:underline;text-underline-offset:3px;margin-bottom:24px}

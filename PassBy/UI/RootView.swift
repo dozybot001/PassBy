@@ -31,8 +31,10 @@ struct LockView: View {
     @EnvironmentObject private var account: TenonAccount
     @State private var recovery = ""
     @State private var understood = false
+    @State private var retrying = false
+    @State private var unlocking = false
     private var needsRecovery: Bool { session.setup == .recovery || session.setup == .localRecovery }
-    private var working: Bool { session.phase == .authenticating || session.setup == .checking }
+    private var working: Bool { unlocking || session.phase == .authenticating || session.setup == .checking }
 
     var body: some View {
         ScrollView {
@@ -74,7 +76,7 @@ struct LockView: View {
                     Text(message).font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
                 }
                 if account.identity == nil {
-                    Button("Sign in with Tenon") { account.signIn() }.buttonStyle(PrimaryButton())
+                    Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working).tint(Palette.paper) }.buttonStyle(PrimaryButton())
                         .disabled(account.working).padding(.bottom, 16)
                     if session.setup != .newNotebook {
                         Text("Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key.")
@@ -83,14 +85,21 @@ struct LockView: View {
                 } else if let identity = account.identity {
                     Text("Tenon: \(identity.name)").font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
                 }
-                if session.setup == .unavailable {
-                    Button("Try again") { Task { await session.prepare() } }.buttonStyle(PrimaryButton())
+                if session.setup == .unavailable || retrying {
+                    Button {
+                        guard !retrying else { return }
+                        retrying = true
+                        Task { defer { retrying = false }; await session.prepare() }
+                    } label: { OperationLabel(title: "Try again", working: retrying) }
+                    .buttonStyle(PrimaryButton()).disabled(retrying)
                 } else {
                     Button {
                         account.checkExpiry()
                         guard session.setup != .newNotebook || account.identity != nil else { return }
+                        guard !working else { return }
                         let text = needsRecovery ? recovery : nil
-                        Task { await session.unlock(recoveryText: text) }
+                        unlocking = true
+                        Task { defer { unlocking = false }; await session.unlock(recoveryText: text) }
                     } label: {
                         if working { ProgressView().tint(Palette.paper) }
                         else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? L("Restore with Face ID") : L("Unlock with Face ID"), systemImage: "faceid") }

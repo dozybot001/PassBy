@@ -58,6 +58,7 @@ struct FoldersView: View {
 
 struct SettingsView: View {
     @State private var confirmWebAccess = false
+    @State private var syncing = false
     @EnvironmentObject private var session: VaultSession
     @EnvironmentObject private var account: TenonAccount
     @Environment(\.dismiss) private var dismiss
@@ -79,7 +80,7 @@ struct SettingsView: View {
                         Link("Manage sign-in methods", destination: URL(string: "https://account.tenon.asia/account/")!)
                         Button("Sign out of PassBy") { account.signOut() }
                     } else {
-                        Button("Sign in with Tenon") { account.signIn() }.disabled(account.working)
+                        Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working) }.disabled(account.working)
                     }
                     Text("Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
@@ -95,11 +96,11 @@ struct SettingsView: View {
                 } header: { Text("Apple storage authorization") }
                 Section("Sync") {
                     LabeledContent("Status", value: status)
-                    Button("Sync now") { Task { await session.syncNow() } }
-                        .disabled(session.syncStatus == .syncing)
+                    Button { sync() } label: { OperationLabel(title: "Sync now", working: syncing || session.syncStatus == .syncing) }
+                        .disabled(syncing || session.syncStatus == .syncing)
                     if session.needsCloudRestore {
-                        Button("Enable web access") { confirmWebAccess = true }
-                            .disabled(session.syncStatus == .syncing)
+                        Button { confirmWebAccess = true } label: { OperationLabel(title: "Enable web access", working: syncing) }
+                            .disabled(syncing || session.syncStatus == .syncing)
                     }
                     if let message = session.syncMessage {
                         Text(message).font(.footnote).foregroundStyle(Palette.secondary)
@@ -134,17 +135,7 @@ struct SettingsView: View {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
                     Link("Support", destination: URL(string: "https://tenon.asia/passby/support")!)
                     Link("Email support", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Support")!)
-                    LabeledContent("Version", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"))")
-                } header: {
-                    Text("About PassBy")
-                } footer: {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("Made by Tenon")
-                        Text("·").accessibilityHidden(true)
-                        Link("tenon.asia", destination: URL(string: "https://tenon.asia/")!)
-                            .fixedSize()
-                    }
-                    .font(.footnote).foregroundStyle(Palette.secondary)
+                    NavigationLink("About PassBy") { AboutPassByView() }
                 }
                 Section {
                     Button("Lock notebook") { session.lock() }
@@ -156,12 +147,22 @@ struct SettingsView: View {
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .alert("Enable web access?", isPresented: $confirmWebAccess) {
                 Button("Cancel", role: .cancel) {}
-                Button("Enable web access") { Task { await session.enableWebAccess() } }
+                Button("Enable web access") { sync(enableWeb: true) }
             } message: {
                 Text("Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same.")
             }
         }
     }
+    private func sync(enableWeb: Bool = false) {
+        guard !syncing, session.syncStatus != .syncing else { return }
+        syncing = true
+        Task {
+            defer { syncing = false }
+            if enableWeb { await session.enableWebAccess() }
+            else { await session.syncNow() }
+        }
+    }
+
 }
 
 struct PrivacyPolicyView: View {
@@ -192,5 +193,35 @@ struct PrivacyPolicyView: View {
             Text(title).font(.headline)
             Text(body).font(.body).foregroundStyle(Palette.secondary)
         }
+    }
+}
+
+struct AboutPassByView: View {
+    private var version: String {
+        let info = Bundle.main.infoDictionary ?? [:]
+        return "\(info["CFBundleShortVersionString"] as? String ?? "—") (\(info["CFBundleVersion"] as? String ?? "—"))"
+    }
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                NotebookTitle()
+                LabeledContent("Version", value: version).font(.subheadline).foregroundStyle(Palette.secondary)
+                Text("PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.")
+                Text("Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser.")
+                    .foregroundStyle(Palette.secondary)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Publisher").font(.footnote).foregroundStyle(Palette.secondary)
+                    HStack(spacing: 10) {
+                        Image("TenonMark").resizable().scaledToFit().frame(width: 24, height: 24).accessibilityHidden(true)
+                        Text("榫卯 Tenon AI")
+                    }
+                    Link("tenon.asia", destination: URL(string: "https://tenon.asia/")!)
+                }
+            }
+            .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)
+            .frame(maxWidth: 540).frame(maxWidth: .infinity)
+        }
+        .background(Palette.paper)
+        .navigationTitle("About PassBy").navigationBarTitleDisplayMode(.inline)
     }
 }

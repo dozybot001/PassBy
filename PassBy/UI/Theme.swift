@@ -23,7 +23,7 @@ struct NotebookTitle: View {
             Image("TenonMark").resizable().scaledToFit()
                 .frame(width: max(14, size * 0.58), height: max(14, size * 0.58)).offset(y: -size * 0.04)
                 .accessibilityHidden(true)
-        }.accessibilityElement(children: .ignore).accessibilityLabel("PassBy, by Tenon")
+        }.accessibilityElement(children: .ignore).accessibilityLabel(Text("PassBy, by Tenon"))
             .accessibilityAddTraits(.isHeader).fixedSize(horizontal: true, vertical: false)
     }
 }
@@ -35,7 +35,7 @@ struct NotebookHeader: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            NotebookTitle(size: 28)
+            NotebookTitle()
             Spacer(minLength: 4)
             Button(action: search) { Image(systemName: "magnifyingglass") }
                 .buttonStyle(IconButton()).accessibilityLabel("Search passwords")
@@ -205,4 +205,16 @@ struct ControlSurface: ViewModifier {
     }
     .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Palette.paper).preferredColorScheme(.dark)
+}
+
+struct OperationLabel: View {
+    let title: LocalizedStringKey
+    let working: Bool
+    var body: some View {
+        HStack(spacing: 8) {
+            if working { ProgressView().controlSize(.small).accessibilityLabel("Working…") }
+            Text(title)
+        }
+        .accessibilityElement(children: .combine)
+    }
 }

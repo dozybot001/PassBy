@@ -10,8 +10,12 @@ staging="$(mktemp -d)"
 trap 'rm -rf "$staging"' EXIT
 git archive "$release" public | tar -x -C "$staging"
 python3 - "$staging" "$release" <<'PY'
-import hashlib, json, pathlib, sys
+import hashlib, json, pathlib, sys, subprocess, re
 root = pathlib.Path(sys.argv[1])
+project = subprocess.check_output(['git', 'show', sys.argv[2] + ':PassBy.xcodeproj/project.pbxproj'], text=True)
+version = re.search(r'"MARKETING_VERSION" = "([^";]+)";', project).group(1)
+page = root / 'public/index.html'
+page.write_text(page.read_text().replace('<title>', '<meta name="passby-version" content="' + version + ' · Web ' + sys.argv[2][:12] + '">\n  <title>', 1))
 files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in sorted((root / 'public').rglob('*')) if p.is_file()}
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
