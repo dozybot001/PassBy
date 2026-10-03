@@ -16,6 +16,6 @@ for p in root.rglob('*'):
  if p.is_file():files[str(p.relative_to(root))]=hashlib.sha256(p.read_bytes()).hexdigest()
 (root/'manifest.json').write_text(json.dumps({'commit':sys.argv[2],'files':files}))
 PY
-tar -czf "$stage/bundle.tar.gz" -C "$stage" server scripts manifest.json
+COPYFILE_DISABLE=1 tar --no-xattrs -czf "$stage/bundle.tar.gz" -C "$stage" server scripts manifest.json
 scp -q "$stage/bundle.tar.gz" "wesaid-prod:/tmp/passby-auth-$release.tar.gz"
 ssh wesaid-prod "sudo python3 /dev/stdin '$release'" < scripts/release-auth.py
