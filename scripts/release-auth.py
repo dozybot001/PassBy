@@ -38,7 +38,7 @@ try:
   except Exception:
    if attempt==19:raise
    time.sleep(.25)
- route=f'\t# BEGIN PASSBY AUTH\n\thandle /passby/api/* {{\n\t\treverse_proxy 127.0.0.1:{port}\n\t}}\n\t# END PASSBY AUTH\n'
+ route=f'\t# BEGIN PASSBY AUTH\n\thandle /passby/api/* {{\n\t\theader {{\n\t\t\tCache-Control \"no-store\"\n\t\t\tReferrer-Policy \"no-referrer\"\n\t\t}}\n\t\treverse_proxy 127.0.0.1:{port}\n\t}}\n\t# END PASSBY AUTH\n'
  content=re.sub(r'\t# BEGIN PASSBY AUTH\n.*?\t# END PASSBY AUTH\n','',before.decode(),flags=re.S)
  assert content.count('\t# BEGIN PASSBY\n')==1
  content=content.replace('\t# BEGIN PASSBY\n','\t# BEGIN PASSBY\n'+route,1)
