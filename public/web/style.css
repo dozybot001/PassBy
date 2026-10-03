@@ -55,3 +55,22 @@
 @media(max-width:380px){.entry-mode .unlock-card{padding:28px 24px}}
 
 .trusted-open{margin-top:28px}
+
+/* Settings uses comfortable, full-width action rows instead of wrapping pills. */
+#dialog[data-kind=settings]{width:min(600px,calc(100vw - 32px))}
+#dialog[data-kind=settings] .dialog-inner{padding:36px}
+#dialog[data-kind=settings] .dialog-header{margin-bottom:34px}
+.settings-block{margin:0 0 28px}.settings-block:last-child{margin-bottom:0}
+.settings-section-title{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 12px;padding:0 4px}
+.settings-list{background:var(--surface);border-radius:20px;overflow:hidden}
+.settings-policy{padding:22px 24px}.settings-policy strong{display:block;font-size:16px;font-weight:600}
+.settings-policy p{font-size:14px;line-height:1.75;color:var(--muted);margin:12px 0 0}
+.settings-language-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 24px;min-height:72px}
+.settings-language-row label{font-size:15px}.settings-language-row select{max-width:65%;border:0;border-radius:999px;background:var(--bg);padding:10px 16px;font-size:14px}
+.settings-action{width:100%;display:flex;align-items:center;gap:16px;text-align:left;padding:18px 24px;min-height:64px;background:transparent;border-radius:0}
+.settings-action:hover{background:var(--hover)}.settings-action-icon{display:flex;align-items:center;flex:none;color:var(--muted)}
+.settings-action-content{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}.settings-action-title{font-size:15px;font-weight:550;line-height:1.5;overflow-wrap:anywhere}
+.settings-action-help{font-size:12px;line-height:1.65;color:var(--muted)}.settings-action-arrow{font-size:24px;line-height:1;color:var(--muted)}
+.settings-identity{margin:0;padding:20px 24px 4px;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.settings-action.is-loading .settings-action-icon{display:none}
+@media(max-width:680px){#dialog[data-kind=settings] .dialog-inner{padding:24px}#dialog[data-kind=settings] .dialog-header{margin-bottom:28px}.settings-block{margin-bottom:24px}.settings-policy{padding:20px}.settings-language-row,.settings-action{padding:18px 20px}.settings-identity{padding:18px 20px 4px}}

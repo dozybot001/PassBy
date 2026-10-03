@@ -60,6 +60,9 @@ let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTime
 let busyOperations = 0, deletion = null;
 const busyControls = new WeakMap();
 const paths = {
+  sync:'<path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/>',
+  browser:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 6.5h.01"/>',
+  account:'<circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
   search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
   generator:'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/>',
   settings:'<path d="M4 6h7m5 0h4M4 12h2m5 0h9M4 18h10m5 0h1"/><circle cx="13.5" cy="6" r="2.5"/><circle cx="8.5" cy="12" r="2.5"/><circle cx="16.5" cy="18" r="2.5"/>',
@@ -376,14 +379,47 @@ function openGenerator(fromEditor=false, retained=null){
   range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
   const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));inner.append(actions,node('p','helper',t('clipboardHelp')));if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
 }
-function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>changeLanguage(select.value));row.append(label,select);inner.append(row);
-  if(tenonIdentity)inner.append(node('h3','',language==='zh'?'Tenon 账号':'Tenon Account'),node('p','helper',tenonIdentity.name),button(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'pill'));
-  if(session.key){inner.append(button(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill'),button(t('lock'),lock,'pill'));}
-  if(trustBinding)inner.append(button(language==='zh'?'撤销这台浏览器的授权':'Forget this browser',async()=>{
-    try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
-  },'pill'));
-  inner.append(button(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'pill'));
+function settingsAction(label,action,symbol,description=''){
+  const el=button(label,action,'settings-action');
+  const mark=node('span','settings-action-icon');mark.append(icon(symbol));
+  const content=node('span','settings-action-content');content.append(node('span','settings-action-title',label));
+  if(description)content.append(node('span','settings-action-help',description));
+  const arrow=node('span','settings-action-arrow','›');arrow.setAttribute('aria-hidden','true');
+  el.replaceChildren(mark,content,arrow);return el;
 }
+function openSettings(){
+  const inner=showDialog(t('settings'),'settings');
+  function section(title){
+    const block=node('section','settings-block');block.append(node('h3','settings-section-title',title));
+    const list=node('div','settings-list');block.append(list);inner.append(block);return list;
+  }
+  const security=section(language==='zh'?'安全':'Security');
+  const policy=node('div','settings-policy');policy.append(node('strong','',t('automaticLock')),
+    node('p','',language==='zh'?'切换标签页或离开窗口，密码本会立即锁定。Tenon 登录有效 1 分钟，到期需重新登录。':'Switching tabs or leaving the window locks your notebook. Your Tenon session lasts one minute; sign in again when it expires.'),
+    node('p','',language==='zh'?'网页版无法使用 iPhone 的 Face ID 或阻止截图。已授权的浏览器无需重复输入恢复密钥，新浏览器仍需首次授权。':'The web app cannot use iPhone Face ID or block screenshots. An authorized browser needs no recovery key; a new browser still needs initial authorization.'));
+  security.append(policy);
+  const preferences=section(language==='zh'?'偏好':'Preferences');
+  const row=node('div','settings-language-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';
+  for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}
+  select.value=language;select.addEventListener('change',()=>changeLanguage(select.value));row.append(label,select);preferences.append(row);
+  if(session.key || trustBinding){
+    const notebook=section(language==='zh'?'密码本':'Notebook');
+    if(session.key){
+      notebook.append(settingsAction(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'sync'),
+        settingsAction(t('lock'),lock,'lock'));
+    }
+    if(trustBinding)notebook.append(settingsAction(language==='zh'?'撤销浏览器授权':'Forget this browser',async()=>{
+      try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
+    },'browser',language==='zh'?'下次打开需要重新输入恢复密钥。':'Your recovery key will be required next time.'));
+  }
+  if(tenonIdentity){
+    const account=section(language==='zh'?'Tenon 账号':'Tenon Account');
+    account.append(node('p','settings-identity',tenonIdentity.name),settingsAction(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'account'));
+  }
+  const product=section(language==='zh'?'产品':'Product');
+  product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook'));
+}
+
 function openAbout(){
   const inner=showDialog(language==='zh'?'关于 PassBy':'About PassBy','about');
   const logo=node('div','wordmark');logo.setAttribute('role','img');logo.setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品':'PassBy, by Tenon');
