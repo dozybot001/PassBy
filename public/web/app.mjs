@@ -20,7 +20,7 @@ const copy = {
 let language = navigator.language.startsWith('zh') ? 'zh' : 'en';
 Object.assign(copy.en, {
   connected:'Apple Account connected', connect:'Continue with Apple', checking:'Checking your notebook…',
-  remember:'Keep Apple signed in on this trusted computer', rememberHelp:'Optional. Your recovery key is still required every time you unlock.',
+  remember:'Keep Apple signed in on this trusted computer', rememberHelp:'Optional. An authorized browser needs no recovery key during a valid Tenon session. A new browser still needs initial authorization.',
   keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
   switchAccount:'Change Apple Account', retry:'Try again', missingTitle:'Your notebook is not available on the web yet',
   missingHelp:'On your iPhone, update PassBy and finish syncing your notebook. If Settings offers “Enable web access”, choose it, then check again here.',
@@ -29,7 +29,7 @@ Object.assign(copy.en, {
 });
 Object.assign(copy.zh, {
   connected:'Apple 账号已连接', connect:'通过 Apple 继续', checking:'正在检查密码本…',
-  remember:'在这台可信电脑上保持 Apple 登录', rememberHelp:'可选。每次解锁仍需输入恢复密钥。',
+  remember:'在这台可信电脑上保持 Apple 登录', rememberHelp:'可选。已授权的浏览器可在 Tenon 登录有效时直接打开，新浏览器仍需首次授权。',
   keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',
   switchAccount:'更换 Apple 账号', retry:'重试', missingTitle:'密码本尚未同步至网页版',
   missingHelp:'请在 iPhone 更新 PassBy，并完成密码本同步。如果设置中出现“启用网页访问”，请点选，然后在这里重新检查。',
@@ -224,6 +224,15 @@ async function prepareApple() {
 }
 function renderWelcome() {
   const welcome = node('section', 'welcome'), card = node('section', 'unlock-card');
+  // Automatic checks are one progress state, never an incomplete authorization form.
+  if(tenonLoading || tenonSigningOut || (tenonIdentity && (connecting || (signedIn && notebookState==='checking')))){
+    card.classList.add('access-progress');const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
+    const title=tenonSigningOut?(language==='zh'?'正在退出 PassBy':'Signing out of PassBy'):(language==='zh'?'正在打开密码本':'Opening your notebook');
+    const progress=node('div','access-progress-status is-loading',tenonSigningOut?(language==='zh'?'正在退出…':'Signing out…'):(language==='zh'?'连接中…':'Connecting…'));progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');
+    card.append(mark,node('h1','',title),progress);
+    authIn.hidden=true;authOut.hidden=true;card.append(authIn,authOut);
+    welcome.append(card);main.replaceChildren(welcome);return;
+  }
   if (!tenonIdentity) {
     card.classList.add('tenon-entry');
     card.append(node('h1','',language==='zh'?'登录 PassBy':'Sign in to PassBy'),
@@ -241,7 +250,7 @@ function renderWelcome() {
       if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
       card.append(actions);
     }
-    card.append(node('p','help',language==='zh'?'Tenon 管理登录身份。密码本仍由 Apple 私有云授权，恢复密钥只在本页解密。':'Tenon handles your identity. Apple authorizes private notebook storage; your recovery key decrypts it only on this page.'));
+    card.querySelector('h1').append(hint(language==='zh'?'Tenon 管理登录身份。密码本由 Apple 私有云授权，恢复密钥只用于设备端解密。':'Tenon manages your identity. Apple authorizes private storage; your recovery key is used only for device-side decryption.',language==='zh'?'登录 PassBy':'Sign in to PassBy'));
     welcome.append(card);main.replaceChildren(welcome);return;
   }
   const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
@@ -313,7 +322,7 @@ function renderWelcome() {
       try { if(rememberApple)localStorage.setItem('passby.rememberApple','true');else localStorage.removeItem('passby.rememberApple'); } catch {}
       authIn.replaceChildren();authOut.replaceChildren();void prepareApple();
     });
-    card.append(remember,node('p','help remember-help',t('rememberHelp')));
+    const rememberRow=node('div','remember-option');rememberRow.append(remember,hint(t('rememberHelp'),t('remember')));card.append(rememberRow);
   }
   const security=node('div','security-notes');security.append(icon('lock'),node('span','',t('security')));
   welcome.append(card,security);main.replaceChildren(welcome);decorateAuthButtons();
@@ -381,7 +390,7 @@ function openGenerator(fromEditor=false, retained=null){
   const checks={};for(const key of ['upper','lower','digits','symbols']){const row=node('label','check-row',t(key)),check=node('input');check.type='checkbox';switchInput(check);check.id=`generator-${key}`;check.checked=retained?.characters[key] ?? true;checks[key]=check;row.append(check);inner.append(row);check.addEventListener('change',generate);}
   function generate(){inner.querySelector('.error')?.remove();try{generatorValue=generatePassword(Number(number.value),Object.fromEntries(Object.entries(checks).map(([k,v])=>[k,v.checked])));output.textContent=generatorValue;}catch(error){generatorValue='';output.textContent='';showError(inner,error);}}
   range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
-  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));dialogActions(inner,actions);actions.append(hint(t('clipboardHelp'),t('copyPassword')));if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
+  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));dialogActions(inner,actions);const copyAction=actions.lastElementChild,copyGroup=node('div','action-with-info');copyAction.remove();copyGroup.append(copyAction,hint(t('clipboardHelp'),t('copyPassword')));actions.append(copyGroup);if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
 }
 function settingsAction(label,action,symbol,description='',navigation=false){
   const el=button(label,action,'settings-action');

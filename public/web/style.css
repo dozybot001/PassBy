@@ -109,3 +109,11 @@ input.capsule-switch:checked{background:var(--fg)}input.capsule-switch:checked::
 @media(prefers-reduced-motion:no-preference){input.capsule-switch,input.capsule-switch::before{transition:background .15s,left .15s}}
 
 .generator-controls input[type=number]{appearance:textfield}.generator-controls input[type=number]::-webkit-inner-spin-button{appearance:none}
+
+/* Help follows its own text, never the far edge of a stretched action row. */
+.settings-action-row{justify-content:flex-start;gap:6px}.settings-action-row .settings-action{flex:0 1 auto;width:auto;padding-right:0}.settings-action-row .settings-action-content{flex:0 1 auto}.settings-action-row .info-control{margin:0}
+.action-with-info{display:inline-flex;align-items:center;gap:6px}.action-with-info .info-control{margin:0}
+.settings-policy-title{gap:6px}.settings-policy-title .info-control{margin:0}
+.remember-option{display:flex;align-items:center;gap:6px;margin-top:26px}.remember-option .remember-row{margin:0;align-items:center}.remember-option .info-control{margin:0}
+.access-progress{min-height:300px;display:flex;flex-direction:column;justify-content:center}.access-progress .access-mark{margin-bottom:28px}.access-progress-status{display:flex;align-items:center;gap:12px;margin-top:28px;color:var(--muted);font-size:14px;cursor:default}
+.unlock-card h1 .info-control{letter-spacing:normal;vertical-align:middle}
