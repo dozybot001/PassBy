@@ -7,7 +7,7 @@ npm test --prefix server
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 git archive "$release" server scripts/release-auth.py | tar -x -C "$stage"
-npm ci --prefix "$stage/server" --offline --ignore-scripts --no-audit --no-fund
+(cd "$stage/server" && npm ci --offline --ignore-scripts --no-audit --no-fund)
 python3 - "$stage" "$release" <<'PY'
 import pathlib,sys,hashlib,json
 root=pathlib.Path(sys.argv[1]); files={}
