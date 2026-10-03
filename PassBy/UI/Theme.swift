@@ -11,7 +11,7 @@ enum Palette {
 }
 
 struct NotebookTitle: View {
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 34
 
     init(size: CGFloat = 34) {
         _size = ScaledMetric(wrappedValue: size, relativeTo: .largeTitle)
