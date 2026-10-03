@@ -70,8 +70,8 @@ source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
 assert source.startswith('tenon.asia {\n')
 auth_route=pathlib.Path('/opt/passby-auth/current-route.caddy').read_text()
 legacy=('\t# BEGIN PASSBY\n'+auth_route+'\t@passby_legacy path /passby /passby/*\n'
-        '\thandle @passby_legacy {\n\t\turi strip_prefix /passby\n'
-        '\t\tredir https://passby.tenon.asia{uri} permanent\n\t}\n\t# END PASSBY\n')
+        '\thandle @passby_legacy {\n\t\troute {\n\t\t\turi strip_prefix /passby\n'
+        '\t\t\tredir https://passby.tenon.asia{uri} permanent\n\t\t}\n\t}\n\t# END PASSBY\n')
 pathlib.Path(sys.argv[2]).write_text(source.replace('tenon.asia {\n','tenon.asia {\n'+legacy,1))
 port=json.loads(pathlib.Path('/opt/passby-auth/active.json').read_text())['port']
 assert port in (7280,7281)
