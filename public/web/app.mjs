@@ -114,6 +114,7 @@ for (const event of ['pointerdown','keydown','input']) document.addEventListener
 document.addEventListener('keydown',event=>{ if(event.key==='Escape' && session.key && !dialog.open && !searchOpen) lock(); });
 dialog.addEventListener('cancel',event=>{ if(editor){event.preventDefault();if(dialogKind==='editor'||dialogKind==='discard')cancelEditor();else renderEditor();}else closeDialog(); });
 function render() {
+  document.querySelector('.app').classList.toggle('entry-mode',!session.key);
   document.documentElement.lang=language==='zh'?'zh-Hans':'en';
   document.querySelector('.header .wordmark').setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品，首页':'PassBy, by Tenon, home');
   $('privacy-link').textContent=t('privacy'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';

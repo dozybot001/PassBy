@@ -29,3 +29,26 @@
 @media(prefers-reduced-motion:reduce){.is-loading::before{animation:none;border-style:dotted}}
 #dialog[data-kind=about] .wordmark{margin:8px 0 18px}
 .about-description{font-size:15px;line-height:1.7}.about-publisher{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:28px 0 12px}.about-publisher .helper{flex-basis:100%;margin:0}.about-publisher img{width:24px;height:24px}.about-website{display:block;text-decoration:underline;text-underline-offset:3px;margin-bottom:24px}
+
+/* Keep the entry experience together rather than anchoring it to four corners. */
+.app.entry-mode{max-width:568px;padding:48px 24px;justify-content:center;gap:32px}
+.entry-mode .header{margin:0;gap:24px}
+.entry-mode #main{flex:none}
+.entry-mode .welcome{max-width:none;margin:0;padding:0}
+.entry-mode .unlock-card{padding:44px;border-radius:28px}
+.entry-mode .unlock-card.tenon-entry{max-width:none;background:var(--surface)}
+.entry-mode .unlock-card .access-mark{margin-bottom:28px}
+.entry-mode .unlock-card h1{margin-bottom:14px}
+.entry-mode .unlock-card .connected{margin-bottom:24px}
+.entry-mode .unlock-card form{margin-top:30px}
+.entry-mode .unlock-card form label{margin-bottom:14px}
+.entry-mode .unlock-card input[type=password]{min-height:56px;padding:16px 18px;margin-bottom:24px}
+.entry-mode .unlock-card .help{margin:24px 0 0;line-height:1.8}
+.entry-mode .unlock-card.tenon-entry .help{margin-top:0}
+.entry-mode .tenon-actions{margin-top:32px;margin-bottom:28px}
+.entry-mode .account-switch{margin-top:30px}
+.entry-mode .security-notes{margin-top:24px;line-height:1.7}
+.entry-mode footer{flex-direction:column;align-items:center;margin:0;padding:0;gap:16px;text-align:center}
+.entry-mode footer nav{order:-1;justify-content:center;gap:24px;flex-wrap:wrap}
+@media(max-width:680px){.app.entry-mode{padding:32px 20px;gap:28px}.entry-mode .header{gap:16px}.entry-mode .unlock-card{padding:30px 26px}.entry-mode .security-notes{padding:0}.entry-mode footer{gap:14px}}
+@media(max-width:380px){.entry-mode .unlock-card{padding:28px 24px}}
