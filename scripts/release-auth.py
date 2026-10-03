@@ -14,9 +14,10 @@ changed=False; started=False
 run=lambda args,**kw:subprocess.run(args,check=True,**kw)
 def request(url,expected):
  try:
-  with urllib.request.urlopen(url,timeout=5) as response:status=response.status
- except urllib.error.HTTPError as error:status=error.code
+  with urllib.request.urlopen(url,timeout=5) as response:status=response.status;headers=response.headers
+ except urllib.error.HTTPError as error:status=error.code;headers=error.headers
  assert status==expected,f'Unexpected status {status}'
+ assert headers.get('Cache-Control')=='no-store' and headers.get('Referrer-Policy')=='no-referrer','Identity privacy headers missing'
 try:
  assert (base/'config/tenon.env').stat().st_mode&0o777==0o600,'Private configuration must be 0600'
  if not release.exists():
