@@ -28,6 +28,7 @@ struct RootView: View {
 
 struct LockView: View {
     @EnvironmentObject private var session: VaultSession
+    @EnvironmentObject private var account: TenonAccount
     @State private var recovery = ""
     @State private var understood = false
     private var needsRecovery: Bool { session.setup == .recovery || session.setup == .localRecovery }
@@ -47,7 +48,7 @@ struct LockView: View {
                     VStack(alignment: .leading, spacing: 18) {
                         securityLine("Face ID, every time", icon: "faceid")
                         securityLine("Encrypted before syncing", icon: "icloud")
-                        securityLine("Your Apple Account. No extra account.", icon: "person.crop.circle")
+                        securityLine("Tenon identity. Apple private storage.", icon: "person.crop.circle")
                     }.padding(.bottom, 30)
                     Text("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key.")
                         .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 14)
@@ -69,6 +70,19 @@ struct LockView: View {
                     Text(message).font(.subheadline).foregroundStyle(Palette.secondary)
                         .fixedSize(horizontal: false, vertical: true).padding(.bottom, 22)
                 }
+                if let message = account.message {
+                    Text(message).font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
+                }
+                if account.identity == nil {
+                    Button("Sign in with Tenon") { account.signIn() }.buttonStyle(PrimaryButton())
+                        .disabled(account.working).padding(.bottom, 16)
+                    if session.setup != .newNotebook {
+                        Text("Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key.")
+                            .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 16)
+                    }
+                } else if let identity = account.identity {
+                    Text("Tenon: \(identity.name)").font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
+                }
                 if session.setup == .unavailable {
                     Button("Try again") { Task { await session.prepare() } }.buttonStyle(PrimaryButton())
                 } else {
@@ -81,6 +95,7 @@ struct LockView: View {
                     }
                     .buttonStyle(PrimaryButton())
                     .disabled(working || (session.setup == .newNotebook && !understood)
+                        || (session.setup == .newNotebook && account.identity == nil)
                         || (needsRecovery && recovery.isEmpty))
                 }
                 Text("Your notebook stays encrypted and linked to your Apple Account.")

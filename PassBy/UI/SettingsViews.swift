@@ -59,6 +59,7 @@ struct FoldersView: View {
 struct SettingsView: View {
     @State private var confirmWebAccess = false
     @EnvironmentObject private var session: VaultSession
+    @EnvironmentObject private var account: TenonAccount
     @Environment(\.dismiss) private var dismiss
     private var status: String {
         switch session.syncStatus {
@@ -72,6 +73,18 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Tenon Account") {
+                    if let identity = account.identity {
+                        Text(identity.name)
+                        Link("Manage sign-in methods", destination: URL(string: "https://account.tenon.asia/account/")!)
+                        Button("Sign out of PassBy") { account.signOut() }
+                    } else {
+                        Button("Sign in with Tenon") { account.signIn() }.disabled(account.working)
+                    }
+                    Text("Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents.")
+                        .font(.footnote).foregroundStyle(Palette.secondary)
+                    if let message = account.message { Text(message).font(.footnote).foregroundStyle(Palette.secondary) }
+                }
                 Section {
                     Label(session.isAppleAccountLinked ? L("Linked to your Apple Account") : L("Apple Account unavailable"),
                           systemImage: "person.crop.circle.badge.checkmark")
@@ -79,7 +92,7 @@ struct SettingsView: View {
                         .font(.footnote).foregroundStyle(Palette.secondary)
                     Text("Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
-                } header: { Text("Apple Account") }
+                } header: { Text("Apple storage authorization") }
                 Section("Sync") {
                     LabeledContent("Status", value: status)
                     Button("Sync now") { Task { await session.syncNow() } }

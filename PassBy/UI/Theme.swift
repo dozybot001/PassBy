@@ -1,4 +1,14 @@
 import SwiftUI
+import CoreText
+
+private enum BrandFont {
+    static let registered: Bool = {
+        guard let data = NSDataAsset(name: "BrandFont")?.data,
+              let provider = CGDataProvider(data: data as CFData), let font = CGFont(provider) else { return false }
+        var error: Unmanaged<CFError>?
+        return CTFontManagerRegisterGraphicsFont(font, &error)
+    }()
+}
 
 enum Palette {
     static let paper = Color("Paper")
@@ -11,9 +21,16 @@ enum Palette {
 }
 
 struct NotebookTitle: View {
+    var size: CGFloat = 34
     var body: some View {
-        Text("PassBy").font(.largeTitle.weight(.semibold)).tracking(-0.7)
-            .accessibilityAddTraits(.isHeader)
+        let _ = BrandFont.registered
+        HStack(alignment: .top, spacing: max(4, size * 0.18)) {
+            Text("PassBy").font(.custom("JetBrainsMono-SemiBold", size: size, relativeTo: .largeTitle)).tracking(size * 0.025)
+            Image("TenonMark").resizable().scaledToFit()
+                .frame(width: max(14, size * 0.58), height: max(14, size * 0.58)).offset(y: -size * 0.04)
+                .accessibilityHidden(true)
+        }.accessibilityElement(children: .ignore).accessibilityLabel("PassBy, by Tenon")
+            .accessibilityAddTraits(.isHeader).fixedSize(horizontal: true, vertical: false)
     }
 }
 
@@ -23,9 +40,9 @@ struct NotebookHeader: View {
     let settings: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            NotebookTitle()
-            Spacer(minLength: 12)
+        HStack(spacing: 8) {
+            NotebookTitle(size: 28)
+            Spacer(minLength: 4)
             Button(action: search) { Image(systemName: "magnifyingglass") }
                 .buttonStyle(IconButton()).accessibilityLabel("Search passwords")
             Button(action: generator) { Image(systemName: "dice") }
@@ -46,6 +63,12 @@ struct NotebookMark: View {
             .renderingMode(.template).resizable().scaledToFit()
             .foregroundStyle(Palette.accent)
         .frame(width: size, height: size)
+        .overlay(alignment: .bottomTrailing) {
+            if size >= 48 {
+                Image("TenonMark").resizable().scaledToFit().frame(width: size * 0.3, height: size * 0.3)
+                    .padding(size * 0.08)
+            }
+        }
         .accessibilityHidden(true)
     }
 }
@@ -137,7 +160,7 @@ struct PrivacyShield: View {
             Palette.paper.ignoresSafeArea()
             VStack(spacing: 18) {
                 NotebookMark()
-                Text("PassBy").font(.title2.weight(.semibold)).foregroundStyle(Palette.ink)
+                NotebookTitle(size: 22).foregroundStyle(Palette.ink)
                 Image(systemName: "lock.fill").foregroundStyle(Palette.secondary)
             }
         }

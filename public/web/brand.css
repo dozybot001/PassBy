@@ -1,0 +1,4 @@
+@font-face{font-family:"JetBrains Mono";src:url("./fonts/JetBrainsMono-SemiBold.ttf") format("truetype");font-weight:600;font-style:normal;font-display:swap}
+.wordmark,nav .brand{display:inline-flex;align-items:flex-start;gap:max(4px,.18em);font-family:"JetBrains Mono",monospace;font-weight:600;line-height:1.15;letter-spacing:.025em;white-space:nowrap}
+.wordmark .tenon-mark,nav .brand img{width:max(14px,.58em);height:max(14px,.58em);margin-top:-.04em;flex:none}
+.wordmark:hover,nav .brand:hover{text-decoration:none}

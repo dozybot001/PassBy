@@ -44,6 +44,8 @@ authIn.className = 'auth-holder'; authOut.className = 'auth-holder account-switc
 let signedIn = false, connecting = true, filter = 'all', selected = null, query = '', searchOpen = false, revealed = false;
 let authError = null, notebookState = 'checking', notebookError = null, notebookGeneration = 0, authenticationGeneration = 0;
 let rememberApple = false;
+let tenonIdentity = null, tenonLoading = true, tenonError = false, tenonExpiry;
+const tenonCallbackFailed = new URLSearchParams(location.search).has('auth_error');
 try { rememberApple = localStorage.getItem('passby.rememberApple') === 'true'; } catch {}
 let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTimer;
 const paths = {
@@ -97,7 +99,7 @@ function render() {
 }
 function changeLanguage(value) {
   language=value;closeDialog();editor=null;render();
-  if(!signedIn) { authIn.replaceChildren();authOut.replaceChildren();void prepareApple(); }
+  if(tenonIdentity && !signedIn) { authIn.replaceChildren();authOut.replaceChildren();void prepareApple(); }
 }
 $('language').addEventListener('click',()=>changeLanguage(language==='zh'?'en':'zh'));
 function decorateAuthButtons() {
@@ -144,9 +146,25 @@ async function prepareApple() {
 }
 function renderWelcome() {
   const welcome = node('section', 'welcome'), card = node('section', 'unlock-card');
+  if (!tenonIdentity) {
+    card.classList.add('tenon-entry');
+    card.append(node('h1','',language==='zh'?'登录 PassBy':'Sign in to PassBy'),
+      node('p','',language==='zh'?'使用 Tenon 账号，统一管理你的登录方式。':'Use your Tenon Account to manage your sign-in methods.'));
+    if (tenonLoading) card.append(node('p','',t('connecting')));
+    else {
+      if (tenonError) { const error=node('p','',language==='zh'?'账号服务暂时不可用，请重试。':'Account service unavailable. Please try again.');error.setAttribute('role','alert');card.append(error); }
+      const actions=node('div','tenon-actions');
+      const login=node('a','pill primary',language==='zh'?'使用 Tenon 账号登录':'Sign in with Tenon');login.href='./api/auth/start';actions.append(login);
+      if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
+      card.append(actions);
+    }
+    card.append(node('p','help',language==='zh'?'Tenon 管理登录身份。密码本仍由 Apple 私有云授权，恢复密钥只在本页解密。':'Tenon handles your identity. Apple authorizes private notebook storage; your recovery key decrypts it only on this page.'));
+    welcome.append(card);main.replaceChildren(welcome);return;
+  }
   const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
   card.append(mark, node('h1', '', t(signedIn ? 'unlock' : 'signIn')));
   card.append(node('p', signedIn ? 'connected' : '', t(signedIn ? 'connected' : 'signInHelp')));
+  card.append(node('p','help',`${language==='zh'?'Tenon 账号：':'Tenon Account: '}${tenonIdentity.name}`));
   authIn.hidden = signedIn || connecting || !!authError; authOut.hidden = !signedIn;
   // Both mount points must exist before CloudKit setUpAuth runs. Reuse them
   // across renders so that Apple's listeners and popup gesture are preserved.
@@ -253,7 +271,34 @@ function openGenerator(fromEditor=false){
   const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));inner.append(actions,node('p','helper',t('clipboardHelp')));generate();
 }
 function openSettings(){const inner=showDialog(t('settings'),'settings');inner.append(node('h3','',t('automaticLock')),node('p','helper',t('automaticLockHelp')),node('p','helper',t('browserHelp')));const row=node('div','settings-row'),label=node('label','',t('language')),select=node('select');label.htmlFor='app-language';select.id='app-language';for(const [value,text]of[['en','English'],['zh','简体中文']]){const option=node('option','',text);option.value=value;select.append(option);}select.value=language;select.addEventListener('change',()=>{changeLanguage(select.value);openSettings();});row.append(label,select);inner.append(row);
+  if(tenonIdentity)inner.append(node('h3','',language==='zh'?'Tenon 账号':'Tenon Account'),node('p','helper',tenonIdentity.name),button(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'pill'));
   if(session.key){inner.append(button(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill'),button(t('lock'),lock,'pill'));}
 }
 render();
-void prepareApple();
+async function prepareTenon() {
+  tenonLoading=true;tenonError=false;render();
+  try {
+    const response=await fetch('./api/auth/session',{cache:'no-store',credentials:'same-origin'});
+    if(response.status===401){tenonIdentity=null;tenonError=tenonCallbackFailed;return;}
+    if(!response.ok)throw Error('Service unavailable');
+    const {identity}=await response.json();
+    if(identity?.issuer!=='https://account.tenon.asia/api/auth'||typeof identity.sub!=='string'||!Number.isFinite(identity.expires)||identity.expires<=Date.now())throw Error('Invalid identity');
+    tenonIdentity=identity;clearTimeout(tenonExpiry);
+    tenonExpiry=setTimeout(()=>{tenonIdentity=null;lock();},Math.max(0,identity.expires-Date.now()));
+    if(!signedIn)void prepareApple();
+  } catch {tenonError=true;}
+  finally {tenonLoading=false;render();}
+}
+async function signOutTenon() {
+  lock();
+  try {
+    const response=await fetch('./api/auth/logout',{method:'POST',credentials:'same-origin'});
+    if(!response.ok)throw Error('Service unavailable');
+    tenonIdentity=null;clearTimeout(tenonExpiry);render();
+  }catch{notify(language==='zh'?'退出未完成，请重试。密码本已锁定。':'Sign-out failed. Try again. Your notebook is locked.');}
+}
+// This is CloudKit data authorization, not a second product account login.
+Object.assign(copy.en,{connect:'Authorize Apple storage',switchAccount:'Change storage account',signInHelp:'Authorize the Apple Account that stores your iPhone notebook.',remember:'Keep Apple storage authorized on this trusted computer'});
+Object.assign(copy.zh,{connect:'授权 Apple 云存储',switchAccount:'更换存储账号',signInHelp:'授权访问 iPhone 密码本所属 Apple 账号的私有云存储。',remember:'在这台可信电脑上保留 Apple 存储授权'});
+if(new URLSearchParams(location.search).has('auth_error')){tenonError=true;history.replaceState(null,'',location.pathname);}
+void prepareTenon();

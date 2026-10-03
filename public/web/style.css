@@ -10,3 +10,13 @@
 .auth-holder .apple-auth-button{width:100%!important;height:44px!important;border-radius:999px!important;display:flex!important;align-items:center!important;justify-content:center!important}.auth-holder:not(.account-switch) .apple-auth-button{background:var(--button)!important;color:var(--button-text)!important}.auth-holder .apple-auth-button-text{stroke:none}
 
 @media(max-width:380px){.wordmark{font-size:24px;letter-spacing:-1px;gap:8px}.brand-mark{width:28px;height:28px}.header{gap:8px}.unlock-card{padding:24px}}
+
+/* Product entry follows the central Tenon account page's light form layout. */
+.unlock-card.tenon-entry{background:transparent;padding:0;max-width:360px;width:100%;margin-inline:auto;border-radius:0}
+.tenon-entry h1{font-size:28px;letter-spacing:-.6px;line-height:1.25;margin:0 0 14px}
+.tenon-entry>p{font-size:14px;line-height:1.65;margin:0 0 24px}
+.tenon-entry>[role=alert]{margin-bottom:20px;color:var(--fg);padding-left:12px;border-left:2px solid var(--muted)}
+.tenon-actions{display:flex;flex-direction:column;gap:12px;margin:4px 0 28px}
+.tenon-actions .pill{display:flex;align-items:center;justify-content:center;min-height:44px;width:100%;margin:0}
+.tenon-entry>p.help{font-size:12px;line-height:1.7;margin:0;color:var(--muted)}
+@media(max-width:680px){.tenon-entry h1{font-size:26px}.welcome:has(.tenon-entry){padding:32px 0 48px}}

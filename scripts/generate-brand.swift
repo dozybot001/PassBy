@@ -1,5 +1,5 @@
 // Run from the repository root: swift scripts/generate-brand.swift
-// The original in-app notebook mark is the source for every brand asset.
+// Notebook geometry is retained; the Tenon corner uses the official local asset.
 import AppKit
 import ImageIO
 import UniformTypeIdentifiers
@@ -29,6 +29,11 @@ func draw(_ context: CGContext, appIcon: Bool = false) {
             width: bar.width, height: bar.height), cornerWidth: 3.25, cornerHeight: 3.25, transform: nil))
         context.fillPath()
     }
+    if appIcon {
+        let mark = NSImage(contentsOfFile: "PassBy/Assets.xcassets/TenonMark.imageset/TenonMark.png")!
+        var source = CGRect(origin: .zero, size: mark.size)
+        context.draw(mark.cgImage(forProposedRect: &source, context: nil, hints: nil)!, in: CGRect(x: 62, y: 8, width: 30, height: 30))
+    }
 }
 let asset = URL(fileURLWithPath: "PassBy/Assets.xcassets/BrandMark.imageset", isDirectory: true)
 try FileManager.default.createDirectory(at: asset, withIntermediateDirectories: true)
@@ -50,8 +55,10 @@ precondition(CGImageDestinationFinalize(destination))
 let rectangles = bars.map { bar in
     "<rect x=\"\(bar.x)\" y=\"\(bar.y)\" width=\"\(bar.width)\" height=\"\(bar.height)\" rx=\"3.25\" opacity=\"\(bar.opacity)\"/>"
 }.joined()
+let tenon = try String(contentsOfFile: "public/web/tenon-mark.svg", encoding: .utf8)
+    .replacingOccurrences(of: "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">", with: "<svg x=\"62\" y=\"62\" width=\"30\" height=\"30\" viewBox=\"0 0 64 64\">")
 let svg = """
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><style>:root{color:#111}@media(prefers-color-scheme:dark){:root{color:#f6f6f6}}</style><g fill="currentColor"><rect width="100" height="100" rx="22" opacity=".1"/>\(rectangles)</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><style>:root{color:#111}@media(prefers-color-scheme:dark){:root{color:#f6f6f6}}</style><g fill="currentColor"><rect width="100" height="100" rx="22" opacity=".1"/>\(rectangles)</g>\(tenon)</svg>
 """
 try svg.write(toFile: "public/web/icon.svg", atomically: true, encoding: .utf8)
 print("Generated in-app vector, opaque App Store icon and web mark from one geometry.")

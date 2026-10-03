@@ -164,3 +164,14 @@
 "Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same." = "Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same.";
 
 "Sync" = "Sync";
+
+"Sign in with Tenon" = "Sign in with Tenon";
+"Tenon Account" = "Tenon Account";
+"Manage sign-in methods" = "Manage sign-in methods";
+"Sign out of PassBy" = "Sign out of PassBy";
+"Apple storage authorization" = "Apple storage authorization";
+"Tenon identity. Apple private storage." = "Tenon identity. Apple private storage.";
+"Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents." = "Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents.";
+"Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key." = "Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key.";
+"Tenon sign-in could not be completed. Please try again." = "Tenon sign-in could not be completed. Please try again.";
+"Tenon: %@" = "Tenon: %@";

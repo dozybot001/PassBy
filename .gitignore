@@ -5,3 +5,6 @@ DerivedData/
 xcuserdata/
 *.ipa
 *.xcarchive
+
+node_modules/
+server/var/

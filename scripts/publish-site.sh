@@ -56,6 +56,9 @@ route = ('\t# BEGIN PASSBY\n\tredir /passby /passby/ permanent\n\thandle_path /p
          '\t\t\tCross-Origin-Opener-Policy "same-origin-allow-popups"\n'
          '\t\t\tPermissions-Policy "camera=(), microphone=(), geolocation=(), clipboard-read=()"\n\t\t}\n'
          '\t\troot * ' + sys.argv[3] + '/public\n\t\tfile_server\n\t}\n\t# END PASSBY\n')
+auth_route = pathlib.Path('/opt/passby-auth/current-route.caddy')
+if auth_route.exists():
+    route = route.replace('\t# BEGIN PASSBY\n', '\t# BEGIN PASSBY\n' + auth_route.read_text(), 1)
 pathlib.Path(sys.argv[2]).write_text(source.replace('tenon.asia {\n', 'tenon.asia {\n' + route, 1))
 PY
 # Validate the candidate with all other current sites before touching ingress.
