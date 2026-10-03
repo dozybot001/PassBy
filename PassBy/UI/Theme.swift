@@ -1,14 +1,4 @@
 import SwiftUI
-import CoreText
-
-private enum BrandFont {
-    static let registered: Bool = {
-        guard let data = NSDataAsset(name: "BrandFont")?.data,
-              let provider = CGDataProvider(data: data as CFData), let font = CGFont(provider) else { return false }
-        var error: Unmanaged<CFError>?
-        return CTFontManagerRegisterGraphicsFont(font, &error)
-    }()
-}
 
 enum Palette {
     static let paper = Color("Paper")
@@ -21,11 +11,15 @@ enum Palette {
 }
 
 struct NotebookTitle: View {
-    var size: CGFloat = 34
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat
+
+    init(size: CGFloat = 34) {
+        _size = ScaledMetric(wrappedValue: size, relativeTo: .largeTitle)
+    }
+
     var body: some View {
-        let _ = BrandFont.registered
         HStack(alignment: .top, spacing: max(4, size * 0.18)) {
-            Text("PassBy").font(.custom("JetBrainsMono-SemiBold", size: size, relativeTo: .largeTitle)).tracking(size * 0.025)
+            Text("PassBy").font(.system(size: size, weight: .semibold)).tracking(-0.7)
             Image("TenonMark").resizable().scaledToFit()
                 .frame(width: max(14, size * 0.58), height: max(14, size * 0.58)).offset(y: -size * 0.04)
                 .accessibilityHidden(true)
