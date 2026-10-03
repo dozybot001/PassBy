@@ -16,6 +16,18 @@ project = subprocess.check_output(['git', 'show', sys.argv[2] + ':PassBy.xcodepr
 version = re.search(r'"MARKETING_VERSION" = "([^";]+)";', project).group(1)
 page = root / 'public/index.html'
 page.write_text(page.read_text().replace('<title>', '<meta name="passby-version" content="' + version + ' · Web ' + sys.argv[2][:12] + '">\n  <title>', 1))
+# Give the whole module graph and styles a fresh URL on each release.
+# Versioning only app.mjs leaves imported modules reusable under old URLs.
+asset_pattern = re.compile(r'([\'"])([^\'"\s<>]+\.(?:mjs|css|svg))(?:\?[^\'"\s<>]*)?([\'"])')
+for asset in (root / 'public').rglob('*'):
+    if asset.suffix not in ('.html', '.mjs'):
+        continue
+    def version_asset(match):
+        quote, path, closing = match.groups()
+        if quote != closing or path.startswith(('http:', 'https:', '//')):
+            return match.group(0)
+        return quote + path + '?v=' + sys.argv[2] + closing
+    asset.write_text(asset_pattern.sub(version_asset, asset.read_text()))
 files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in sorted((root / 'public').rglob('*')) if p.is_file()}
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
