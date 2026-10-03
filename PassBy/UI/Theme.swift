@@ -57,12 +57,6 @@ struct NotebookMark: View {
             .renderingMode(.template).resizable().scaledToFit()
             .foregroundStyle(Palette.accent)
         .frame(width: size, height: size)
-        .overlay(alignment: .bottomTrailing) {
-            if size >= 48 {
-                Image("TenonMark").resizable().scaledToFit().frame(width: size * 0.3, height: size * 0.3)
-                    .padding(size * 0.08)
-            }
-        }
         .accessibilityHidden(true)
     }
 }
