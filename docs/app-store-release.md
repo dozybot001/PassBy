@@ -9,7 +9,16 @@
 - 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
 - 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
 - 公开支持邮箱：`support@tenonai.cn`。审核联系人沿用 WeSaid，私人联系信息不写入仓库。
-- 旧 Build 2 已从审核草稿移除，Connect 1.0 为“准备提交”；Build 10 已上传、处理完成，并保存关联到 1.0 版本；包含重启提示修复与账号删除入口。采用手动发布。
+- 旧 Build 2 已从审核草稿移除；Build 10 包含重启提示修复与账号删除入口。Connect 1.0 已提交，当前为“等待审核”。采用手动发布。
+
+## 免费首发提交（2026-10-04，21:52 SGT）
+
+- 已提交 iOS App 1.0（10），Connect 明确显示“已提交 1 个项目”，审核详情显示“等待审核”。尚未审核通过或公开上架。
+- 提交 ID：`70bd4eea-a3cd-4da9-93d4-3132e85d1467`；[审核详情](https://appstoreconnect.apple.com/apps/6817881529/distribution/reviewsubmissions/details/70bd4eea-a3cd-4da9-93d4-3132e85d1467)。
+- 沿用免费 $0.00、174 个海外地区、手动发布；审核账号及中英文资料、截图、隐私标签已随此次提交保存。
+- Tenon 删除服务正式版本：`c949c0bcbf0e389b5879a21b504762857c332d0d`。正式入口返回 HTTP 200、no-store、X-Frame-Options DENY；浏览器确认匿名页面展示登录入口及删除影响说明。中央隔离测试已通过，不对真实账号执行删除验收。
+- PassBy 网页、支持和隐私页面已从干净提交 `7dc82e4884bd3d92a0f7a6f88dcbafeb72c69c4b` 发布，13 项网页/加密兼容性测试与发布文件摘要检查通过。隐私页和网页设置的直接账号删除入口已公开。
+- 用户确认重启后首屏不再显示 Tenon 登录，但设置仍显示该入口。设置用于短期 Tenon 会话重新验证，与已有密码本的 Face ID 解锁和 Apple 同步独立；不把此反馈写成两台真机恢复验收已通过。跨设备恢复、并发编辑及完整真实设备异常场景仍为后续质量验证项目。
 
 ## 账号与密码本
 
@@ -85,7 +94,7 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 
 审核登录信息：用户提供的 `app-review@tenon.asia` 已填写并保存到 Connect，“需要登录”已勾选；重新加载后确认凭据仍在。已在正式 Tenon 登录页验证登录成功，账号权限为普通账号，随后退出测试会话。审核说明指向该专用账号，Apple 私有存储仍属于审核设备系统账号。密码按用户明确要求保存在本机产品规范，不进入 PassBy 仓库、应用包或公开日志。
 
-当前依赖：Tenon 删除流程已在隔离环境完成 97 项账号测试、24 项发布检查和浏览器验收。正式部署在 Gitee 同步阶段遇到网络超时，服务器尚未切换版本；“主站开发”会话继续处理。PassBy 已接入固定删除地址，提交前必须确认其正式环境可用。
+已完成依赖：Tenon 删除流程通过 97 项账号测试、24 项发布检查和隔离浏览器验收，随后以 `c949c0bc` 正式上线。PassBy 已验证固定删除地址可用，并完成此次审核提交。
 
 ## 隐私与提交门禁
 
@@ -93,9 +102,9 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 - 本机隐私清单声明姓名、邮箱、用户 ID、其他数据（账号/请求安全记录），均用于 App 功能，关联身份，不跟踪、不用于广告。App Store Connect 披露已按同一范围发布。当前 UI 的发布步骤未显示额外法律声明弹窗。
 - 云端密码本仍只有密文，恢复密钥不上传。此披露不能将 Tenon 身份误写成密码本内容收集。
 - 仅使用系统 CryptoKit、Security 和 CloudKit；`ITSAppUsesNonExemptEncryption = NO`。
-- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 的真正删除流程及 Apple 登录令牌撤销已完成隔离验收，仍须等待正式部署并验证公开入口后再提交。
+- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 删除流程及 Apple 登录令牌撤销已完成隔离验收；正式部署与公开入口验证已完成，应用设置直接打开该流程。
 - 来源：[隐私标签定义](https://developer.apple.com/app-store/app-privacy-details/)、[账号删除要求](https://developer.apple.com/support/offering-account-deletion-in-your-app/)。
-- 2026-10-04：28 项原生单元测试通过；免费定价与新版隐私披露已保存。英文 4 张、中文 3 张 1320×2868 原始截图已上传并排序：首页、生成器、详情，英文另有深色首页；均只含虚构账号，密码隐藏。Build 9、Build 10 的 Release 归档与上传均成功；Build 10 处理完成并已在 Connect 保存关联。Build 10 已安装到连接的 iPhone，等待用户确认重启后的 Face ID 入口；没有提交审核。
+- 2026-10-04：28 项原生单元测试通过；免费定价与新版隐私披露已保存。英文 4 张、中文 3 张 1320×2868 原始截图已上传并排序：首页、生成器、详情，英文另有深色首页；均只含虚构账号，密码隐藏。Build 9、Build 10 的 Release 归档与上传均成功；Build 10 已安装到 iPhone，并在 21:52 SGT 提交审核。
 - Build 10 修复：锁屏只在创建新密码本时显示 Tenon 登录入口。已有本机密码本在会话到期或重启后仍显示 Face ID 解锁，未延长会话或改变密钥保护。设置与网页版新增账号删除直接入口。
 - 以下为此前发布历史，不能作为当前构建已经提交的证据。
 
