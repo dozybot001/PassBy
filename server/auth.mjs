@@ -26,10 +26,12 @@ export class TenonAuth {
     this.iosCallback = origin + this.apiPath + '/auth/ios/callback';
     this.attempts = new Map(); this.sessions = new Map(); this.tickets = new Map();
     this.refreshing = new Map(); this.refreshLimits = new Map();
+    this.nativeSessions = new Map();
   }
   sweep() {
     for (const map of [this.attempts, this.sessions, this.tickets]) for (const [key, value] of map) if (value.expires <= this.now()) map.delete(key);
     for (const [key, value] of this.refreshLimits) if (value.expires <= this.now()) this.refreshLimits.delete(key);
+    for (const key of this.nativeSessions.keys()) if (!this.sessions.has(key)) this.nativeSessions.delete(key);
   }
   async config(native = false) {
     if (native && (!this.iosClientId || !this.iosClientSecret)) throw failure(503);
@@ -126,6 +128,7 @@ export class TenonAuth {
     if (!ticket || ticket.expires <= this.now() || !equal(digest(body.verifier), ticket.challenge) || !equal(body.state, ticket.nativeState)) throw failure(401);
     this.tickets.delete(key);
     const sessionToken = token(); this.sessions.set(digest(sessionToken), ticket.session);
+    if (ticket.remembered) this.nativeSessions.set(digest(sessionToken), digest(ticket.refreshToken));
     return { token: sessionToken, identity: ticket.session,
       ...(ticket.remembered ? { version: 2, refreshToken: ticket.refreshToken, refreshExpires: ticket.refreshExpires } : {}) };
   }
@@ -151,7 +154,9 @@ export class TenonAuth {
         const identity = await this.verifiedIdentity(config, tokens, NATIVE_TTL);
         if (identity.issuer !== body.issuer || identity.sub !== body.sub) throw failure(401);
         const credential = this.refreshCredential(tokens);
+        this.clearNativeAccess(key);
         const sessionToken = token(); this.sessions.set(digest(sessionToken), identity);
+        this.nativeSessions.set(digest(sessionToken), digest(credential.refreshToken));
         return { token: sessionToken, identity, ...credential };
       })();
       this.refreshing.set(key, { sub: body.sub, operation });
@@ -164,6 +169,12 @@ export class TenonAuth {
   async revoke(body) {
     if (this.origin !== 'https://tenon.asia' || !validRefresh(body.refreshToken)) throw failure(400);
     await this.protocol.tokenRevocation(await this.config(true), body.refreshToken, { token_type_hint: 'refresh_token' });
+    this.clearNativeAccess(digest(body.refreshToken));
+  }
+  clearNativeAccess(credential) {
+    for (const [key, value] of this.nativeSessions) if (value === credential) {
+      this.sessions.delete(key); this.nativeSessions.delete(key);
+    }
   }
 }
 

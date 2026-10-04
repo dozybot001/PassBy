@@ -118,6 +118,18 @@ test('renewal verifies fresh central identity, rotates refresh credential and re
   assert.equal(next.refreshToken, 'n'.repeat(32)); assert.ok(next.identity.expires > original.identity.expires);
   assert.equal(f.auth.identity({ headers: { authorization: `Bearer ${next.token}` } }).session.sub, 'test-user');
 });
+test('rotation retires previous native access and logout retires all retries of the same device credential', async () => {
+  const f = fixture(); const original = await rememberedGrant(f);
+  f.protocol.refreshTokenGrant = async () => ({ ...f.tokens, refresh_token: 'n'.repeat(32) });
+  f.protocol.tokenRevocation = async () => {};
+  const body = { refreshToken: original.refreshToken, issuer: ISSUER, sub: original.identity.sub };
+  const next = await f.auth.refresh(body);
+  assert.throws(() => f.auth.identity({ headers: { authorization: `Bearer ${original.token}` } }), { status: 401 });
+  const replay = await f.auth.refresh(body);
+  assert.equal(replay.refreshToken, next.refreshToken);
+  await f.auth.revoke({ refreshToken: next.refreshToken });
+  for (const value of [next.token, replay.token]) assert.throws(() => f.auth.identity({ headers: { authorization: `Bearer ${value}` } }), { status: 401 });
+});
 test('concurrent refreshes coalesce and a mismatched subject cannot reuse the in-flight result', async () => {
   const f = fixture(); let finish, calls = 0;
   f.protocol.refreshTokenGrant = async () => { calls++; await new Promise(resolve => { finish = resolve; }); return { ...f.tokens, refresh_token: 'n'.repeat(32) }; };
