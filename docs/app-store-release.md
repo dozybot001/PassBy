@@ -83,7 +83,7 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 6. Settings contains identity management, Apple storage status, sync, privacy, support and About PassBy. Delete Tenon Account opens https://account.tenon.asia/account/delete/ directly. The central service requires identity verification and confirmation, and deletion affects all Tenon products. The Apple-stored notebook and recovery key are managed separately. A second iPhone using the same Apple storage account needs the saved recovery key.
 7. Web access is available at https://passby.tenon.asia/. Tenon authentication and Apple private storage authorization are separate. A new browser requires the recovery key once; an authorized browser can reopen during a valid Tenon session.
 
-审核登录信息：Apple 要求提供专用测试账号。已请用户在 Connect 的用户名、密码栏亲自填写和保存；不在仓库或聊天记录保存密码。最终审核说明须包含该测试账号的入口，不能用审核员自行创建 Apple 账号代替未提供的测试账号。
+审核登录信息：用户提供的 `app-review@tenon.asia` 已填写并保存到 Connect，“需要登录”已勾选；重新加载后确认凭据仍在。已在正式 Tenon 登录页验证登录成功，账号权限为普通账号，随后退出测试会话。审核说明指向该专用账号，Apple 私有存储仍属于审核设备系统账号。密码按用户明确要求保存在本机产品规范，不进入 PassBy 仓库、应用包或公开日志。
 
 当前依赖：Tenon 删除流程已在隔离环境完成 97 项账号测试、24 项发布检查和浏览器验收。正式部署在 Gitee 同步阶段遇到网络超时，服务器尚未切换版本；“主站开发”会话继续处理。PassBy 已接入固定删除地址，提交前必须确认其正式环境可用。
 
