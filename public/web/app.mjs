@@ -139,8 +139,6 @@ function render() {
   document.documentElement.lang=language==='zh'?'zh-Hans':'en';
   document.querySelector('.header .wordmark').setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品，首页':'PassBy, by Tenon, home');
   $('privacy-link').textContent=t('privacy'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
-  $('page-actions').replaceChildren();
-  if(session.key){const create=button(t('newPassword'),()=>openEditor(),'pill primary new-password','plus');create.replaceChildren(icon('plus'),node('span','',t('newPassword')));$('page-actions').append(create);}
   tools.replaceChildren(button(t('generator'),()=>openGenerator(),'icon-button','generator'),button(t('settings'),openSettings,'icon-button','settings'));
   if(session.key) tools.prepend(button(t('search'),()=>openSearch(),'icon-button','search'));
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
@@ -347,7 +345,9 @@ function renderWorkspace() {
   const picker=choice(folderOptions().map(f=>({id:f.id,name:`${f.name} (${folderCount(f.id)})`})),filter,t('folders'),value=>{filter=value;renderWorkspace();},'folder-navigation-select');picker.classList.add('folder-picker');navigation.append(filters,picker);
   const heading=node('div','library-heading');heading.append(node('h2','',folderOptions().find(f=>f.id===filter)?.name||t('all')),node('span','library-count',String(filteredEntries().length)));sidebar.append(heading);
   const list=node('ul','entry-list');list.id='entries';sidebar.append(list);
-  const detail=node('article','detail');detail.id='detail';workspace.append(navigation,sidebar,detail);main.replaceChildren(workspace);renderList();renderDetail();
+  const detail=node('article','detail');detail.id='detail';
+  const actions=node('div');actions.id='page-actions';const create=button(t('newPassword'),()=>openEditor(),'pill primary new-password','plus');create.replaceChildren(icon('plus'),node('span','',t('newPassword')));actions.append(create);
+  workspace.append(navigation,sidebar,detail,actions);main.replaceChildren(workspace);renderList();renderDetail();
 }
 function openSearch(retainedQuery=''){
   if(!session.vault)return;
