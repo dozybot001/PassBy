@@ -17,15 +17,17 @@ export function createApp(legacyAuth, webAuth = null) {
       if (route === '/auth/start' && req.method === 'GET') return await auth.start(req, res, url);
       if (['/auth/callback', '/auth/ios/callback'].includes(route) && req.method === 'GET') return await auth.complete(req, res, url);
       if (route === '/auth/session' && req.method === 'GET') return json(200, { identity: auth.identity(req).session });
-      if (route === '/auth/exchange' && req.method === 'POST') {
+      if (['/auth/exchange', '/auth/refresh'].includes(route) && req.method === 'POST') {
         if (req.headers.origin && req.headers.origin !== auth.origin) return json(403, { error: 'forbidden' });
         if (req.headers['content-type'] !== 'application/json') return json(415, { error: 'invalid_request' });
-        return json(200, auth.exchange(await readBody(req)));
+        const body = await readBody(req);
+        return json(200, route === '/auth/refresh' ? await auth.refresh(body) : auth.exchange(body));
       }
       if (route === '/auth/logout' && req.method === 'POST') {
         const bearer = /^Bearer [A-Za-z0-9_-]{43}$/.test(req.headers.authorization || '');
         if (!bearer && req.headers.origin !== auth.origin || req.headers.origin && req.headers.origin !== auth.origin) return json(403, { error: 'forbidden' });
         try { auth.sessions.delete(auth.identity(req).key); } catch {}
+        if (req.headers['content-type'] === 'application/json') await auth.revoke(await readBody(req));
         res.setHeader('Set-Cookie', auth.cookie('session', '', 0)); return json(200, { ok: true });
       }
       return json(404, { error: 'not_found' });

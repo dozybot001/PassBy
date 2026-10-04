@@ -74,7 +74,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Tenon Account") {
+                Section {
                     if let identity = account.identity {
                         Text(identity.name)
                         Link("Manage sign-in methods", destination: URL(string: "https://account.tenon.asia/account/")!)
@@ -83,20 +83,14 @@ struct SettingsView: View {
                         Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working) }.disabled(account.working)
                     }
                     Link("Delete Tenon Account", destination: URL(string: "https://account.tenon.asia/account/delete/")!)
-                    Text("Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents.")
-                        .font(.footnote).foregroundStyle(Palette.secondary)
-                    Text("Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key.")
-                        .font(.footnote).foregroundStyle(Palette.secondary)
+                    DisclosureGroup("Account deletion details") {
+                        Text("Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key.")
+                            .font(.footnote).foregroundStyle(Palette.secondary)
+                    }
                     if let message = account.message { Text(message).font(.footnote).foregroundStyle(Palette.secondary) }
+                } header: { Text("Tenon Account") } footer: {
+                    Text("Stay signed in to Tenon. Use Face ID each time you open your notebook. Manage your sign-in methods in Tenon Account.")
                 }
-                Section {
-                    Label(session.isAppleAccountLinked ? L("Linked to your Apple Account") : L("Apple Account unavailable"),
-                          systemImage: "person.crop.circle.badge.checkmark")
-                    Text("PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email.")
-                        .font(.footnote).foregroundStyle(Palette.secondary)
-                    Text("Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.")
-                        .font(.footnote).foregroundStyle(Palette.secondary)
-                } header: { Text("Apple storage authorization") }
                 Section("Sync") {
                     LabeledContent("Status", value: status)
                     Button { sync() } label: { OperationLabel(title: "Sync now", working: syncing || session.syncStatus == .syncing) }
@@ -108,10 +102,22 @@ struct SettingsView: View {
                     if let message = session.syncMessage {
                         Text(message).font(.footnote).foregroundStyle(Palette.secondary)
                     }
+                    if !session.isAppleAccountLinked {
+                        Label("Apple Account unavailable", systemImage: "exclamationmark.icloud")
+                            .foregroundStyle(Palette.secondary)
+                    }
+                    DisclosureGroup("Sync details") {
+                        Label(session.isAppleAccountLinked ? L("Linked to your Apple Account") : L("Apple Account unavailable"),
+                              systemImage: "icloud")
+                        Text("PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email.")
+                            .font(.footnote).foregroundStyle(Palette.secondary)
+                        Text("Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.")
+                            .font(.footnote).foregroundStyle(Palette.secondary)
+                    }
                 }
                 Section {
                     Label("Locked whenever you leave", systemImage: "faceid")
-                    Label("Encrypted on device and in iCloud", systemImage: "lock.shield")
+                    Label("Encrypted before syncing", systemImage: "lock.shield")
                     Label("Clipboard expires after 60 seconds", systemImage: "doc.on.clipboard")
                 } header: { Text("Privacy") } footer: {
                     Text("Copying makes a password temporarily available to the app you paste into. Copies stay on this iPhone and do not use Universal Clipboard.")
@@ -176,8 +182,8 @@ struct PrivacyPolicyView: View {
                 Text("Effective October 4, 2026 · Zeng Deyang")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                 policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
-                policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 1 minute; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service.")
-                policySection("Account information", "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish its short product session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.")
+                policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy keeps a rotating sign-in credential in this iPhone’s device-only Keychain and renews short account sessions securely. Closing the app does not sign you out. Sign out, credential revocation or 30 days without renewal may require a new sign-in. Face ID is still required to open the notebook, including offline. No passwords or recovery keys are sent to the account service.")
+                policySection("Account information", "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish and securely renew its account session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.")
                 Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenon.asia/account/privacy.html")!)
                 policySection("Apple Account and Face ID", "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.")
                 policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")

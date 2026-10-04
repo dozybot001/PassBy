@@ -7,7 +7,7 @@ import { TrustedBrowser, bindingID } from './trusted-browser.mjs';
 
 const copy = {
   en: {
-    security:'Encrypted on your device. Linked to your Apple Account.', signIn:'Open your notebook', signInHelp:'Sign in to the Apple Account you use with PassBy on iPhone.',
+    security:'Device encryption. Your private notebook.', signIn:'Open your notebook', signInHelp:'Connect the encrypted notebook you use on iPhone.',
     unlock:'Unlock notebook', key:'Recovery key', keyPlaceholder:'Paste your recovery key', keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
     connect:'Continue with Apple', connecting:'Connecting…', lock:'Lock notebook', locked:'Notebook locked', settings:'Settings', search:'Search', generator:'Password generator', privacy:'Privacy', support:'Support',
     all:'All', unfiled:'Unfiled', newPassword:'New password', newFolder:'New folder', folders:'Folders', empty:'Your notebook starts here', emptyHelp:'Add an account and password. Keep the details in one place.', noResults:'No matching entries', noResultsHelp:'Try another title or account.', choose:'A little space for your passwords.', chooseHelp:'Choose an entry to see its details.', placeholder:'Search titles or accounts', edit:'Edit', save:'Save', saving:'Saving…', cancel:'Cancel', close:'Close', back:'Back', account:'Account', password:'Password', title:'Title', notes:'Notes', folder:'Folder', noNotes:'No notes added', copy:'Copy', copied:'Copied', show:'Show password', hide:'Hide password', delete:'Delete entry', deleteConfirm:'Delete this entry?', deleteHelp:'It will be removed from your notebook. This cannot be undone.', deleteFolder:'Delete folder', deleteFolderHelp:'Its passwords will move to Unfiled. This cannot be undone.', confirm:'Delete', saved:'Notebook synced', refreshed:'Notebook refreshed', refresh:'Sync now', conflictCopy:' (Conflict copy)', conflicts:'Concurrent changes were kept as conflict copies.', length:'Length', upper:'Uppercase letters', lower:'Lowercase letters', digits:'Numbers', symbols:'Symbols', another:'Generate another', use:'Use & copy', copyPassword:'Copy password', lengthHelp:'Choose 8–24 with the slider, or enter up to 4096 characters.', clipboardHelp:'Copied passwords follow your browser and operating system’s clipboard rules. They are not automatically cleared.', language:'Language', automaticLock:'Automatic lock', automaticLockHelp:'Switching tabs, leaving the window or 5 minutes without activity locks this notebook.', browserHelp:'The web app cannot use iPhone Face ID or block screenshots. Unlock again with your recovery key.', discard:'Discard changes?', discardHelp:'This unfinished entry has not been saved.', discardButton:'Discard', continueEditing:'Keep editing', required:'Enter a title and password.', folderName:'Folder name', signedOut:'Signed out', existingHelp:'Create your notebook in PassBy on iPhone first, then wait for iCloud sync.',
@@ -19,22 +19,22 @@ const copy = {
 };
 let language = navigator.language.startsWith('zh') ? 'zh' : 'en';
 Object.assign(copy.en, {
-  connected:'Apple Account connected', connect:'Continue with Apple', checking:'Checking your notebook…',
-  remember:'Keep Apple signed in on this trusted computer', rememberHelp:'Optional. An authorized browser needs no recovery key during a valid Tenon session. A new browser still needs initial authorization.',
+  connected:'Notebook connected', connect:'Connect notebook', checking:'Checking your notebook…',
+  remember:'Keep the notebook connected on this trusted computer', rememberHelp:'Optional. This retains Apple private storage authorization on this computer; it does not extend your Tenon session. A new browser still needs initial authorization with your recovery key.',
   keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
-  switchAccount:'Change Apple Account', retry:'Try again', missingTitle:'Your notebook is not available on the web yet',
+  switchAccount:'Change notebook connection', retry:'Try again', missingTitle:'Your notebook is not available on the web yet',
   missingHelp:'On your iPhone, update PassBy and finish syncing your notebook. If Settings offers “Enable web access”, choose it, then check again here.',
   noNotebook:'Your notebook is not available on the web yet. Finish syncing in PassBy on iPhone, then try again.',
-  security:'Encrypted on your device. Linked to your Apple Account.',
+  security:'Device encryption. Your private notebook.',
 });
 Object.assign(copy.zh, {
-  connected:'Apple 账号已连接', connect:'通过 Apple 继续', checking:'正在检查密码本…',
-  remember:'在这台可信电脑上保持 Apple 登录', rememberHelp:'可选。已授权的浏览器可在 Tenon 登录有效时直接打开，新浏览器仍需首次授权。',
+  connected:'密码本已连接', connect:'连接密码本', checking:'正在检查密码本…',
+  remember:'在这台可信电脑上保留密码本连接', rememberHelp:'可选。此选项保留本机的 Apple 私有存储授权，不会延长 Tenon 登录。新浏览器仍需首次用恢复密钥授权。',
   keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',
-  switchAccount:'更换 Apple 账号', retry:'重试', missingTitle:'密码本尚未同步至网页版',
+  switchAccount:'更换密码本连接', retry:'重试', missingTitle:'密码本尚未同步至网页版',
   missingHelp:'请在 iPhone 更新 PassBy，并完成密码本同步。如果设置中出现“启用网页访问”，请点选，然后在这里重新检查。',
   noNotebook:'密码本尚未同步至网页版，请在 iPhone PassBy 完成同步后重试。',
-  security:'设备端加密，绑定你的 Apple 账号。',
+  security:'设备端加密，你的私人密码本。',
 });
 copy.en.browserStorage='Browser authorization could not be saved or removed. Check browser storage permissions and try again.';
 copy.zh.browserStorage='无法保存或撤销浏览器授权，请检查浏览器存储权限后重试。';
@@ -254,7 +254,7 @@ function renderWelcome() {
       card.append(actions);
     }
     card.querySelector('.access-mark').src='./web/icon.svg';card.querySelector('.access-mark').alt='';
-    card.querySelector('h1').append(hint(language==='zh'?'Tenon 管理登录身份。密码本由 Apple 私有云授权，恢复密钥只用于设备端解密。':'Tenon manages your identity. Apple authorizes private storage; your recovery key is used only for device-side decryption.',language==='zh'?'登录 PassBy':'Sign in to PassBy'));
+    card.querySelector('h1').append(hint(language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.',language==='zh'?'登录 PassBy':'Sign in to PassBy'));
     welcome.append(card);main.replaceChildren(welcome);return;
   }
   const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
@@ -262,8 +262,9 @@ function renderWelcome() {
     const loading=button(language==='zh'?'正在退出…':'Signing out…',()=>{},'pill primary');loading.disabled=true;loading.classList.add('is-loading');loading.setAttribute('aria-busy','true');
     card.append(mark,loading);welcome.append(card);main.replaceChildren(welcome);return;
   }
-  card.append(mark,node('h1','',signedIn?t('unlock'):(language==='zh'?'连接密码本':'Connect your notebook')));
-  card.append(node('p','access-intro',signedIn?(language==='zh'?'打开这台浏览器上的密码本。':'Open your notebook in this browser.'):(language==='zh'?'连接保存 iPhone 密码本的 Apple 账号。':'Connect the Apple Account that stores your iPhone notebook.')));
+  card.append(mark,node('h1','',signedIn?t('unlock'):t('signIn')));
+  card.querySelector('h1').append(hint(language==='zh'?'密码本使用 iPhone 系统 Apple 账号的私有存储。Tenon 中绑定的 Apple 登录方式不能替代存储授权；请连接与手机同步时相同的 Apple 账号。恢复密钥仅在本机用于解密。':'Your notebook uses the private storage of the system Apple Account on iPhone. An Apple sign-in method linked in Tenon does not replace storage authorization. Connect the same Apple Account used for iPhone sync. Your recovery key is used only for local decryption.',signedIn?t('unlock'):t('signIn')));
+  card.append(node('p','access-intro',signedIn?(language==='zh'?'打开这台浏览器上的密码本。':'Open your notebook in this browser.'):(language==='zh'?'首次连接，请授权访问手机已同步的密码本。':'For your first connection, authorize access to the notebook synced from your iPhone.')));
   card.append(node('div','access-identity',`${language==='zh'?'Tenon 账号：':'Tenon Account: '}${tenonIdentity.name}`));
   authIn.hidden = signedIn || connecting || !!authError; authOut.hidden = !signedIn;
   // Both mount points must exist before CloudKit setUpAuth runs. Reuse them
@@ -446,10 +447,15 @@ function openSettings(){
       try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
     },'browser'));
   }
-  const account=section(language==='zh'?'Tenon 账号':'Tenon Account',language==='zh'?'删除账号前需在 Tenon 重新验证并确认。这会影响所有 Tenon 产品，不会删除 Apple 私有存储中的密码本或恢复密钥。':'Tenon verifies your identity and asks for confirmation before deleting your account. This affects all Tenon products; your Apple-stored notebook and recovery key are managed separately.');
+  const account=section(language==='zh'?'Tenon 账号':'Tenon Account',language==='zh'?'Tenon 统一管理你的账号和登录方式。删除账号前需重新验证并确认，会影响所有 Tenon 产品。密码本内容与恢复密钥分别管理。':'Tenon manages your account and sign-in methods. Account deletion requires identity verification and confirmation and affects all Tenon products. Notebook contents and recovery keys are managed separately.');
   if(tenonIdentity){
-    account.append(node('p','settings-identity',tenonIdentity.name),settingsAction(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'account'));
+    account.append(node('p','settings-identity',tenonIdentity.name));
   }
+  const manageAccount=node('a','settings-action');manageAccount.href='https://account.tenon.asia/account/';manageAccount.target='_blank';manageAccount.rel='noopener noreferrer';
+  const manageMark=node('span','settings-action-icon');manageMark.append(icon('account'));
+  const manageContent=node('span','settings-action-content');manageContent.append(node('span','settings-action-title',language==='zh'?'管理账号与登录方式':'Manage account and sign-in methods'));manageAccount.append(manageMark,manageContent);
+  const manageArrow=node('span','settings-action-arrow','›');manageArrow.setAttribute('aria-hidden','true');manageAccount.append(manageArrow);account.append(manageAccount);
+  if(tenonIdentity)account.append(settingsAction(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'account'));
   const deleteAccount=node('a','settings-action');deleteAccount.href='https://account.tenon.asia/account/delete/';deleteAccount.target='_blank';deleteAccount.rel='noopener noreferrer';
   const deleteMark=node('span','settings-action-icon');deleteMark.append(icon('account'));
   const deleteContent=node('span','settings-action-content');deleteContent.append(node('span','settings-action-title',language==='zh'?'删除 Tenon 账号':'Delete Tenon Account'));deleteAccount.append(deleteMark,deleteContent);
@@ -497,8 +503,5 @@ async function signOutTenon() {
   }catch{notify(language==='zh'?'退出未完成，请重试。密码本已锁定。':'Sign-out failed. Try again. Your notebook is locked.');}
   finally{tenonSigningOut=false;render();}
 }
-// This is CloudKit data authorization, not a second product account login.
-Object.assign(copy.en,{connect:'Authorize Apple storage',switchAccount:'Change storage account',signInHelp:'Authorize the Apple Account that stores your iPhone notebook.',remember:'Keep Apple storage authorized on this trusted computer'});
-Object.assign(copy.zh,{connect:'授权 Apple 云存储',switchAccount:'更换存储账号',signInHelp:'授权访问 iPhone 密码本所属 Apple 账号的私有云存储。',remember:'在这台可信电脑上保留 Apple 存储授权'});
 if(new URLSearchParams(location.search).has('auth_error')){tenonError=true;history.replaceState(null,'',location.pathname);}
 void prepareTenon();

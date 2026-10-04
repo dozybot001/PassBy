@@ -4,13 +4,18 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 export const ISSUER = 'https://account.tenon.asia/api/auth';
 export const ROLE = 'https://tenon.asia/claims/platform_role';
 export const TTL = 60 * 1000;
+export const NATIVE_TTL = 15 * 60 * 1000;
+export const REFRESH_TTL = 30 * 24 * 60 * 60 * 1000;
 const token = () => randomBytes(32).toString('base64url');
 export const digest = value => createHash('sha256').update(value).digest('base64url');
 const equal = (a, b) => typeof a === 'string' && typeof b === 'string' && a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const failure = status => Object.assign(new Error('Authentication unavailable'), { status });
+const validRefresh = value => typeof value === 'string' && /^[A-Za-z0-9._~-]{32,4096}$/.test(value);
 
 // Identity-only BFF: no notebook, recovery key, Apple token or password storage.
-// Central tokens are discarded after the callback; opaque product sessions expire.
+// Web tokens are discarded after the callback. Native v2 refresh credentials
+// pass through a one-use ticket to the device Keychain, never to cookies, logs
+// or disk. Tickets are discarded within 60 seconds.
 export class TenonAuth {
   constructor({ origin = 'https://tenon.asia', clientId, clientSecret, iosClientId, iosClientSecret, protocol = oidc, now = Date.now }) {
     if (!['https://tenon.asia', 'https://passby.tenon.asia'].includes(origin) || !clientId || !clientSecret) throw Error('Incomplete authentication configuration');
@@ -20,9 +25,11 @@ export class TenonAuth {
     this.callback = origin + this.apiPath + '/auth/callback';
     this.iosCallback = origin + this.apiPath + '/auth/ios/callback';
     this.attempts = new Map(); this.sessions = new Map(); this.tickets = new Map();
+    this.refreshing = new Map(); this.refreshLimits = new Map();
   }
   sweep() {
     for (const map of [this.attempts, this.sessions, this.tickets]) for (const [key, value] of map) if (value.expires <= this.now()) map.delete(key);
+    for (const [key, value] of this.refreshLimits) if (value.expires <= this.now()) this.refreshLimits.delete(key);
   }
   async config(native = false) {
     if (native && (!this.iosClientId || !this.iosClientSecret)) throw failure(503);
@@ -54,13 +61,15 @@ export class TenonAuth {
     this.sweep();
     if (this.attempts.size >= 1000 || this.sessions.size >= 5000) throw failure(429);
     const native = url.searchParams.get('platform') === 'ios';
+    const remembered = native && url.searchParams.get('session_version') === '2';
     const challenge = url.searchParams.get('challenge'), nativeState = url.searchParams.get('state');
     if (native && (!/^[A-Za-z0-9_-]{43}$/.test(challenge || '') || !/^[A-Za-z0-9_-]{43}$/.test(nativeState || ''))) throw failure(400);
     const config = await this.config(native), browser = token(), verifier = this.protocol.randomPKCECodeVerifier();
     const state = this.protocol.randomState(), nonce = this.protocol.randomNonce();
-    const location = this.protocol.buildAuthorizationUrl(config, { redirect_uri: native ? this.iosCallback : this.callback, scope: 'openid profile email', state, nonce,
+    const location = this.protocol.buildAuthorizationUrl(config, { redirect_uri: native ? this.iosCallback : this.callback,
+      scope: remembered ? 'openid profile email offline_access' : 'openid profile email', ...(remembered ? { prompt: 'consent' } : {}), state, nonce,
       code_challenge: await this.protocol.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256' });
-    this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState });
+    this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, remembered, challenge, nativeState });
     res.setHeader('Set-Cookie', this.cookie('attempt', browser, 600, 'Lax'));
     if (url.searchParams.get('format') === 'json') {
       res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ url: location.href }));
@@ -74,16 +83,12 @@ export class TenonAuth {
     const config = await this.config(attempt.native);
     const tokens = await this.protocol.authorizationCodeGrant(config, url, { pkceCodeVerifier: attempt.verifier,
       expectedState: attempt.state, expectedNonce: attempt.nonce, idTokenExpected: true });
-    const claims = tokens.claims();
-    if (!claims || claims.iss !== ISSUER || typeof claims.sub !== 'string' || !claims.sub || !tokens.access_token || !(tokens.expires_in > 0)) throw failure(401);
-    const info = await this.protocol.fetchUserInfo(config, tokens.access_token, claims.sub);
-    if (info.sub !== claims.sub || info.email_verified !== true || !['admin', 'user'].includes(info[ROLE]) || claims[ROLE] !== info[ROLE]) throw failure(403);
-    const expires = Math.min(this.now() + TTL, this.now() + tokens.expires_in * 1000, claims.exp * 1000);
-    if (!Number.isFinite(expires) || expires <= this.now()) throw failure(401);
-    const session = { issuer: ISSUER, sub: claims.sub, name: typeof info.name === 'string' ? info.name.slice(0, 120) : 'Tenon', role: info[ROLE], expires };
+    const session = await this.verifiedIdentity(config, tokens, attempt.remembered ? NATIVE_TTL : TTL);
+    const refresh = attempt.remembered ? this.refreshCredential(tokens) : {};
+    const expires = session.expires;
     if (attempt.native) {
       const ticket = token();
-      this.tickets.set(digest(ticket), { ...attempt, session, expires: Math.min(expires, this.now() + 60000) });
+      this.tickets.set(digest(ticket), { ...attempt, session, ...refresh, expires: Math.min(expires, this.now() + 60000) });
       // A fixed product callback, never a caller-provided redirect. The ticket
       // is useless without the verifier held by the initiating iPhone.
       res.writeHead(303, { Location: `passby://auth?ticket=${ticket}&state=${attempt.nativeState}` }).end();
@@ -93,6 +98,26 @@ export class TenonAuth {
       res.writeHead(303, { Location: this.basePath }).end();
     }
   }
+  async verifiedIdentity(config, tokens, ttl) {
+    const claims = tokens.claims();
+    if (!claims || claims.iss !== ISSUER || typeof claims.sub !== 'string' || !claims.sub || !tokens.access_token || !(tokens.expires_in > 0)) throw failure(401);
+    let info;
+    try { info = await this.protocol.fetchUserInfo(config, tokens.access_token, claims.sub); }
+    catch (error) {
+      if ([401, 403].includes(error.status)) throw failure(401);
+      throw failure(503);
+    }
+    if (info.sub !== claims.sub || info.email_verified !== true || !['admin', 'user'].includes(info[ROLE]) || claims[ROLE] !== info[ROLE]) throw failure(403);
+    const expires = Math.min(this.now() + ttl, this.now() + tokens.expires_in * 1000, claims.exp * 1000);
+    if (!Number.isFinite(expires) || expires <= this.now()) throw failure(401);
+    return { issuer: ISSUER, sub: claims.sub, name: typeof info.name === 'string' ? info.name.slice(0, 120) : 'Tenon', role: info[ROLE], expires };
+  }
+  refreshCredential(tokens) {
+    if (!validRefresh(tokens.refresh_token)) throw failure(401);
+    // The registered native client's central refresh lifetime is 30 days;
+    // renewing rotates the credential and starts a new bounded lifetime.
+    return { version: 2, refreshToken: tokens.refresh_token, refreshExpires: this.now() + REFRESH_TTL };
+  }
   exchange(body) {
     this.sweep();
     if (!/^[A-Za-z0-9_-]{43}$/.test(body.ticket || '') || !/^[A-Za-z0-9_-]{43,128}$/.test(body.verifier || '')) throw failure(400);
@@ -101,12 +126,49 @@ export class TenonAuth {
     if (!ticket || ticket.expires <= this.now() || !equal(digest(body.verifier), ticket.challenge) || !equal(body.state, ticket.nativeState)) throw failure(401);
     this.tickets.delete(key);
     const sessionToken = token(); this.sessions.set(digest(sessionToken), ticket.session);
-    return { token: sessionToken, identity: ticket.session };
+    return { token: sessionToken, identity: ticket.session,
+      ...(ticket.remembered ? { version: 2, refreshToken: ticket.refreshToken, refreshExpires: ticket.refreshExpires } : {}) };
+  }
+  async refresh(body) {
+    if (this.origin !== 'https://tenon.asia' || !validRefresh(body.refreshToken)
+      || body.issuer !== ISSUER || typeof body.sub !== 'string' || !body.sub || body.sub.length > 256) throw failure(400);
+    this.sweep();
+    const key = digest(body.refreshToken);
+    const limit = this.refreshLimits.get(key) || { expires: this.now() + 60000, count: 0 };
+    if (this.refreshLimits.size >= 1000 && !this.refreshLimits.has(key) || ++limit.count > 30 || this.sessions.size >= 5000) throw failure(429);
+    this.refreshLimits.set(key, limit);
+    // Coalesce concurrent retries; the central provider also has a bounded
+    // rotation replay interval for a lost response or a restarted BFF.
+    if (!this.refreshing.has(key)) {
+      const operation = (async () => {
+        const config = await this.config(true);
+        let tokens;
+        try { tokens = await this.protocol.refreshTokenGrant(config, body.refreshToken); }
+        catch (error) {
+          if (['invalid_grant', 'invalid_token'].includes(error.error)) throw failure(401);
+          throw failure(503);
+        }
+        const identity = await this.verifiedIdentity(config, tokens, NATIVE_TTL);
+        if (identity.issuer !== body.issuer || identity.sub !== body.sub) throw failure(401);
+        const credential = this.refreshCredential(tokens);
+        const sessionToken = token(); this.sessions.set(digest(sessionToken), identity);
+        return { token: sessionToken, identity, ...credential };
+      })();
+      this.refreshing.set(key, { sub: body.sub, operation });
+      operation.finally(() => this.refreshing.delete(key)).catch(() => {});
+    }
+    const flight = this.refreshing.get(key);
+    if (flight.sub !== body.sub) throw failure(401);
+    return flight.operation;
+  }
+  async revoke(body) {
+    if (this.origin !== 'https://tenon.asia' || !validRefresh(body.refreshToken)) throw failure(400);
+    await this.protocol.tokenRevocation(await this.config(true), body.refreshToken, { token_type_hint: 'refresh_token' });
   }
 }
 
 export async function readBody(req) {
   let body = '';
-  for await (const chunk of req) { body += chunk; if (body.length > 2048) throw failure(413); }
-  try { return JSON.parse(body); } catch { throw failure(400); }
+  for await (const chunk of req) { body += chunk; if (body.length > 8192) throw failure(413); }
+  try { const value = JSON.parse(body); if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error(); return value; } catch { throw failure(400); }
 }

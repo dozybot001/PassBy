@@ -50,7 +50,7 @@ struct LockView: View {
                     VStack(alignment: .leading, spacing: 18) {
                         securityLine("Face ID, every time", icon: "faceid")
                         securityLine("Encrypted before syncing", icon: "icloud")
-                        securityLine("Tenon identity. Apple private storage.", icon: "person.crop.circle")
+                        securityLine("One Tenon Account", icon: "person.crop.circle")
                     }.padding(.bottom, 30)
                     Text("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key.")
                         .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 14)
@@ -60,7 +60,7 @@ struct LockView: View {
                 if needsRecovery {
                     Text(L(session.setup == .localRecovery
                         ? "Restore the encrypted notebook already on this iPhone to your current Apple Account. Your original local copy will be kept. Enter its recovery key to continue."
-                        : "Enter your recovery key to open your Apple-linked notebook."))
+                        : "Enter your recovery key to open your notebook on this iPhone."))
                         .font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 12)
                     SecureField("Recovery key", text: $recovery)
                         .textInputAutocapitalization(.characters).autocorrectionDisabled()
@@ -94,12 +94,14 @@ struct LockView: View {
                     .buttonStyle(PrimaryButton()).disabled(retrying)
                 } else {
                     Button {
-                        account.checkExpiry()
-                        guard session.setup != .newNotebook || account.identity != nil else { return }
                         guard !working else { return }
                         let text = needsRecovery ? recovery : nil
                         unlocking = true
-                        Task { defer { unlocking = false }; await session.unlock(recoveryText: text) }
+                        Task {
+                            defer { unlocking = false }
+                            if session.setup == .newNotebook, !(await account.ensureCurrentSession()) { return }
+                            await session.unlock(recoveryText: text)
+                        }
                     } label: {
                         if working { ProgressView().tint(Palette.paper) }
                         else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? L("Restore with Face ID") : L("Unlock with Face ID"), systemImage: "faceid") }
@@ -109,7 +111,7 @@ struct LockView: View {
                         || (session.setup == .newNotebook && account.identity == nil)
                         || (needsRecovery && recovery.isEmpty))
                 }
-                Text("Your notebook stays encrypted and linked to your Apple Account.")
+                Text("Your notebook is encrypted before it syncs.")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                     .padding(.top, 22).frame(maxWidth: .infinity, alignment: .center)
             }

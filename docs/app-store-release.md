@@ -4,7 +4,7 @@
 
 - 开发者：Zeng Deyang；App 内名称：PassBy。
 - Bundle ID：`cn.tenonai.apps.passby`；Team：`3U6LT38JKB`。
-- 版本 1.0，当前候选 Build 10；iOS 17+，仅 iPhone，竖屏。
+- 版本 1.0，当前候选 Build 11（准备替换审核包）；iOS 17+，仅 iPhone，竖屏。
 - 用户改为免费首发，已在 Connect 保存所有地区 $0.00；174 个海外地区，排除中国大陆、Mac 和 Vision Pro。此决定替代此前 US$1.99 买断方案。
 - 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
 - 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
@@ -18,11 +18,20 @@
 - 沿用免费 $0.00、174 个海外地区、手动发布；审核账号及中英文资料、截图、隐私标签已随此次提交保存。
 - Tenon 删除服务正式版本：`c949c0bcbf0e389b5879a21b504762857c332d0d`。正式入口返回 HTTP 200、no-store、X-Frame-Options DENY；浏览器确认匿名页面展示登录入口及删除影响说明。中央隔离测试已通过，不对真实账号执行删除验收。
 - PassBy 网页、支持和隐私页面已从干净提交 `7dc82e4884bd3d92a0f7a6f88dcbafeb72c69c4b` 发布，13 项网页/加密兼容性测试与发布文件摘要检查通过。隐私页和网页设置的直接账号删除入口已公开。
-- 用户确认重启后首屏不再显示 Tenon 登录，但设置仍显示该入口。设置用于短期 Tenon 会话重新验证，与已有密码本的 Face ID 解锁和 Apple 同步独立；不把此反馈写成两台真机恢复验收已通过。跨设备恢复、并发编辑及完整真实设备异常场景仍为后续质量验证项目。
+- 用户确认重启后首屏不再显示 Tenon 登录，但设置仍显示该入口。Build 10 将一分钟账号会话用于手机，导致设置重复显示登录。用户已要求手机保持登录，已授权替换审核包；不把此反馈写成两台真机恢复验收已通过。跨设备恢复、并发编辑及完整真实设备异常场景仍为后续质量验证项目。
+
+## Build 11 候选：统一 Tenon 与手机记住登录（2026-10-05）
+
+用户已授权替换首发审核包；Build 10 仍在等待审核，尚未撤回。候选统一账号入口，将 Apple 存储细节收进同步说明，手机通过安全轮换凭据保留登录，日常使用 Face ID。
+
+- 原生 33 项测试、网页 13 项测试、BFF 14 项测试通过；中央 103 项账号测试与 24 项发布检查通过。
+- 覆盖过期访问凭据续期、断网保留资料但不延长权限、凭据轮换、并发单次续期、退出后的延迟响应、错误身份、撤销、账号删除、封禁和密码重置。
+- 中央续期代码提交 `0b2e320`；生产发布及客户端精确启用需验收后再记录。新手机授权请求 `offline_access`，升级需登录一次取得新版凭据。没有绕过 Face ID 或修改现有密码本。
+- 当前测试结果不代表两台真机恢复或第三方安全审计已经完成。新构建上传、真机记住登录、商店更新和重新提交仍待完成。
 
 ## 账号与密码本
 
-Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱登录。新建密码本需要 Tenon 身份；已有本机密码本继续由 Face ID 解锁。产品会话最长 1 分钟，退出或到期清理，不静默续期。
+Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱登录。新建密码本需要 Tenon 身份；已有本机密码本继续由 Face ID 解锁。网页版会话最长 1 分钟，不静默续期。Build 11 手机端使用最长 15 分钟的短访问会话和轮换续期凭据，存入仅本机钥匙串，关闭应用后保留登录。凭据在 30 天未续期后到期；主动退出、中央撤销、删除账号、封禁或密码重置可能需要重新登录。断网不延长账号权限，但已有密码本仍可 Face ID 解锁。
 
 密码本存储属于手机系统 iCloud 的 Apple 账号，与 Tenon 登录身份分别授权。CloudKit 私有库只保存已加密的整个密码本与格式版本。Tenon 不接收密码本内容或恢复密钥。Apple 账号变化会立即锁定，并隔离不同账号的本机密文与钥匙串。
 
@@ -88,8 +97,8 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 2. Return to PassBy, read and acknowledge the recovery notice, and tap Create my notebook. Complete Face ID and save the displayed recovery key outside the app. Do not send this key to the developer.
 3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
 4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
-5. Leave and return to the app: Face ID is required again. An existing local notebook remains accessible through Face ID when the short Tenon session expires. Tenon product sessions last at most 1 minute. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
-6. Settings contains identity management, Apple storage status, sync, privacy, support and About PassBy. Delete Tenon Account opens https://account.tenon.asia/account/delete/ directly. The central service requires identity verification and confirmation, and deletion affects all Tenon products. The Apple-stored notebook and recovery key are managed separately. A second iPhone using the same Apple storage account needs the saved recovery key.
+5. Leave and return to the app: Face ID is required again. The iPhone remembers Tenon sign-in in the device-only Keychain and securely renews short account sessions. Closing the app does not sign out. An existing notebook remains accessible through Face ID offline; signing out or revoked credentials may require signing in again for account services. The web session remains limited to 1 minute. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
+6. Settings shows Tenon Account, sign-in method management, sync, privacy, support and About PassBy. Apple storage authorization details are available under Sync details. Delete Tenon Account opens https://account.tenon.asia/account/delete/ directly. The central service requires identity verification and confirmation, and deletion affects all Tenon products. The Apple-stored notebook and recovery key are managed separately. A second iPhone using the same Apple storage account needs the saved recovery key.
 7. Web access is available at https://passby.tenon.asia/. Tenon authentication and Apple private storage authorization are separate. A new browser requires the recovery key once; an authorized browser can reopen during a valid Tenon session.
 
 审核登录信息：用户提供的 `app-review@tenon.asia` 已填写并保存到 Connect，“需要登录”已勾选；重新加载后确认凭据仍在。已在正式 Tenon 登录页验证登录成功，账号权限为普通账号，随后退出测试会话。审核说明指向该专用账号，Apple 私有存储仍属于审核设备系统账号。密码按用户明确要求保存在本机产品规范，不进入 PassBy 仓库、应用包或公开日志。
