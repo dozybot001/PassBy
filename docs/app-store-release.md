@@ -1,58 +1,55 @@
 # PassBy 1.0 发布记录
 
-## 产品与分发
+## 当前分发决定（2026-10-04）
 
 - 开发者：Zeng Deyang；App 内名称：PassBy。
 - Bundle ID：`cn.tenonai.apps.passby`；Team：`3U6LT38JKB`。
-- 版本 1.0，当前候选 build 2；iOS 17+，仅 iPhone，竖屏。
-- 首发买断制，美国区 US$1.99，其他地区采用 Apple 自动换算；已确认沿用 WeSaid 的 174 个中国大陆以外地区。
-- 主要商店语言：英语（美国）；补充简体中文。
-- 独立应用名 PassBy 已被占用；商店名称采用 `PassBy — Password Notebook`。
-- 隐私政策：`https://tenon.asia/passby/privacy/`。
-- 支持页面：`https://tenon.asia/passby/support/`。
-- 支持邮箱：`support@tenonai.cn`，经用户确认沿用 Tenon 的公共支持邮箱。
+- 版本 1.0，当前候选 Build 9；iOS 17+，仅 iPhone，竖屏。
+- 用户改为免费首发，已在 Connect 保存所有地区 $0.00；174 个海外地区，排除中国大陆、Mac 和 Vision Pro。此决定替代此前 US$1.99 买断方案。
+- 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
+- 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
+- 公开支持邮箱：`support@tenonai.cn`。审核联系人沿用 WeSaid，私人联系信息不写入仓库。
+- 当前 Connect 仍是旧 Build 2 的未提交审核草稿，采用手动发布。
 
-## Apple 账号绑定
+## 账号与密码本
 
-使用系统 iCloud 的 Apple Account，不建立应用账户，不额外添加 Sign in with Apple。
-`CloudNotebook.ownerID()` 核对 iCloud 可用性，将容器用户记录 ID 散列后用于本机数据目录和
-Keychain 隔离。`CKAccountChanged` 使会话立即锁定；每次同步重新核对当前 owner。
-不获取 Apple 密码、姓名、邮箱，不将散列身份传到开发者服务器。
+Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱登录。新建密码本需要 Tenon 身份；已有本机密码本继续由 Face ID 解锁。产品会话最长 1 分钟，退出或到期清理，不静默续期。
 
-注意：Sign in with Apple 与 iCloud 登录是两套机制，前者不能授权读取另一个 iCloud 账号的
-私有数据库。此版本通过已有系统账号提供归属与跨设备恢复。
+密码本存储属于手机系统 iCloud 的 Apple 账号，与 Tenon 登录身份分别授权。CloudKit 私有库只保存已加密的整个密码本与格式版本。Tenon 不接收密码本内容或恢复密钥。Apple 账号变化会立即锁定，并隔离不同账号的本机密文与钥匙串。
 
 ## 商店英文文案
 
 副标题：`Your private password notebook`
 
-推广文本：`Your password notebook, linked to your Apple Account. Organize accounts, generate passwords, and access your encrypted notebook on iPhone or the web.`
+推广文本：`Keep accounts in one quiet place. Organize folders, generate passwords, and open your encrypted notebook on iPhone or a trusted computer.`
 
 描述：
 
-PassBy is a simple password notebook for iPhone. Keep each account in four fields: title, account, password and notes. Organize entries into folders and find them with search.
+PassBy is a simple password notebook for iPhone. Keep each entry in four fields: title, account, password and notes. Organize entries into folders and find them with search.
 
-Generate random passwords using lowercase letters, uppercase letters, numbers and symbols. Start with 16 characters, use the slider for 8–24, or enter a longer length up to 4096. Copy a password and paste it into another app.
+Generate random passwords with lowercase letters, uppercase letters, numbers and symbols. The default is 16 characters; the slider covers 8–24, and you can enter a longer length up to 4096. Copy a password and paste it into another app.
 
-Your notebook locks whenever you leave PassBy. Face ID is required to reopen it. Passwords remain hidden until you choose to reveal them, and copied values stay on this iPhone and expire after 60 seconds.
+Your notebook locks whenever you leave PassBy. Face ID is required to reopen it. Passwords remain hidden until you choose to reveal them. Copies stay on this iPhone and expire after 60 seconds.
 
-Your notebook is encrypted on your device using AES-256-GCM before syncing to your private iCloud database. PassBy uses the Apple Account already signed in to iCloud, with no separate app account or developer-operated password server.
+Sign in through Tenon Account using Apple or email. Tenon manages your sign-in methods; it does not receive notebook contents or recovery keys. Your notebook is encrypted on your device using AES-256-GCM before syncing to the private storage of your Apple Account.
 
-Save your recovery key outside PassBy. You need it to open the same notebook on a new iPhone or after your local key becomes unavailable. The developer cannot recover a lost key or decrypt your notebook.
+Save your recovery key outside PassBy. You need it on a new iPhone or when your local key becomes unavailable. The developer cannot recover a lost key or decrypt your notebook.
 
-When your iPhone is not nearby, open tenon.asia/passby on a trusted computer. Continue with the same Apple Account and enter your recovery key to unlock your synced notebook. The key remains in the current page's memory; leaving the page locks it.
+When your iPhone is not nearby, open passby.tenon.asia on a trusted computer. Sign in with Tenon and authorize the Apple Account used for your notebook. Use your recovery key to authorize that browser once. An authorized browser can then reopen during a valid Tenon session. Leaving the window locks the notebook. Browser authorization can be removed in Settings.
 
-Swipe down to keep an encrypted local draft while you switch apps. Tap New password to resume it. Save when you finish, or Cancel to discard the draft. PassBy supports English and Simplified Chinese, light and dark appearances, and adjustable text sizes.
+Swipe down to keep an encrypted local draft while you switch apps. Tap New password to resume it. Save when finished, or Cancel to discard the draft. PassBy supports English and Simplified Chinese, light and dark appearances, and adjustable text sizes.
 
-Requirements: iPhone with iOS 17 or later, a device passcode, Face ID enrollment, and an iCloud account. Screen recording and mirroring prevent unlocking. Cold launch requires confirming your iCloud identity. PassBy does not provide AutoFill in this version.
+PassBy is free to download, with no subscriptions, in-app purchases or ads. Requirements: iOS 17 or later, a device passcode, Face ID enrollment, an Apple Account signed in to iCloud, and a Tenon Account. Screen recording and mirroring prevent unlocking. Cold launch checks your Apple storage identity. This version does not provide AutoFill.
 
-关键词：`password,notebook,vault,secure,icloud,faceid,generator,accounts,notes,folders`
+关键词：`password,notebook,vault,secure,faceid,generator,accounts,notes,folders,tenon`
 
 ## 商店中文文案
 
 名称：`PassBy — 私人密码本`
 
 副标题：`四个字段，安心记录账户密码`
+
+推广文本：`为账户密码留一个安静的位置。文件夹分类、随机密码生成，在 iPhone 和可信电脑上打开你的加密密码本。`
 
 描述：
 
@@ -62,38 +59,41 @@ PassBy 是一款简洁的 iPhone 密码本。每项记录包含标题、账户�
 
 每次离开 PassBy，密码本立即锁定，再次打开需通过 Face ID。密码默认隐藏，复制内容只保留在本机，60 秒后过期。
 
-密码本先在设备上使用 AES-256-GCM 加密，再同步至你的 iCloud 私有数据库。使用本机已登录 iCloud 的 Apple 账号，无需额外注册，开发者不运营密码服务器。
+通过 Tenon 账号使用 Apple 或邮箱登录，统一管理登录方式。Tenon 不接收密码本内容或恢复密钥。密码本先在设备上使用 AES-256-GCM 加密，再同步至你的 Apple 账号私有存储。
 
-请将恢复密钥保存在 PassBy 之外。新 iPhone 或本机密钥失效后，需要同一 iCloud 账号和恢复密钥才能打开密码本。开发者无法找回丢失的密钥或解密密码本。
+请将恢复密钥保存在 PassBy 之外。新 iPhone 或本机密钥失效后，需要同一 Apple 存储账号和恢复密钥才能打开密码本。开发者无法找回丢失的密钥或解密密码本。
 
-iPhone 不在身边时，可以在可信电脑打开 tenon.asia/passby，使用同一 Apple 账号和恢复密钥访问已同步的密码本。恢复密钥只保留在当前页面内存中，离开页面会锁定。
+iPhone 不在身边时，在可信电脑打开 passby.tenon.asia。登录 Tenon，授权密码本所属的 Apple 账号，首次用恢复密钥授权这台浏览器。已授权浏览器可在 Tenon 会话有效时再次打开；离开窗口即锁定，可在设置中撤销浏览器授权。
 
 下滑关闭编辑页会保留加密的本机草稿，点击“新建密码”恢复编辑；保存存入条目，取消丢弃草稿。支持中英文、深浅色外观及动态字号。
 
-需要 iOS 17 或更新系统、设备密码、已登记 Face ID 和 iCloud 账号。录屏与镜像期间无法解锁，冷启动需确认 iCloud 身份。当前版本不提供自动填充。
+免费使用，无订阅、应用内购买或广告。需要 iOS 17 或更新系统、设备密码、已登记 Face ID、登录系统 iCloud 的 Apple 账号和 Tenon 账号。录屏与镜像期间无法解锁；冷启动检查 Apple 存储身份。当前版本不提供自动填充。
 
-关键词：`密码本,密码,账户,笔记,文件夹,随机密码,生成器,加密,iCloud,FaceID`
+关键词：`密码本,密码,账户,笔记,文件夹,随机密码,生成器,加密,FaceID,Tenon`
 
-## 审核说明（英文）
+## 审核说明（英文草稿）
 
-PassBy uses the system iCloud Apple Account and does not require a separate app login or a developer-provided test account. Use an iPhone with a device passcode, Face ID enrolled, and an Apple Account signed in to iCloud. The app is iPhone-only.
+PassBy is a free iPhone-only password notebook with no subscriptions, in-app purchases or ads. An iPhone with a device passcode, Face ID enrolled, and an Apple Account signed in to iCloud is required. Notebook data is encrypted before it is stored in the user's private CloudKit database.
 
-1. Launch PassBy, read the recovery notice, enable the acknowledgement and tap Create my notebook.
-2. Complete Face ID, save the displayed recovery key outside the app, acknowledge it and open the notebook. Do not send this key to the developer.
-3. Add a test entry, generate a password, select Use this password and Save. Create a folder from the editor if desired.
-4. Search, open the entry, reveal/copy the password, and edit it. Swipe down while editing to retain a local encrypted draft; New password resumes it. Cancel discards the draft.
-5. Leave and return to the app: Face ID is required again. Screen recording/mirroring intentionally prevents unlocking. Screenshots are permitted by iOS.
-6. Settings shows Apple Account binding and sync status, as well as privacy and support links. A second iPhone signed in to the same iCloud account requires the saved recovery key.
+1. Launch PassBy and select Sign in with Tenon. The central login page offers Continue with Apple or email sign-in. You can use your own Apple Account to create a Tenon identity. This account is for sign-in only and does not hold notebook contents or recovery keys.
+2. Return to PassBy, read and acknowledge the recovery notice, and tap Create my notebook. Complete Face ID and save the displayed recovery key outside the app. Do not send this key to the developer.
+3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
+4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
+5. Leave and return to the app: Face ID is required again. An existing local notebook remains accessible through Face ID when the short Tenon session expires. Tenon product sessions last at most 1 minute. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
+6. Settings contains identity management, Apple storage status, sync, privacy, support and About PassBy. A second iPhone using the same Apple storage account needs the saved recovery key.
+7. Web access is available at https://passby.tenon.asia/. Tenon authentication and Apple private storage authorization are separate. A new browser requires the recovery key once; an authorized browser can reopen during a valid Tenon session.
 
-Only an encrypted ciphertext asset and a format version are written to the private CloudKit database. The recovery key is never uploaded. The app is a paid download with no subscriptions or in-app purchases. There are no ads, tracking SDKs or developer-operated password servers.
+Release blocker: the central Tenon service currently supports deletion requests only by email. The app needs a direct account deletion flow before this draft is submitted. Do not describe a deletion feature until it is implemented and tested.
 
-## 隐私与加密申报依据
+## 隐私与提交门禁
 
-- 本机清单：不跟踪，不接入第三方 SDK，不调用文件时间戳、磁盘容量、UserDefaults 或系统运行时长等 required-reason APIs。
-- 营养标签拟填“不收集数据”：开发者不接收应用数据；密码本在设备加密后同步至 CloudKit 私有库。此为基于当前实现和 Apple 定义的判断，最终在 Connect 核对。
-- 只使用系统 CryptoKit、Security 和 CloudKit；`ITSAppUsesNonExemptEncryption = NO`，属于仅使用系统提供的加密功能的申报判断，不能申报应用“没有使用加密”。
-- 不建立应用账户，因此不提供删除 Apple 账号。用户可删除条目、文件夹并同步；卸载不删除 iCloud 密码本。
-- 来源：[隐私标签定义](https://developer.apple.com/app-store/app-privacy-details/)、[私有数据库](https://developer.apple.com/documentation/cloudkit/ckcontainer/privateclouddatabase)、[加密申报](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance/)、[删除账号要求](https://developer.apple.com/support/offering-account-deletion-in-your-app/)。
+- 原“未收集数据”标签不适用于 Tenon 登录版本，必须替换。
+- 本机隐私清单声明姓名、邮箱、用户 ID、其他数据（账号/请求安全记录），均用于 App 功能，关联身份，不跟踪、不用于广告。App Store Connect 披露需按同一范围更新并最终确认发布。
+- 云端密码本仍只有密文，恢复密钥不上传。此披露不能将 Tenon 身份误写成密码本内容收集。
+- 仅使用系统 CryptoKit、Security 和 CloudKit；`ITSAppUsesNonExemptEncryption = NO`。
+- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 的真正删除流程及 Apple 登录令牌撤销是当前依赖。
+- 来源：[隐私标签定义](https://developer.apple.com/app-store/app-privacy-details/)、[账号删除要求](https://developer.apple.com/support/offering-account-deletion-in-your-app/)。
+- 2026-10-04：28 项原生单元测试通过；免费定价已保存。以下为此前发布历史，不能作为当前构建已经提交的证据。
 
 ## 当前发布验证
 

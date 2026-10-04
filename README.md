@@ -62,7 +62,7 @@ App ID：`cn.tenonai.apps.passby`。CloudKit 容器：`iCloud.cn.tenonai.apps.pa
 - 两台设备同步、离线编辑、同时修改、账户切换与恢复流程。
 - 草稿生成密码、切换注册应用粘贴、返回解锁并保存的完整旅程。
 - UI 的小屏、大字号、深色模式、VoiceOver 与中文/英文。
-- 隐私与支持页面、App Store 隐私标签及中英文截图已完成；Build 2 已上传并关联，审核草稿已创建。付费协议、税务更正与真机恢复验收仍待完成。
+- 2026-10-04 改为免费首发，Connect 已保存 $0.00。Build 2 的未提交草稿需要替换成 Tenon 登录版本；更新隐私标签、截图及审核说明。Tenon 账号删除流程与真机恢复验收仍需补齐。
 
 发布记录与当前进度见 [上架准备](docs/app-store-release.md)。
 

@@ -180,7 +180,7 @@
 
 "Could not clear the saved sign-in. Please try again." = "Could not clear the saved sign-in. Please try again.";
 
-"Effective October 3, 2026 · Zeng Deyang" = "Effective October 3, 2026 · Zeng Deyang";
+"Effective October 4, 2026 · Zeng Deyang" = "Effective October 4, 2026 · Zeng Deyang";
 "Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 1 minute; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service." = "Tenon manages your sign-in methods. PassBy verifies your identity and keeps the current product session in this iPhone’s device-only Keychain. Closing the app does not end a valid session. It expires within 1 minute; signing out removes it. Face ID is still required to open the notebook. No passwords or recovery keys are sent to the account service.";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.";
 
@@ -189,3 +189,7 @@
 "Publisher" = "Publisher";
 "PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps." = "PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.";
 "Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser." = "Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser.";
+
+"Account information" = "Account information";
+"Tenon Account privacy notice" = "Tenon Account privacy notice";
+"Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish its short product session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon." = "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish its short product session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.";
