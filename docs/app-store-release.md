@@ -9,7 +9,7 @@
 - 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
 - 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
 - 公开支持邮箱：`support@tenonai.cn`。审核联系人沿用 WeSaid，私人联系信息不写入仓库。
-- 旧 Build 2 已从审核草稿移除，Connect 1.0 为“准备提交”；Build 9 已上传，最终将替换为包含重启提示修复与账号删除入口的 Build 10。采用手动发布。
+- 旧 Build 2 已从审核草稿移除，Connect 1.0 为“准备提交”；Build 10 已上传、处理完成，并保存关联到 1.0 版本；包含重启提示修复与账号删除入口。采用手动发布。
 
 ## 账号与密码本
 
@@ -75,7 +75,7 @@ iPhone 不在身边时，在可信电脑打开 passby.tenon.asia。登录 Tenon�
 
 PassBy is a free iPhone-only password notebook with no subscriptions, in-app purchases or ads. An iPhone with a device passcode, Face ID enrolled, and an Apple Account signed in to iCloud is required. Notebook data is encrypted before it is stored in the user's private CloudKit database.
 
-1. Launch PassBy and select Sign in with Tenon. The central login page offers Continue with Apple or email sign-in. You can use your own Apple Account to create a Tenon identity. This account is for sign-in only and does not hold notebook contents or recovery keys.
+1. Launch PassBy and select Sign in with Tenon. Sign in using the dedicated Tenon demo account supplied in App Review Information. The central login page also offers Continue with Apple. Tenon identity is for sign-in only and does not hold notebook contents or recovery keys. The Apple Account signed in to iCloud on the review device independently authorizes its private notebook storage.
 2. Return to PassBy, read and acknowledge the recovery notice, and tap Create my notebook. Complete Face ID and save the displayed recovery key outside the app. Do not send this key to the developer.
 3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
 4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
@@ -85,7 +85,7 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 
 审核登录信息：Apple 要求提供专用测试账号。已请用户在 Connect 的用户名、密码栏亲自填写和保存；不在仓库或聊天记录保存密码。最终审核说明须包含该测试账号的入口，不能用审核员自行创建 Apple 账号代替未提供的测试账号。
 
-当前依赖：Tenon 正在完善、测试和部署直接账号删除页面。PassBy 已接入固定删除地址，提交前必须确认其正式环境可用。
+当前依赖：Tenon 删除流程已在隔离环境完成 97 项账号测试、24 项发布检查和浏览器验收。正式部署在 Gitee 同步阶段遇到网络超时，服务器尚未切换版本；“主站开发”会话继续处理。PassBy 已接入固定删除地址，提交前必须确认其正式环境可用。
 
 ## 隐私与提交门禁
 
@@ -93,9 +93,9 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 - 本机隐私清单声明姓名、邮箱、用户 ID、其他数据（账号/请求安全记录），均用于 App 功能，关联身份，不跟踪、不用于广告。App Store Connect 披露已按同一范围发布。当前 UI 的发布步骤未显示额外法律声明弹窗。
 - 云端密码本仍只有密文，恢复密钥不上传。此披露不能将 Tenon 身份误写成密码本内容收集。
 - 仅使用系统 CryptoKit、Security 和 CloudKit；`ITSAppUsesNonExemptEncryption = NO`。
-- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 的真正删除流程及 Apple 登录令牌撤销正在接入，须验证正式环境后再提交。
+- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 的真正删除流程及 Apple 登录令牌撤销已完成隔离验收，仍须等待正式部署并验证公开入口后再提交。
 - 来源：[隐私标签定义](https://developer.apple.com/app-store/app-privacy-details/)、[账号删除要求](https://developer.apple.com/support/offering-account-deletion-in-your-app/)。
-- 2026-10-04：28 项原生单元测试通过；免费定价与新版隐私披露已保存。英文 4 张、中文 3 张 1320×2868 原始截图已上传并排序：首页、生成器、详情，英文另有深色首页；均只含虚构账号，密码隐藏。Build 9 的 Release 归档与上传成功；没有提交审核。
+- 2026-10-04：28 项原生单元测试通过；免费定价与新版隐私披露已保存。英文 4 张、中文 3 张 1320×2868 原始截图已上传并排序：首页、生成器、详情，英文另有深色首页；均只含虚构账号，密码隐藏。Build 9、Build 10 的 Release 归档与上传均成功；Build 10 处理完成并已在 Connect 保存关联。Build 10 已安装到连接的 iPhone，等待用户确认重启后的 Face ID 入口；没有提交审核。
 - Build 10 修复：锁屏只在创建新密码本时显示 Tenon 登录入口。已有本机密码本在会话到期或重启后仍显示 Face ID 解锁，未延长会话或改变密钥保护。设置与网页版新增账号删除直接入口。
 - 以下为此前发布历史，不能作为当前构建已经提交的证据。
 
