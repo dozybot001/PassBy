@@ -72,18 +72,18 @@ struct LockView: View {
                     Text(message).font(.subheadline).foregroundStyle(Palette.secondary)
                         .fixedSize(horizontal: false, vertical: true).padding(.bottom, 22)
                 }
-                if let message = account.message {
-                    Text(message).font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
-                }
-                if account.identity == nil {
-                    Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working).tint(Palette.paper) }.buttonStyle(PrimaryButton())
-                        .disabled(account.working).padding(.bottom, 16)
-                    if session.setup != .newNotebook {
-                        Text("Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key.")
-                            .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 16)
+                if session.setup == .newNotebook {
+                    if let message = account.message {
+                        Text(message).font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
                     }
-                } else if let identity = account.identity {
-                    Text("Tenon: \(identity.name)").font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
+                    if account.identity == nil {
+                        Button { account.signIn() } label: {
+                            OperationLabel(title: "Sign in with Tenon", working: account.working).tint(Palette.paper)
+                        }.buttonStyle(PrimaryButton())
+                            .disabled(account.working).padding(.bottom, 16)
+                    } else if let identity = account.identity {
+                        Text("Tenon: \(identity.name)").font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
+                    }
                 }
                 if session.setup == .unavailable || retrying {
                     Button {

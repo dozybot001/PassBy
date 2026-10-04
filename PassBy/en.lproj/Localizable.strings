@@ -172,7 +172,6 @@
 "Apple storage authorization" = "Apple storage authorization";
 "Tenon identity. Apple private storage." = "Tenon identity. Apple private storage.";
 "Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents." = "Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents.";
-"Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key." = "Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key.";
 "Tenon sign-in could not be completed. Please try again." = "Tenon sign-in could not be completed. Please try again.";
 "Tenon: %@" = "Tenon: %@";
 
@@ -193,3 +192,7 @@
 "Account information" = "Account information";
 "Tenon Account privacy notice" = "Tenon Account privacy notice";
 "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish its short product session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon." = "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish its short product session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.";
+
+"Delete Tenon Account" = "Delete Tenon Account";
+"Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key." = "Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key.";
+"Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon." = "Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon.";

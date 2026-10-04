@@ -82,7 +82,10 @@ struct SettingsView: View {
                     } else {
                         Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working) }.disabled(account.working)
                     }
+                    Link("Delete Tenon Account", destination: URL(string: "https://account.tenon.asia/account/delete/")!)
                     Text("Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents.")
+                        .font(.footnote).foregroundStyle(Palette.secondary)
+                    Text("Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
                     if let message = account.message { Text(message).font(.footnote).foregroundStyle(Palette.secondary) }
                 }
@@ -180,6 +183,8 @@ struct PrivacyPolicyView: View {
                 policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")
                 policySection("Clipboard and drafts", "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.")
                 policySection("Retention and deletion", "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.")
+                Text("Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon.")
+                    .foregroundStyle(Palette.secondary)
                 policySection("Support and your choices", "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.")
                 Link("Online privacy policy", destination: URL(string: "https://passby.tenon.asia/privacy/")!)
                 Link("Apple privacy policy", destination: URL(string: "https://www.apple.com/legal/privacy/")!)

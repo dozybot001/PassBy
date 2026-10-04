@@ -172,7 +172,6 @@
 "Apple storage authorization" = "Apple 存储授权";
 "Tenon identity. Apple private storage." = "Tenon 身份，Apple 私有存储。";
 "Tenon manages your sign-in methods. Apple authorizes notebook storage. Face ID and the recovery key protect its contents." = "Tenon 管理登录方式，Apple 授权密码本存储，Face ID 与恢复密钥保护密码本内容。";
-"Your existing encrypted notebook remains available with Face ID. Tenon does not hold its recovery key." = "已有加密密码本仍可通过 Face ID 访问。Tenon 不持有它的恢复密钥。";
 "Tenon sign-in could not be completed. Please try again." = "Tenon 登录未完成，请重试。";
 "Tenon: %@" = "Tenon：%@";
 
@@ -193,3 +192,7 @@
 "Account information" = "账号信息";
 "Tenon Account privacy notice" = "Tenon 账号隐私说明";
 "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish its short product session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon." = "Tenon 为身份验证与账号管理处理邮箱、称呼、账号标识及登录安全记录。PassBy 接收已验证的身份信息，建立短期产品会话。这些信息关联账号，不用于广告或追踪。密码本内容与恢复密钥不会发送给 Tenon。";
+
+"Delete Tenon Account" = "删除 Tenon 账号";
+"Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key." = "删除账号会打开 Tenon，由你重新验证身份并确认。这会影响所有 Tenon 产品，不会删除 Apple 私有存储中的密码本或恢复密钥。";
+"Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon." = "可在设置中进入“删除 Tenon 账号”。Tenon 会重新验证身份，并在你确认后删除中央账号资料、撤销可用的 Apple 登录令牌。这会影响所有 Tenon 产品。Apple 私有存储中的密码本与恢复密钥分别管理，不会由 Tenon 删除。";

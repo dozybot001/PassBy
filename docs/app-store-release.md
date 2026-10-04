@@ -4,12 +4,12 @@
 
 - 开发者：Zeng Deyang；App 内名称：PassBy。
 - Bundle ID：`cn.tenonai.apps.passby`；Team：`3U6LT38JKB`。
-- 版本 1.0，当前候选 Build 9；iOS 17+，仅 iPhone，竖屏。
+- 版本 1.0，当前候选 Build 10；iOS 17+，仅 iPhone，竖屏。
 - 用户改为免费首发，已在 Connect 保存所有地区 $0.00；174 个海外地区，排除中国大陆、Mac 和 Vision Pro。此决定替代此前 US$1.99 买断方案。
 - 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
 - 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
 - 公开支持邮箱：`support@tenonai.cn`。审核联系人沿用 WeSaid，私人联系信息不写入仓库。
-- 当前 Connect 仍是旧 Build 2 的未提交审核草稿，采用手动发布。
+- 旧 Build 2 已从审核草稿移除，Connect 1.0 为“准备提交”；Build 9 已上传，最终将替换为包含重启提示修复与账号删除入口的 Build 10。采用手动发布。
 
 ## 账号与密码本
 
@@ -80,20 +80,24 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
 4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
 5. Leave and return to the app: Face ID is required again. An existing local notebook remains accessible through Face ID when the short Tenon session expires. Tenon product sessions last at most 1 minute. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
-6. Settings contains identity management, Apple storage status, sync, privacy, support and About PassBy. A second iPhone using the same Apple storage account needs the saved recovery key.
+6. Settings contains identity management, Apple storage status, sync, privacy, support and About PassBy. Delete Tenon Account opens https://account.tenon.asia/account/delete/ directly. The central service requires identity verification and confirmation, and deletion affects all Tenon products. The Apple-stored notebook and recovery key are managed separately. A second iPhone using the same Apple storage account needs the saved recovery key.
 7. Web access is available at https://passby.tenon.asia/. Tenon authentication and Apple private storage authorization are separate. A new browser requires the recovery key once; an authorized browser can reopen during a valid Tenon session.
 
-Release blocker: the central Tenon service currently supports deletion requests only by email. The app needs a direct account deletion flow before this draft is submitted. Do not describe a deletion feature until it is implemented and tested.
+审核登录信息：Apple 要求提供专用测试账号。已请用户在 Connect 的用户名、密码栏亲自填写和保存；不在仓库或聊天记录保存密码。最终审核说明须包含该测试账号的入口，不能用审核员自行创建 Apple 账号代替未提供的测试账号。
+
+当前依赖：Tenon 正在完善、测试和部署直接账号删除页面。PassBy 已接入固定删除地址，提交前必须确认其正式环境可用。
 
 ## 隐私与提交门禁
 
-- 原“未收集数据”标签不适用于 Tenon 登录版本，必须替换。
-- 本机隐私清单声明姓名、邮箱、用户 ID、其他数据（账号/请求安全记录），均用于 App 功能，关联身份，不跟踪、不用于广告。App Store Connect 披露需按同一范围更新并最终确认发布。
+- 原“未收集数据”标签已替换：姓名、邮箱、用户 ID、其他数据类型均已在 Connect 发布为 App 功能、关联用户、不跟踪。
+- 本机隐私清单声明姓名、邮箱、用户 ID、其他数据（账号/请求安全记录），均用于 App 功能，关联身份，不跟踪、不用于广告。App Store Connect 披露已按同一范围发布。当前 UI 的发布步骤未显示额外法律声明弹窗。
 - 云端密码本仍只有密文，恢复密钥不上传。此披露不能将 Tenon 身份误写成密码本内容收集。
 - 仅使用系统 CryptoKit、Security 和 CloudKit；`ITSAppUsesNonExemptEncryption = NO`。
-- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 的真正删除流程及 Apple 登录令牌撤销是当前依赖。
+- Apple 要求支持创建账号的应用提供应用内可进入的账号删除流程；仅要求发送邮件不足以满足普通应用的要求。Tenon 的真正删除流程及 Apple 登录令牌撤销正在接入，须验证正式环境后再提交。
 - 来源：[隐私标签定义](https://developer.apple.com/app-store/app-privacy-details/)、[账号删除要求](https://developer.apple.com/support/offering-account-deletion-in-your-app/)。
-- 2026-10-04：28 项原生单元测试通过；免费定价已保存。以下为此前发布历史，不能作为当前构建已经提交的证据。
+- 2026-10-04：28 项原生单元测试通过；免费定价与新版隐私披露已保存。英文 4 张、中文 3 张 1320×2868 原始截图已上传并排序：首页、生成器、详情，英文另有深色首页；均只含虚构账号，密码隐藏。Build 9 的 Release 归档与上传成功；没有提交审核。
+- Build 10 修复：锁屏只在创建新密码本时显示 Tenon 登录入口。已有本机密码本在会话到期或重启后仍显示 Face ID 解锁，未延长会话或改变密钥保护。设置与网页版新增账号删除直接入口。
+- 以下为此前发布历史，不能作为当前构建已经提交的证据。
 
 ## 当前发布验证
 
