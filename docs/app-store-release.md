@@ -1,34 +1,35 @@
 # PassBy 1.0 发布记录
 
-## 当前分发决定（2026-10-04）
+## 当前分发决定（2026-10-05）
 
 - 开发者：Zeng Deyang；App 内名称：PassBy。
 - Bundle ID：`cn.tenonai.apps.passby`；Team：`3U6LT38JKB`。
-- 版本 1.0，当前候选 Build 11（准备替换审核包）；iOS 17+，仅 iPhone，竖屏。
+- 版本 1.0，当前构建 Build 11；iOS 17+，仅 iPhone，竖屏。
 - 用户改为免费首发，已在 Connect 保存所有地区 $0.00；174 个海外地区，排除中国大陆、Mac 和 Vision Pro。此决定替代此前 US$1.99 买断方案。
 - 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
 - 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
 - 公开支持邮箱：`support@tenonai.cn`。审核联系人沿用 WeSaid，私人联系信息不写入仓库。
-- 旧 Build 2 已从审核草稿移除；Build 10 包含重启提示修复与账号删除入口。Connect 1.0 已提交，当前为“等待审核”。采用手动发布。
+- 旧 Build 2 已从审核草稿移除；Build 10 的提交已按用户要求取消，Build 11 已重新提交，当前“等待审核”。采用手动发布。
 
 ## 免费首发提交（2026-10-04，21:52 SGT）
 
-- 已提交 iOS App 1.0（10），Connect 明确显示“已提交 1 个项目”，审核详情显示“等待审核”。尚未审核通过或公开上架。
+- 当日提交 iOS App 1.0（10），Connect 明确显示“已提交 1 个项目”，审核详情显示“等待审核”。该提交已于 2026-10-05 按用户要求取消并替换，不代表当前审核包。尚未审核通过或公开上架。
 - 提交 ID：`70bd4eea-a3cd-4da9-93d4-3132e85d1467`；[审核详情](https://appstoreconnect.apple.com/apps/6817881529/distribution/reviewsubmissions/details/70bd4eea-a3cd-4da9-93d4-3132e85d1467)。
 - 沿用免费 $0.00、174 个海外地区、手动发布；审核账号及中英文资料、截图、隐私标签已随此次提交保存。
 - Tenon 删除服务正式版本：`c949c0bcbf0e389b5879a21b504762857c332d0d`。正式入口返回 HTTP 200、no-store、X-Frame-Options DENY；浏览器确认匿名页面展示登录入口及删除影响说明。中央隔离测试已通过，不对真实账号执行删除验收。
 - PassBy 网页、支持和隐私页面已从干净提交 `7dc82e4884bd3d92a0f7a6f88dcbafeb72c69c4b` 发布，13 项网页/加密兼容性测试与发布文件摘要检查通过。隐私页和网页设置的直接账号删除入口已公开。
 - 用户确认重启后首屏不再显示 Tenon 登录，但设置仍显示该入口。Build 10 将一分钟账号会话用于手机，导致设置重复显示登录。用户已要求手机保持登录，已授权替换审核包；不把此反馈写成两台真机恢复验收已通过。跨设备恢复、并发编辑及完整真实设备异常场景仍为后续质量验证项目。
 
-## Build 11 候选：统一 Tenon 与手机记住登录（2026-10-05）
+## Build 11：统一 Tenon 与手机记住登录（2026-10-05）
 
-用户已授权替换首发审核包；Build 10 仍在等待审核，尚未撤回。候选统一账号入口，将 Apple 存储细节收进同步说明，手机通过安全轮换凭据保留登录，日常使用 Face ID。
+用户已授权替换首发审核包；Build 10 已取消提交。Build 11 统一账号入口，将 Apple 存储细节收进同步说明，手机通过安全轮换凭据保留登录，日常使用 Face ID。
 
 - 原生 33 项测试、网页 13 项测试、BFF 15 项测试通过；中央 103 项账号测试与 24 项发布检查通过。
 - 覆盖过期访问凭据续期、断网保留资料但不延长权限、凭据轮换、并发单次续期、退出后的延迟响应、错误身份、撤销、账号删除、封禁和密码重置。
 - 中央续期服务 `0b2e3206b47fcc9e13445cd1263163e8611ed39e` 已正式发布，仅启用既有 PassBy iPhone 客户端。服务器和开发机直接 HTTPS 的完整验收通过；最初开发机继承代理导致超时，关闭该命令的代理继承后验收通过，TLS 校验保持开启。新手机授权请求 `offline_access`，升级需登录一次取得新版凭据。没有绕过 Face ID 或修改现有密码本。
 - PassBy BFF 与网页正式提交为 `b315d6091f690e7bb4507d3ccf26122510737659`，健康、匿名会话、文件摘要与安全头验收通过。用授权的普通审核账号完成正式 native v2 授权、PKCE 兑换、续期轮换、旧访问会话失效、退出与中央撤销验证；未读写任何密码本，测试会话已退出。原生 archive 来源为 `717219fb0ffdbfa9a9d1fd8f32f9272f61440d05`，正式 CloudKit 与完整文件保护已核对。
-- 当前测试结果不代表两台真机恢复或第三方安全审计已经完成。Build 11 已成功上传 Apple，仍在处理；已更新安装到现有 iPhone，保留密码本，手机实际记住登录确认仍待用户完成。商店更新和重新提交仍待完成。
+- 当前测试结果不代表两台真机恢复或第三方安全审计已经完成。Build 11 已成功上传 Apple并处理完成，构建 ID 为 `9c3bb405-f29d-4827-ad32-04d5be0c72d6`。已更新安装到现有 iPhone，保留密码本，手机实际记住登录确认仍待用户完成。中英文描述与新版审核说明已保存，审核草稿明确关联 1.0（11）。
+- 2026-10-05 00:41 SGT 已重新提交。Connect 明确显示“已提交 1 个项目”，新审核详情显示版本 1.0（11）“等待审核”。提交 ID：`d6a43e0a-41b7-45e0-8c2f-f3bbb35ffe88`；[审核详情](https://appstoreconnect.apple.com/apps/6817881529/distribution/reviewsubmissions/details/d6a43e0a-41b7-45e0-8c2f-f3bbb35ffe88)。免费首发、174 个海外地区、中英文原截图、审核登录信息和手动发布设置继续沿用。尚未审核通过或公开上架。
 
 ## 账号与密码本
 
@@ -50,7 +51,7 @@ Generate random passwords with lowercase letters, uppercase letters, numbers and
 
 Your notebook locks whenever you leave PassBy. Face ID is required to reopen it. Passwords remain hidden until you choose to reveal them. Copies stay on this iPhone and expire after 60 seconds.
 
-Sign in through Tenon Account using Apple or email. Tenon manages your sign-in methods; it does not receive notebook contents or recovery keys. Your notebook is encrypted on your device using AES-256-GCM before syncing to the private storage of your Apple Account.
+Sign in through Tenon Account using Apple or email. Your iPhone remembers your sign-in and securely renews account sessions; reopening the notebook still requires Face ID. Tenon manages your sign-in methods; it does not receive notebook contents or recovery keys. Your notebook is encrypted on your device using AES-256-GCM before syncing to the private storage of your Apple Account.
 
 Save your recovery key outside PassBy. You need it on a new iPhone or when your local key becomes unavailable. The developer cannot recover a lost key or decrypt your notebook.
 
@@ -78,7 +79,7 @@ PassBy 是一款简洁的 iPhone 密码本。每项记录包含标题、账户�
 
 每次离开 PassBy，密码本立即锁定，再次打开需通过 Face ID。密码默认隐藏，复制内容只保留在本机，60 秒后过期。
 
-通过 Tenon 账号使用 Apple 或邮箱登录，统一管理登录方式。Tenon 不接收密码本内容或恢复密钥。密码本先在设备上使用 AES-256-GCM 加密，再同步至你的 Apple 账号私有存储。
+通过 Tenon 账号使用 Apple 或邮箱登录，统一管理登录方式。iPhone 会记住登录并安全续期，重新打开密码本仍需 Face ID。Tenon 不接收密码本内容或恢复密钥。密码本先在设备上使用 AES-256-GCM 加密，再同步至你的 Apple 账号私有存储。
 
 请将恢复密钥保存在 PassBy 之外。新 iPhone 或本机密钥失效后，需要同一 Apple 存储账号和恢复密钥才能打开密码本。开发者无法找回丢失的密钥或解密密码本。
 
