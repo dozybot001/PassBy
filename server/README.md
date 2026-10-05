@@ -44,6 +44,15 @@ It does not store notebooks, keys, provider credentials, or central access token
 
 ## Operation
 
+Product deletion derives its subject from the current local session, then uses
+Tenon's short product-bound authorization. The central start and claim calls
+have 5-second deadlines; finish has a 2-second deadline. Local deletion and its
+durable receipt commit before finish. A finish timeout returns that committed
+result; a retry reads the receipt and cannot delete a later new product identity.
+Only UUIDv4 operation IDs, 43-character grants and the single controlled central
+request URL with a future integer expiry are accepted. This flow removes PassBy
+identity snapshots and sessions, not Apple private notebooks or local keys.
+
 Production private configuration is `/opt/passby-auth/config/tenon.env` (0600):
 `TENON_CLIENT_ID`, `TENON_CLIENT_SECRET`, `TENON_IOS_CLIENT_ID`,
 `TENON_IOS_CLIENT_SECRET`. Do not copy its contents to Git, logs or chats.

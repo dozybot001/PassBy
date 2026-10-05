@@ -19,7 +19,7 @@ function fixture(store = new SessionStore(':memory:')) {
     assert.equal(init.redirect, 'error'); assert.match(init.headers.Authorization, /^Basic /);
     if (url.endsWith('/finish') && options.failFinish) throw Error('Fixture network failure');
     return Response.json(url.endsWith('/claim') ? { issuer: ISSUER, ...options } : url.endsWith('/start') ?
-      { url: options.url || `https://account.tenon.asia/account/delete/?request=${grant}`, expiresAt: now + 10000 } : { status: 'completed' });
+      { url: options.url || `https://account.tenon.asia/account/delete/?request=${grant}`, expiresAt: 'expiresAt' in options ? options.expiresAt : now + 10000 } : { status: 'completed' });
   };
   return { auth, store, options, transport, service: new ProductDeletion({ auth, transport }) };
 }
@@ -128,4 +128,61 @@ test('a lost local receipt cannot reuse a central completed operation to delete 
  f.options.completed = true;
  await assert.rejects(f.service.execute({ operationId, grant }), { status: 503 });
  assert.equal(f.auth.sessionCount, 1); f.store.close();
+});
+
+test('start and claim have 5-second deadlines; a 2-second finish timeout still returns the committed result', async t => {
+  const f = fixture(); t.after(() => f.store.close());
+  const token = 't'.repeat(43), durations = [];
+  f.store.create(origins[0], digest(token), identity('person'), now);
+  const timeoutSignal = milliseconds => {
+    durations.push(milliseconds);
+    const controller = new AbortController();
+    if (milliseconds === 2000) queueMicrotask(() => controller.abort(new DOMException('Fixture deadline', 'TimeoutError')));
+    return controller.signal;
+  };
+  const transport = async (url, init) => {
+    if (!url.endsWith('/finish')) return f.transport(url, init);
+    assert.equal(f.auth.sessionCount, 0, 'deletion must commit before contacting finish');
+    return new Promise((resolve, reject) => {
+      init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true });
+    });
+  };
+  const service = new ProductDeletion({ auth: f.auth, transport, timeoutSignal });
+  await service.start({ headers: { authorization: `Bearer ${token}` } });
+  assert.deepEqual(await service.execute({ operationId, grant }), { operationId, status: 'completed', deleted: true });
+  assert.deepEqual(durations, [5000, 5000, 2000]);
+  f.store.create(origins[0], digest('new-after-timeout'), identity('person'), now);
+  await service.execute({ operationId, grant });
+  assert.equal(f.store.get(origins[0], digest('new-after-timeout'), now).sub, 'person');
+});
+
+test('invalid deletion bodies and non-v4 operation IDs reject before requesting any proof', async t => {
+  const f = fixture(); t.after(() => f.store.close());
+  f.store.create(origins[0], digest('live'), identity('person'), now);
+  const service = new ProductDeletion({ auth: f.auth, transport: () => { throw Error('Must not contact central service'); } });
+  for (const body of [null, [], 'request', {}, { operationId: [operationId], grant },
+    { operationId, grant: [grant] }, { operationId: operationId.slice(0, 14) + '1' + operationId.slice(15), grant },
+    { operationId, grant, sub: 'forged' }]) {
+    await assert.rejects(service.execute(body), { status: 400 });
+    assert.equal(f.auth.sessionCount, 1);
+  }
+});
+
+test('start accepts only one controlled request query and a future safe-integer expiry', async t => {
+  const f = fixture(); t.after(() => f.store.close());
+  const token = 't'.repeat(43), request = { headers: { authorization: `Bearer ${token}` } };
+  f.store.create(origins[0], digest(token), identity('person'), now);
+  const valid = `https://account.tenon.asia/account/delete/?request=${grant}`;
+  for (const url of [`${valid}&request=${grant}`, `${valid}&other=1`, `${valid}#extra`,
+    valid.replace('account.tenon.asia', 'account.tenon.asia.evil.example'), [valid]]) {
+    f.options.url = url;
+    await assert.rejects(f.service.start(request), { status: 503 });
+  }
+  f.options.url = valid;
+  for (const expiresAt of [null, `${now + 10000}`, now, now - 1, now + 0.5, Number.MAX_SAFE_INTEGER + 1]) {
+    f.options.expiresAt = expiresAt;
+    await assert.rejects(f.service.start(request), { status: 503 });
+  }
+  delete f.options.expiresAt;
+  assert.deepEqual(await f.service.start(request), { url: valid, expiresAt: now + 10000 });
 });
