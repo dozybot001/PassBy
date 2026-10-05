@@ -1,13 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TenonAuth, ISSUER, ROLE, digest, TTL, NATIVE_TTL, REFRESH_TTL } from '../auth.mjs';
+import { TenonAuth, ISSUER, ROLE, digest, TTL, NATIVE_TTL, REFRESH_TTL, LEGACY_NATIVE_TTL } from '../auth.mjs';
 import { createApp } from '../server.mjs';
 
 function fixture(options = {}) {
   let now = 1000000, grants = 0;
+  const issuedAt = now;
   const info = { sub: 'test-user', name: 'Example', email_verified: true, [ROLE]: 'user' };
   const claims = { iss: ISSUER, sub: info.sub, exp: now / 1000 + 3600, [ROLE]: info[ROLE] };
-  const tokens = { claims: () => claims, access_token: 'test-only', expires_in: 3600, refresh_token: 'r'.repeat(32) };
+  const tokens = { claims: () => claims, access_token: 'test-only', expires_in: 3600, refresh_token: 'r'.repeat(32),
+    expiresIn: () => Math.max(0, Math.floor(tokens.expires_in - (now - issuedAt) / 1000)) };
   const protocol = {
     discovery: async () => ({ serverMetadata: () => ({ issuer: ISSUER }) }), ClientSecretBasic: () => {},
     randomPKCECodeVerifier: () => 'verifier', randomState: () => 'state', randomNonce: () => 'nonce',
@@ -21,22 +23,25 @@ function fixture(options = {}) {
   };
   const auth = new TenonAuth({ clientId: 'test', clientSecret: 'test-only', iosClientId: 'native-test', iosClientSecret: 'native-test-only', protocol, now: () => now, ...options });
   const req = { headers: {} }, res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, writeHead(s, h) { this.status = s; Object.assign(this.headers, h); return this; }, end() {} };
-  return { auth, req, res, info, claims, tokens, protocol, advance: ms => { now += ms; }, grants: () => grants };
+  return { auth, req, res, info, claims, tokens, protocol, advance: ms => { now += ms; }, time: () => now, grants: () => grants };
 }
 async function begin(f, suffix = '') {
   await f.auth.start(f.req, f.res, new URL('https://tenon.asia/passby/api/auth/start' + suffix));
   f.req.headers.cookie = f.res.headers['Set-Cookie'].split(';')[0];
 }
 const callback = (native = false) => new URL(`https://tenon.asia/passby/api/auth/${native ? 'ios/' : ''}callback?code=test&state=state`);
-test('callback grants bounded independent session; token is never returned to the web', async () => {
-  const f = fixture(); await begin(f); await f.auth.complete(f.req, f.res, callback());
+test('callback grants an independent 30-day session even when central tokens expire in a minute', async () => {
+  const f = fixture(); f.claims.exp = f.time() / 1000 + 60; f.tokens.expires_in = 60;
+  await begin(f); await f.auth.complete(f.req, f.res, callback());
   assert.equal(f.res.headers.Location, '/passby/');
   assert.match(f.res.headers['Set-Cookie'][1], /HttpOnly; Secure; SameSite=Strict/);
+  assert.match(f.res.headers['Set-Cookie'][1], /Max-Age=2592000$/);
   f.req.headers.cookie = f.res.headers['Set-Cookie'][1].split(';')[0];
   const identity = f.auth.identity(f.req).session;
   assert.equal(identity.role, 'user'); assert.equal(identity.expires, 1000000 + TTL);
   assert.equal('access_token' in identity, false); assert.equal(f.grants(), 1);
-  f.advance(TTL); assert.throws(() => f.auth.identity(f.req), { status: 401 });
+  f.advance(TTL - 1); assert.equal(f.auth.identity(f.req).session.expires, identity.expires);
+  f.advance(1); assert.throws(() => f.auth.identity(f.req), { status: 401 });
 });
 test('missing cookie, wrong state, expired and replayed callbacks cannot grant sessions', async () => {
   for (const kind of ['missing', 'state', 'expired', 'replay']) {
@@ -50,8 +55,30 @@ test('missing cookie, wrong state, expired and replayed callbacks cannot grant s
   }
 });
 test('unverified, mismatched subject/role and expired central tokens are rejected', async () => {
-  for (const mutate of [f => { f.info.email_verified = false; }, f => { f.info.sub = 'other'; }, f => { f.info[ROLE] = 'admin'; }, f => { f.claims.exp = 0; }, f => { f.claims.iss = 'https://attacker.invalid'; }]) {
+  for (const mutate of [f => { f.info.email_verified = false; }, f => { f.info.sub = 'other'; }, f => { f.info[ROLE] = 'admin'; },
+    f => { f.claims.exp = 0; }, f => { f.claims.exp = Infinity; }, f => { delete f.claims.exp; },
+    f => { f.tokens.expires_in = 0; }, f => { f.tokens.expires_in = Infinity; }, f => { f.claims.iss = 'https://attacker.invalid'; }]) {
     const f = fixture(); mutate(f); await begin(f); await assert.rejects(f.auth.complete(f.req, f.res, callback())); assert.equal(f.auth.sessions.size, 0);
+  }
+});
+test('callback and renewal reject tokens that expire while UserInfo verification is in flight', async () => {
+  for (const expiry of ['id', 'access']) for (const version of [undefined, 2, 3]) for (const phase of ['callback', 'refresh']) {
+    const f = fixture();
+    if (expiry === 'id') f.claims.exp = f.time() / 1000 + 60;
+    else f.tokens.expires_in = 60;
+    f.protocol.fetchUserInfo = async () => { f.advance(60000); return f.info; };
+    if (phase === 'refresh') {
+      f.protocol.refreshTokenGrant = async () => f.tokens;
+      await assert.rejects(f.auth.refresh({ refreshToken: f.tokens.refresh_token, issuer: ISSUER, sub: f.info.sub,
+        ...(version === undefined ? {} : { session_version: version }) }), { status: 401 });
+    }
+    else if (version === undefined) { await begin(f); await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 }); }
+    else {
+      const verifier = 'v'.repeat(43), state = 's'.repeat(43);
+      await begin(f, `?platform=ios&session_version=${version}&challenge=${digest(verifier)}&state=${state}`);
+      await assert.rejects(f.auth.complete(f.req, f.res, callback(true)), { status: 401 });
+    }
+    assert.equal(f.auth.sessions.size, 0); assert.equal(f.auth.tickets.size, 0);
   }
 });
 test('native callback is fixed, PKCE-bound, one-use and short-lived', async () => {
@@ -61,6 +88,7 @@ test('native callback is fixed, PKCE-bound, one-use and short-lived', async () =
   const ticket = url.searchParams.get('ticket');
   assert.throws(() => f.auth.exchange({ ticket, verifier: 'z'.repeat(43), state }), { status: 401 });
   const result = f.auth.exchange({ ticket, verifier, state }); assert.equal(result.identity.sub, 'test-user');
+  assert.equal(result.identity.expires, f.time() + TTL);
   assert.throws(() => f.auth.exchange({ ticket, verifier, state }), { status: 401 });
   assert.equal(f.auth.identity({ headers: { authorization: `Bearer ${result.token}` } }).session.sub, 'test-user');
 });
@@ -81,13 +109,14 @@ test('API rejects CSRF logout, unexpected methods and password/vault endpoints',
   assert.equal((await fetch(origin + '/passby/api/vault', { method: 'POST', body: 'test-only' })).status, 404);
 });
 
-test('web sessions have a one-minute maximum; remembered native access is bounded separately', () => {
-  assert.equal(TTL, 60000); assert.equal(NATIVE_TTL, 900000); assert.equal(REFRESH_TTL, 2592000000);
+test('web, native and rotating refresh lifetimes are all 30 days', () => {
+  assert.equal(TTL, 2592000000); assert.equal(NATIVE_TTL, TTL); assert.equal(REFRESH_TTL, TTL);
+  assert.equal(LEGACY_NATIVE_TTL, 900000);
 });
 
-async function rememberedGrant(f) {
+async function rememberedGrant(f, version = 3) {
   const verifier = 'v'.repeat(43), state = 's'.repeat(43);
-  await begin(f, `?platform=ios&session_version=2&challenge=${digest(verifier)}&state=${state}`);
+  await begin(f, `?platform=ios&session_version=${version}&challenge=${digest(verifier)}&state=${state}`);
   const authorization = new URL(f.res.headers.Location);
   assert.equal(authorization.searchParams.get('scope'), 'openid profile email offline_access');
   assert.equal(authorization.searchParams.get('prompt'), 'consent');
@@ -95,28 +124,54 @@ async function rememberedGrant(f) {
   const ticket = new URL(f.res.headers.Location).searchParams.get('ticket');
   return f.auth.exchange({ ticket, verifier, state });
 }
-test('only explicit native v2 exchanges return a refresh credential; callback contains only a ticket', async () => {
-  const f = fixture(); const grant = await rememberedGrant(f);
-  assert.equal(grant.version, 2); assert.equal(grant.refreshToken, f.tokens.refresh_token);
-  assert.equal(grant.identity.expires, 1000000 + NATIVE_TTL);
-  assert.equal(grant.refreshExpires, 1000000 + REFRESH_TTL);
-  assert.equal(new URL(f.res.headers.Location).searchParams.has('refreshToken'), false);
-  const web = fixture(); await begin(web, '?session_version=2');
+test('native v2 and v3 negotiate expiry; only native remembered exchanges receive refresh credentials', async () => {
+  for (const version of [2, 3]) {
+    const f = fixture(); f.claims.exp = f.time() / 1000 + 60; f.tokens.expires_in = 60;
+    const grant = await rememberedGrant(f, version);
+    const lifetime = version === 2 ? LEGACY_NATIVE_TTL : NATIVE_TTL;
+    assert.equal(grant.version, version); assert.equal(grant.refreshToken, f.tokens.refresh_token);
+    assert.equal(grant.identity.expires, f.time() + lifetime);
+    assert.equal(grant.refreshExpires, f.time() + REFRESH_TTL);
+    assert.equal(new URL(f.res.headers.Location).searchParams.has('refreshToken'), false);
+    f.advance(lifetime - 1);
+    assert.equal(f.auth.identity({ headers: { authorization: `Bearer ${grant.token}` } }).session.expires, grant.identity.expires);
+    f.advance(1);
+    assert.throws(() => f.auth.identity({ headers: { authorization: `Bearer ${grant.token}` } }), { status: 401 });
+  }
+  const web = fixture(); await begin(web, '?session_version=3');
   assert.equal(new URL(web.res.headers.Location).searchParams.get('scope'), 'openid profile email');
   await web.auth.complete(web.req, web.res, callback());
-  assert.ok(!JSON.stringify([...web.auth.sessions.values()]).includes(f.tokens.refresh_token));
+  assert.ok(!JSON.stringify([...web.auth.sessions.values()]).includes(web.tokens.refresh_token));
 });
 test('renewal verifies fresh central identity, rotates refresh credential and recovers after BFF restart', async () => {
   const f = fixture(); const original = await rememberedGrant(f);
-  f.advance(NATIVE_TTL + 1000);
-  assert.throws(() => f.auth.identity({ headers: { authorization: `Bearer ${original.token}` } }), { status: 401 });
-  f.protocol.refreshTokenGrant = async (_, refresh) => { assert.equal(refresh, original.refreshToken); return { ...f.tokens, refresh_token: 'n'.repeat(32) }; };
-  f.info.name = 'Updated'; f.info[ROLE] = f.claims[ROLE] = 'admin';
+  f.advance(NATIVE_TTL - 60000);
   f.auth.sessions.clear();
-  const next = await f.auth.refresh({ refreshToken: original.refreshToken, issuer: ISSUER, sub: 'test-user' });
+  assert.throws(() => f.auth.identity({ headers: { authorization: `Bearer ${original.token}` } }), { status: 401 });
+  f.protocol.refreshTokenGrant = async (_, refresh) => {
+    assert.equal(refresh, original.refreshToken);
+    return { ...f.tokens, claims: () => ({ ...f.claims, exp: f.time() / 1000 + 60 }), expires_in: 60, expiresIn: () => 60, refresh_token: 'n'.repeat(32) };
+  };
+  f.info.name = 'Updated'; f.info[ROLE] = f.claims[ROLE] = 'admin';
+  const next = await f.auth.refresh({ refreshToken: original.refreshToken, issuer: ISSUER, sub: 'test-user', session_version: 3 });
+  assert.equal(next.version, 3);
   assert.equal(next.identity.name, 'Updated'); assert.equal(next.identity.role, 'admin');
+  assert.equal(next.identity.expires, f.time() + TTL); assert.equal(next.refreshExpires, f.time() + REFRESH_TTL);
   assert.equal(next.refreshToken, 'n'.repeat(32)); assert.ok(next.identity.expires > original.identity.expires);
   assert.equal(f.auth.identity({ headers: { authorization: `Bearer ${next.token}` } }).session.sub, 'test-user');
+});
+test('old native refresh requests remain v2; upgraded clients can renew saved v2 credentials into v3', async () => {
+  for (const version of [undefined, 2, 3]) {
+    const f = fixture(), original = await rememberedGrant(f, 2);
+    f.advance(LEGACY_NATIVE_TTL);
+    f.protocol.refreshTokenGrant = async () => ({ ...f.tokens, refresh_token: 'n'.repeat(32) });
+    const next = await f.auth.refresh({ refreshToken: original.refreshToken, issuer: ISSUER, sub: original.identity.sub,
+      ...(version === undefined ? {} : { session_version: version }) });
+    assert.equal(next.version, version ?? 2);
+    assert.equal(next.identity.expires, f.time() + (version === 3 ? TTL : LEGACY_NATIVE_TTL));
+    assert.equal(next.refreshExpires, f.time() + REFRESH_TTL);
+    assert.equal(next.refreshToken, 'n'.repeat(32));
+  }
 });
 test('rotation retires previous native access and logout retires all retries of the same device credential', async () => {
   const f = fixture(); const original = await rememberedGrant(f);
@@ -138,6 +193,21 @@ test('concurrent refreshes coalesce and a mismatched subject cannot reuse the in
   await assert.rejects(f.auth.refresh({ ...body, sub: 'other' }), { status: 401 });
   await Promise.resolve(); finish();
   assert.deepEqual(await a, await b); assert.equal(calls, 1);
+});
+test('concurrent old and new clients share central rotation and receive compatible independent sessions', async () => {
+  const f = fixture(); let finish, calls = 0;
+  let markStarted; const started = new Promise(resolve => { markStarted = resolve; });
+  f.protocol.refreshTokenGrant = async () => { calls++; await new Promise(resolve => { finish = resolve; markStarted(); }); return { ...f.tokens, refresh_token: 'n'.repeat(32) }; };
+  f.protocol.tokenRevocation = async () => {};
+  const body = { refreshToken: 'r'.repeat(32), issuer: ISSUER, sub: 'test-user' };
+  const oldRequest = f.auth.refresh(body), newRequest = f.auth.refresh({ ...body, session_version: 3 });
+  await started; finish();
+  const [legacy, current] = await Promise.all([oldRequest, newRequest]);
+  assert.equal(calls, 1); assert.equal(legacy.version, 2); assert.equal(current.version, 3);
+  assert.equal(legacy.identity.expires, f.time() + LEGACY_NATIVE_TTL); assert.equal(current.identity.expires, f.time() + TTL);
+  assert.equal(legacy.refreshToken, current.refreshToken); assert.notEqual(legacy.token, current.token);
+  await f.auth.revoke({ refreshToken: current.refreshToken });
+  for (const grant of [legacy, current]) assert.throws(() => f.auth.identity({ headers: { authorization: `Bearer ${grant.token}` } }), { status: 401 });
 });
 test('revoked grants require login; network failure cannot issue an extended session', async () => {
   for (const [error, status] of [[Object.assign(Error(), { error: 'invalid_grant' }), 401], [Error('offline'), 503]]) {

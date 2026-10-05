@@ -5,6 +5,7 @@ import { recoveryKey, openNotebook, sealNotebook, generatePassword } from '../pu
 import { validateVault, mergeVault } from '../public/web/model.mjs';
 import { NotebookSession } from '../public/web/session.mjs';
 import { CloudNotebook } from '../public/web/cloud.mjs';
+import { TENON_SESSION_TTL, validIdentity, scheduleExpiry } from '../public/web/auth.mjs';
 const id = '11111111-1111-4111-8111-111111111111';
 const entry = {id,title:'Example',account:'example@test.invalid',password:'Test-Only-Password',notes:'兼容性'};
 const vault = () => ({schemaVersion:1,folders:[],entries:[{...entry}]});
@@ -12,6 +13,26 @@ const raw = Uint8Array.from({length:32},(_,i)=>i);
 const checksum = new Uint8Array(await crypto.subtle.digest('SHA-256',raw));
 const text = Buffer.concat([raw,checksum.subarray(0,2)]).toString('hex');
 const key = await recoveryKey(text);
+test('Tenon identity accepts 30 days and rejects expired or excessive lifetimes',()=>{
+  const now=1000000,identity={issuer:'https://account.tenon.asia/api/auth',sub:'fixture-user',role:'user',expires:now+TENON_SESSION_TTL};
+  assert.equal(TENON_SESSION_TTL,2592000000);
+  assert.equal(validIdentity(identity,now),true);
+  assert.equal(validIdentity(identity,identity.expires-1),true);
+  assert.equal(validIdentity(identity,identity.expires),false);
+  assert.equal(validIdentity({...identity,expires:identity.expires+1},now),false);
+  assert.equal(validIdentity({...identity,role:'unknown'},now),false);
+});
+test('30-day expiry uses bounded timers, expires once and can be cancelled after rescheduling',()=>{
+  let now=1000000,queued,expired=0,cancelled;
+  const options={now:()=>now,schedule:(callback,delay)=>{assert.ok(delay>0&&delay<=86400000);queued={callback,delay};return queued;},cancel:timer=>{cancelled=timer;}};
+  const stop=scheduleExpiry(now+TENON_SESSION_TTL,()=>expired++,options);
+  for(let day=0;day<29;day++){now+=queued.delay;queued.callback();assert.equal(expired,0);}
+  now+=queued.delay;queued.callback();queued.callback();assert.equal(expired,1);
+  stop();assert.equal(cancelled,queued);
+  const cancelAfterReschedule=scheduleExpiry(now+TENON_SESSION_TTL,()=>expired++,options);
+  now+=queued.delay;queued.callback();cancelAfterReschedule();
+  now+=TENON_SESSION_TTL;queued.callback();assert.equal(expired,1);
+});
 test('recovery checksum, nonextractable key, AES-GCM authentication',async()=>{
   assert.equal(key.extractable,false);
   await assert.rejects(recoveryKey(text.slice(0,-2)+'00'),{code:'invalidKey'});

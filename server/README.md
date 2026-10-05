@@ -13,7 +13,25 @@ It does not store notebooks, keys, provider credentials, or central access token
 - Separate production clients use exact HTTPS callbacks
   `/passby/api/auth/callback` and `/passby/api/auth/ios/callback`.
 - Web sessions use Secure / HttpOnly / SameSite=Strict cookies scoped to the API.
-  Sessions live in memory for at most 1 minute. No silent renewal or fallback.
+  Sessions live in memory for 30 days after successful central verification.
+  Web cookie Max-Age and identity expiry match that lifetime. No silent renewal or fallback.
+- Web and native v3 product sessions share this independent 30-day lifetime.
+  Callback and refresh grants still validate the current central token signature,
+  issuer, audience, time, subject, role and verified email; short OIDC token
+  lifetimes do not shorten a verified product session. Native refresh credentials
+  remain rotating and expire after 30 days without renewal. Login transactions
+  remain 10 minutes and one-use native tickets remain 60 seconds.
+- Native start declares `session_version=3` in its query and refresh declares
+  `session_version: 3` in JSON. Responses carry `version: 3`. Existing v2
+  builds (11/12) reject longer expiry values, so v2 start and refresh without
+  a version keep 15-minute access sessions plus the existing 30-day rotating
+  refresh login. This is temporary compatibility for shipped native builds.
+  A new iPhone accepts v2/v3 responses and renews saved v2 credentials into v3.
+  Concurrent v2/v3 requests coalesce central rotation while receiving their
+  own compatible expiry; revocation retires both sessions.
+- Deploy the compatible BFF before distributing a v3 iPhone build. The old BFF
+  does not request offline access for a v3 start; new first-time sign-in needs
+  the updated BFF. Existing v2 iPhones continue working throughout that order.
 - The iPhone uses ASWebAuthenticationSession. Its held PKCE verifier binds a
   60-second one-use ticket returned to the fixed `passby://auth` URL. The native
   session token and identity are kept in the device-only Keychain and restored

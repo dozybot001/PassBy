@@ -42,7 +42,9 @@
 
 ## 账号与密码本
 
-Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱登录。新建密码本需要 Tenon 身份；已有本机密码本继续由 Face ID 解锁。网页版会话最长 1 分钟，不静默续期。Build 11 手机端使用最长 15 分钟的短访问会话和轮换续期凭据，存入仅本机钥匙串，关闭应用后保留登录。凭据在 30 天未续期后到期；主动退出、中央撤销、删除账号、封禁或密码重置可能需要重新登录。断网不延长账号权限，但已有密码本仍可 Face ID 解锁。
+Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱登录。新建密码本需要 Tenon 身份；已有本机密码本继续由 Face ID 解锁。当前源码将网页与新版 iPhone v3 产品会话统一为验证成功后 30 天；网页不静默续期。手机使用仅本机钥匙串保存的轮换续期凭据，30 天未续期后到期；关闭应用后保留登录。每次登录和续期验证当时中央身份、角色、已验证邮箱与令牌有效性，中央短期 OIDC 令牌不压缩已建立的产品会话。主动退出或续期凭据撤销后可能需要重新登录；独立产品会话不会仅因中央退出而立即撤销。断网不延长原到期时间，已有密码本仍可 Face ID 解锁。旧 Build 11 与已归档/安装的 Build 12 使用 v2，暂时保留 15 分钟访问 expiry 与原有 30 天轮换续期登录，避免旧包拒绝登录。新版源码在 start 与 refresh 声明 session_version=3，并接受旧 v2 和新 v3 响应；已有钥匙串 v2 凭据可续期升级。须先发布兼容 BFF，再发布新版 iPhone，旧 BFF 无法完成新版首次 v3 登录。此源码变更尚未替换正在审核的 Build 11，未上传 App Store 或改变审核状态；后续 iPhone 发布需使用新构建。
+
+此次源码验证：BFF 18 项测试、网页 15 项测试、原生 SessionGate 17 项测试通过，覆盖新旧协议互操作、30 天边界、网络校验期间中央令牌到期、轮换与退出。Release 真机目标签名构建通过，使用现有本机开发证书和描述文件，不需要重新登录 Xcode；这不是新的 App Store 上传，现有上传认证阻塞仍须单独处理。
 
 密码本存储属于手机系统 iCloud 的 Apple 账号，与 Tenon 登录身份分别授权。CloudKit 私有库只保存已加密的整个密码本与格式版本。Tenon 不接收密码本内容或恢复密钥。Apple 账号变化会立即锁定，并隔离不同账号的本机密文与钥匙串。
 
@@ -108,7 +110,7 @@ PassBy is a free iPhone-only password notebook with no subscriptions, in-app pur
 2. Return to PassBy, read and acknowledge the recovery notice, and tap Create my notebook. Complete Face ID and save the displayed recovery key outside the app. Do not send this key to the developer.
 3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
 4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
-5. Leave and return to the app: Face ID is required again. The iPhone remembers Tenon sign-in in the device-only Keychain and securely renews short account sessions. Closing the app does not sign out. An existing notebook remains accessible through Face ID offline; signing out or revoked credentials may require signing in again for account services. The web session remains limited to 1 minute. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
+5. Leave and return to the app: Face ID is required again. The iPhone remembers Tenon sign-in in the device-only Keychain and securely renews account sessions. The updated iPhone and web product sessions last up to 30 days after verification. Existing v2 iPhone builds use shorter access sessions and retain their 30-day rotating refresh sign-in during the update. Closing the app does not sign out. An existing notebook remains accessible through Face ID offline; signing out or revoked credentials may require signing in again for account services. The web session also lasts up to 30 days after verification. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
 6. Settings shows Tenon Account, sign-in method management, sync, privacy, support and About PassBy. Apple storage authorization details are available under Sync details. Delete Tenon Account opens https://account.tenon.asia/account/delete/ directly. The central service requires identity verification and confirmation, and deletion affects all Tenon products. The Apple-stored notebook and recovery key are managed separately. A second iPhone using the same Apple storage account needs the saved recovery key.
 7. Web access is available at https://passby.tenon.asia/. Tenon authentication and Apple private storage authorization are separate. A new browser requires the recovery key once; an authorized browser can reopen during a valid Tenon session.
 

@@ -4,6 +4,7 @@ import { NotebookSession } from './session.mjs';
 import { generatePassword } from './crypto.mjs';
 import { newID } from './model.mjs';
 import { TrustedBrowser, bindingID } from './trusted-browser.mjs';
+import { validIdentity, scheduleExpiry } from './auth.mjs';
 
 const copy = {
   en: {
@@ -430,7 +431,7 @@ function openSettings(){
     const block=node('section','settings-block'),heading=node('h3','settings-section-title',title);if(help)heading.append(hint(help,title));block.append(heading);
     const list=node('div','settings-list');block.append(list);inner.append(block);return list;
   }
-  const security=section(language==='zh'?'安全':'Security',language==='zh'?'切换标签页或离开窗口，密码本会立即锁定。Tenon 登录有效 1 分钟，到期需重新登录。网页版无法使用 iPhone 的 Face ID 或阻止截图。已授权的浏览器无需重复输入恢复密钥，新浏览器仍需首次授权。':'Switching tabs or leaving the window locks your notebook. Your Tenon session lasts one minute. The web app cannot use iPhone Face ID or block screenshots. Authorized browsers need no recovery key; new browsers need initial authorization.');
+  const security=section(language==='zh'?'安全':'Security',language==='zh'?'切换标签页或离开窗口，密码本会立即锁定。Tenon 登录成功后有效 30 天，到期需重新登录。网页版无法使用 iPhone 的 Face ID 或阻止截图。已授权的浏览器无需重复输入恢复密钥，新浏览器仍需首次授权。':'Switching tabs or leaving the window locks your notebook. Your Tenon session lasts up to 30 days after sign-in. The web app cannot use iPhone Face ID or block screenshots. Authorized browsers need no recovery key; new browsers need initial authorization.');
   const policy=node('div','settings-policy'),policyTitle=node('div','settings-policy-title');
   policyTitle.append(node('strong','',t('automaticLock')));
   policy.append(policyTitle,node('span','settings-policy-value',language==='zh'?'离开即锁定':'Locks when you leave'));security.append(policy);
@@ -486,9 +487,9 @@ async function prepareTenon() {
     if(response.status===401){tenonIdentity=null;tenonError=tenonCallbackFailed;return;}
     if(!response.ok)throw Error('Service unavailable');
     const {identity}=await response.json();
-    if(identity?.issuer!=='https://account.tenon.asia/api/auth'||typeof identity.sub!=='string'||!Number.isFinite(identity.expires)||identity.expires<=Date.now() || identity.expires>Date.now()+60000)throw Error('Invalid identity');
-    tenonIdentity=identity;clearTimeout(tenonExpiry);
-    tenonExpiry=setTimeout(()=>{tenonIdentity=null;lock();},Math.max(0,identity.expires-Date.now()));
+    if(!validIdentity(identity))throw Error('Invalid identity');
+    tenonIdentity=identity;tenonExpiry?.();
+    tenonExpiry=scheduleExpiry(identity.expires,()=>{tenonIdentity=null;lock();});
     if(!signedIn)void prepareApple();
   } catch {tenonError=true;}
   finally {tenonLoading=false;render();}
@@ -499,7 +500,7 @@ async function signOutTenon() {
   try {
     const response=await fetch('./api/auth/logout',{method:'POST',credentials:'same-origin'});
     if(!response.ok)throw Error('Service unavailable');
-    tenonIdentity=null;trustedKey=null;trustBinding=null;clearTimeout(tenonExpiry);render();
+    tenonIdentity=null;trustedKey=null;trustBinding=null;tenonExpiry?.();render();
   }catch{notify(language==='zh'?'退出未完成，请重试。密码本已锁定。':'Sign-out failed. Try again. Your notebook is locked.');}
   finally{tenonSigningOut=false;render();}
 }

@@ -64,7 +64,7 @@ final class SessionGateTests: XCTestCase {
     @MainActor
     private func savedTenonSession(store: TenonSessionStore, time: Date, expires: Double? = nil) throws {
         let identity = TenonAccount.Identity(issuer: "https://account.tenon.asia/api/auth", sub: "fixture-user",
-            name: "Example", role: "user", expires: expires ?? (time.timeIntervalSince1970 * 1000 + 60000))
+            name: "Example", role: "user", expires: expires ?? (time.timeIntervalSince1970 * 1000 + TenonAccount.sessionLifetime))
         try store.write(JSONEncoder().encode(TenonAccount.Grant(token: String(repeating: "t", count: 43), identity: identity)))
     }
     @MainActor
@@ -74,7 +74,7 @@ final class SessionGateTests: XCTestCase {
         let now = Date(timeIntervalSince1970: 1000)
         try savedTenonSession(store: store, time: now)
         let first = TenonAccount(store: store, now: { now })
-        let reopened = TenonAccount(store: store, now: { now.addingTimeInterval(30) })
+        let reopened = TenonAccount(store: store, now: { now.addingTimeInterval(29 * 86400) })
         XCTAssertEqual(first.identity?.sub, "fixture-user")
         XCTAssertEqual(reopened.identity?.sub, first.identity?.sub)
         XCTAssertEqual(reopened.identity?.expires, first.identity?.expires)
@@ -85,7 +85,7 @@ final class SessionGateTests: XCTestCase {
         let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
         defer { try? store.clear() }
         let now = Date(timeIntervalSince1970: 1000)
-        for expiry in [now.timeIntervalSince1970 * 1000, now.timeIntervalSince1970 * 1000 + 60001] {
+        for expiry in [now.timeIntervalSince1970 * 1000, now.timeIntervalSince1970 * 1000 + TenonAccount.sessionLifetime + 1] {
             try savedTenonSession(store: store, time: now, expires: expiry)
             XCTAssertNil(TenonAccount(store: store, now: { now }).identity)
             XCTAssertNil(try store.read())
@@ -121,18 +121,18 @@ final class SessionGateTests: XCTestCase {
     }
 
     @MainActor
-    private func rememberedGrant(time: Date, refresh: String = String(repeating: "r", count: 32), sub: String = "fixture-user") -> TenonAccount.Grant {
+    private func rememberedGrant(time: Date, refresh: String = String(repeating: "r", count: 32), sub: String = "fixture-user", accessLifetime: Double = TenonAccount.sessionLifetime, version: Int = 3) -> TenonAccount.Grant {
         TenonAccount.Grant(token: String(repeating: "t", count: 43),
             identity: TenonAccount.Identity(issuer: "https://account.tenon.asia/api/auth", sub: sub, name: "Example", role: "user",
-                expires: time.timeIntervalSince1970 * 1000 + 900000),
-            version: 2, refreshToken: refresh, refreshExpires: time.timeIntervalSince1970 * 1000 + 2592000000)
+                expires: time.timeIntervalSince1970 * 1000 + accessLifetime),
+            version: version, refreshToken: refresh, refreshExpires: time.timeIntervalSince1970 * 1000 + 2592000000)
     }
     @MainActor
     func testRememberedAccountSurvivesExpiredAccessOfflineWithoutExtendingAuthority() async throws {
         let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
         defer { try? store.clear() }
         let created = Date(timeIntervalSince1970: 1000), reopened = created.addingTimeInterval(86400)
-        let original = rememberedGrant(time: created)
+        let original = rememberedGrant(time: created, accessLifetime: 900000, version: 2)
         try store.write(JSONEncoder().encode(original))
         let account = TenonAccount(store: store, now: { reopened }, transport: { _ in throw URLError(.notConnectedToInternet) })
         await account.validateRestoredSession()
@@ -143,19 +143,30 @@ final class SessionGateTests: XCTestCase {
         XCTAssertNotEqual(VaultSession.shared.phase, .unlocked)
     }
     @MainActor
+    func testRememberedSessionRejectsAnExpiryBeyondThirtyDays() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        let invalid = rememberedGrant(time: now, accessLifetime: TenonAccount.sessionLifetime + 1)
+        try store.write(JSONEncoder().encode(invalid))
+        XCTAssertNil(TenonAccount(store: store, now: { now }).identity)
+        XCTAssertNil(try store.read())
+    }
+    @MainActor
     func testColdStartRenewsAndPersistsRotatedCredentialWithTheSameIdentity() async throws {
         let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
         defer { try? store.clear() }
         let created = Date(timeIntervalSince1970: 1000), reopened = created.addingTimeInterval(86400)
-        let original = rememberedGrant(time: created), next = rememberedGrant(time: reopened, refresh: String(repeating: "n", count: 32))
+        let original = rememberedGrant(time: created, accessLifetime: 900000, version: 2), next = rememberedGrant(time: reopened, refresh: String(repeating: "n", count: 32))
         try store.write(JSONEncoder().encode(original))
         var requests = 0
         let account = TenonAccount(store: store, now: { reopened }, transport: { request in
             requests += 1
             XCTAssertEqual(request.url?.lastPathComponent, "refresh")
-            let body = try JSONSerialization.jsonObject(with: request.httpBody!) as! [String: String]
-            XCTAssertEqual(body["refreshToken"], original.refreshToken)
-            XCTAssertEqual(body["sub"], original.identity.sub)
+            let body = try JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+            XCTAssertEqual(body["refreshToken"] as? String, original.refreshToken)
+            XCTAssertEqual(body["sub"] as? String, original.identity.sub)
+            XCTAssertEqual(body["session_version"] as? Int, 3)
             return (try JSONEncoder().encode(next), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         })
         await account.validateRestoredSession()
@@ -163,8 +174,30 @@ final class SessionGateTests: XCTestCase {
         XCTAssertEqual(requests, 1)
         let saved = try JSONDecoder().decode(TenonAccount.Grant.self, from: XCTUnwrap(store.read()))
         XCTAssertEqual(saved.refreshToken, next.refreshToken)
+        XCTAssertEqual(saved.version, 3)
         XCTAssertEqual(saved.identity.sub, original.identity.sub)
+        XCTAssertEqual(saved.identity.expires, reopened.timeIntervalSince1970 * 1000 + TenonAccount.sessionLifetime)
         XCTAssertNotEqual(VaultSession.shared.phase, .unlocked)
+    }
+    @MainActor
+    func testNewClientAlsoAcceptsLegacyV2RenewalResponses() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let created = Date(timeIntervalSince1970: 1000), reopened = created.addingTimeInterval(86400)
+        let original = rememberedGrant(time: created, accessLifetime: 900000, version: 2)
+        let next = rememberedGrant(time: reopened, refresh: String(repeating: "n", count: 32), accessLifetime: 900000, version: 2)
+        try store.write(JSONEncoder().encode(original))
+        let account = TenonAccount(store: store, now: { reopened }, transport: { request in
+            let body = try JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+            XCTAssertEqual(body["session_version"] as? Int, 3)
+            return (try JSONEncoder().encode(next), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        })
+        await account.validateRestoredSession()
+        XCTAssertTrue(account.hasCurrentAuthorization)
+        let saved = try JSONDecoder().decode(TenonAccount.Grant.self, from: XCTUnwrap(store.read()))
+        XCTAssertEqual(saved.version, 2)
+        XCTAssertEqual(saved.refreshToken, next.refreshToken)
+        XCTAssertEqual(saved.identity.expires, next.identity.expires)
     }
     @MainActor
     func testRememberedRevokedOrMismatchedIdentityIsRemoved() async throws {
@@ -187,6 +220,9 @@ final class SessionGateTests: XCTestCase {
         defer { try? store.clear() }
         let created = Date(timeIntervalSince1970: 1000)
         try store.write(JSONEncoder().encode(rememberedGrant(time: created)))
+        let beforeExpiry = TenonAccount(store: store, now: { created.addingTimeInterval(30 * 86400 - 0.001) })
+        XCTAssertTrue(beforeExpiry.hasCurrentAuthorization)
+        XCTAssertEqual(beforeExpiry.identity?.expires, created.timeIntervalSince1970 * 1000 + TenonAccount.sessionLifetime)
         XCTAssertNil(TenonAccount(store: store, now: { created.addingTimeInterval(30 * 86400) }).identity)
         XCTAssertNil(try store.read())
         try store.write(JSONEncoder().encode(rememberedGrant(time: created)))
@@ -195,7 +231,7 @@ final class SessionGateTests: XCTestCase {
         })
         await account.validateRestoredSession()
         XCTAssertNotNil(account.identity); XCTAssertNotNil(try store.read())
-        XCTAssertFalse(account.hasCurrentAuthorization)
+        XCTAssertTrue(account.hasCurrentAuthorization)
     }
     @MainActor
     func testConcurrentRenewalIsSingleFlightAndLogoutCannotBeUndoneByALateResponse() async throws {
