@@ -255,7 +255,7 @@ function renderWelcome() {
       card.append(actions);
     }
     card.querySelector('.access-mark').src='./web/icon.svg';card.querySelector('.access-mark').alt='';
-    card.querySelector('h1').append(hint(language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.',language==='zh'?'登录 PassBy':'Sign in to PassBy'));
+    addHint(card.querySelector('h1'),language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.');
     welcome.append(card);main.replaceChildren(welcome);return;
   }
   const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
@@ -264,7 +264,7 @@ function renderWelcome() {
     card.append(mark,loading);welcome.append(card);main.replaceChildren(welcome);return;
   }
   card.append(mark,node('h1','',signedIn?t('unlock'):t('signIn')));
-  card.querySelector('h1').append(hint(language==='zh'?'密码本使用 iPhone 系统 Apple 账号的私有存储。Tenon 中绑定的 Apple 登录方式不能替代存储授权；请连接与手机同步时相同的 Apple 账号。恢复密钥仅在本机用于解密。':'Your notebook uses the private storage of the system Apple Account on iPhone. An Apple sign-in method linked in Tenon does not replace storage authorization. Connect the same Apple Account used for iPhone sync. Your recovery key is used only for local decryption.',signedIn?t('unlock'):t('signIn')));
+  addHint(card.querySelector('h1'),language==='zh'?'密码本使用 iPhone 系统 Apple 账号的私有存储。Tenon 中绑定的 Apple 登录方式不能替代存储授权；请连接与手机同步时相同的 Apple 账号。恢复密钥仅在本机用于解密。':'Your notebook uses the private storage of the system Apple Account on iPhone. An Apple sign-in method linked in Tenon does not replace storage authorization. Connect the same Apple Account used for iPhone sync. Your recovery key is used only for local decryption.');
   card.append(node('p','access-intro',signedIn?(language==='zh'?'打开这台浏览器上的密码本。':'Open your notebook in this browser.'):(language==='zh'?'首次连接，请授权访问手机已同步的密码本。':'For your first connection, authorize access to the notebook synced from your iPhone.')));
   card.append(node('div','access-identity',`${language==='zh'?'Tenon 账号：':'Tenon Account: '}${tenonIdentity.name}`));
   authIn.hidden = signedIn || connecting || !!authError; authOut.hidden = !signedIn;
@@ -290,7 +290,7 @@ function renderWelcome() {
       }else{
         const form=node('form'),label=node('label','',t('key'));label.htmlFor='recovery-key';
         const input=node('input');input.id='recovery-key';input.type='password';input.autocomplete='off';input.spellcheck=false;input.placeholder=t('keyPlaceholder');input.required=true;
-        const help=node('p','help',language==='zh'?'首次授权这台浏览器后，以后可在 Tenon 登录有效时直接打开。只保存不可导出的解密密钥，不保存恢复密钥原文。':'Authorize this browser once to open it during a valid Tenon session. Only a non-exportable decryption key is saved, never your recovery phrase.');
+        addHint(label,language==='zh'?'首次授权这台浏览器后，以后可在 Tenon 登录有效时直接打开。只保存不可导出的解密密钥，不保存恢复密钥原文。':'Authorize this browser once to open it during a valid Tenon session. Only a non-exportable decryption key is saved, never your recovery phrase.');
         const submit=node('button','pill primary',language==='zh'?'授权并打开密码本':'Authorize and open notebook');submit.type='submit';
         form.append(label,input,submit);form.addEventListener('submit',async event=>{
           event.preventDefault();if(!validTenon()){tenonIdentity=null;lock();return;}
@@ -303,7 +303,7 @@ function renderWelcome() {
             trustBinding=binding;trustedKey=session.key;selected=null;resetIdle();render();
           }catch(error){if(error.code==='browserStorage'){lock();notify(t('browserStorage'));}else if(error.code!=='locked')showError(form,error);}
           finally{setBusy(form,false);}
-        });accessActions.append(form,help);
+        });accessActions.append(form);
       }
     } else {
       const state=node('div','access-state');state.setAttribute('aria-live','polite');
@@ -328,7 +328,7 @@ function renderWelcome() {
       try { if(rememberApple)localStorage.setItem('passby.rememberApple','true');else localStorage.removeItem('passby.rememberApple'); } catch {}
       authIn.replaceChildren();authOut.replaceChildren();void prepareApple();
     });
-    const rememberTitle=language==='zh'?'浏览器授权':'Browser authorization';const rememberHeading=node('h2','access-option-title',rememberTitle);rememberHeading.append(hint(t('rememberHelp'),rememberTitle));const rememberRow=node('div','remember-option');rememberRow.append(remember);accessActions.append(rememberHeading,rememberRow);
+    const rememberTitle=language==='zh'?'浏览器授权':'Browser authorization';const rememberHeading=node('h2','access-option-title',rememberTitle);addHint(rememberHeading,t('rememberHelp'));const rememberRow=node('div','remember-option');rememberRow.append(remember);accessActions.append(rememberHeading,rememberRow);
   }
   const security=node('div','security-notes');security.append(icon('lock'),node('span','',t('security')));
   welcome.append(card,security);main.replaceChildren(welcome);decorateAuthButtons();
@@ -385,6 +385,8 @@ window.visualViewport?.addEventListener('resize',updateDialogViewport);window.vi
 function showDialog(title,kind){closeDialog();dialogKind=kind;dialog.dataset.kind=kind;const inner=node('div','dialog-inner'),header=node('div','dialog-header'),body=node('div','dialog-body'),footer=node('div','dialog-footer');header.append(node('h2','',title),button(t('close'),()=>editor?(kind==='editor'||kind==='discard'?cancelEditor():renderEditor()):closeDialog(),'icon-button','close'));inner.append(header,body,footer);dialog.append(inner);updateDialogViewport();dialog.showModal();return body;}
 function dialogActions(body,actions,form){if(form){form.id='dialog-form';actions.querySelectorAll('button[type=submit]').forEach(el=>el.setAttribute('form',form.id));}body.parentElement.querySelector('.dialog-footer').append(actions);}
 function hint(text,label){return info(text,`${label} — ${language==='zh'?'说明':'Help'}`);}
+// Keep the final title word and its help control on the same line.
+function addHint(title,text){const label=title.textContent;title.append(document.createTextNode('\u2060'),hint(text,label));return title;}
 async function saveVault(vault){if(!validTenon()){tenonIdentity=null;lock();throw {code:'locked'};}const conflicts=await session.save(vault,t('conflictCopy'));notify(t(conflicts?'conflicts':'saved'));}
 function formField(label,value,type='text'){const wrap=node('div','form-field'),name=node('label','',t(label));name.htmlFor=`field-${label}`;const input=node(type==='textarea'?'textarea':'input');input.id=`field-${label}`;if(type!=='textarea')input.type=type;else input.rows=3;input.value=value;input.autocomplete='off';input.spellcheck=false;wrap.append(name,input);if(type==='textarea')dialogCleanups.push(autoGrow(input));return{wrap,input};}
 function openEditor(entry){
@@ -410,14 +412,19 @@ function openNewFolder(fromEditor=false){
 function openFolders(){if(!session.vault)return;const inner=showDialog(t('folders'),'folders');for(const folder of session.vault.folders){const row=node('div','folder-row');row.append(icon('folder'),node('strong','',folder.name),button(t('deleteFolder'),()=>confirmDelete(t('deleteFolder'),t('deleteFolderHelp'),async()=>{const vault=structuredClone(session.vault);vault.folders=vault.folders.filter(f=>f.id!==folder.id);vault.entries.forEach(e=>{if(e.folderID===folder.id)delete e.folderID;});await saveVault(vault);if(filter===folder.id)filter='all';}),'icon-button','delete'));inner.append(row);}const actions=node('div','form-actions');actions.append(button(t('newFolder'),()=>openNewFolder(),'pill','plus'));dialogActions(inner,actions);}
 function confirmDelete(title,message,action){const inner=showDialog(title,'confirm');deletion={title,message,action};inner.append(node('p','helper',message));const actions=node('div','form-actions');actions.append(button(t('cancel'),closeDialog),button(t('confirm'),async()=>{setBusy(inner,true);try{await action();closeDialog();render();}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'pill primary'));dialogActions(inner,actions);}
 function openGenerator(fromEditor=false, retained=null){
-  const inner=showDialog(t('generator'),'generator'),output=node('div','generated');output.setAttribute('aria-label',t('password'));output.tabIndex=0;inner.append(output);
-  const label=node('label','helper',t('length'));label.htmlFor='password-length';inner.append(label);const controls=node('div','generator-controls'),range=node('input'),number=node('input');range.type='range';range.min='8';range.max='24';range.value='16';range.setAttribute('aria-label',t('length'));number.id='password-length';number.type='number';number.min='8';number.max='4096';number.step='1';number.value=retained?.length || '16';range.value=String(Math.min(24,Math.max(8,Number(number.value))));controls.append(range,number);label.append(hint(t('lengthHelp'),t('length')));inner.append(controls);
+  const inner=showDialog(t('generator'),'generator'),output=node('div','generated');output.setAttribute('aria-label',t('password'));output.tabIndex=0;inner.append(addHint(node('div','helper',t('password')),t('clipboardHelp')),output);
+  const label=node('label','helper',t('length'));label.htmlFor='password-length';inner.append(label);const controls=node('div','generator-controls'),range=node('input'),number=node('input');range.type='range';range.min='8';range.max='24';range.value='16';range.setAttribute('aria-label',t('length'));number.id='password-length';number.type='number';number.min='8';number.max='4096';number.step='1';number.value=retained?.length || '16';range.value=String(Math.min(24,Math.max(8,Number(number.value))));controls.append(range,number);addHint(label,t('lengthHelp'));inner.append(controls);
   const checks={};for(const key of ['upper','lower','digits','symbols']){const row=node('label','check-row',t(key)),check=node('input');check.type='checkbox';switchInput(check);check.id=`generator-${key}`;check.checked=retained?.characters[key] ?? true;checks[key]=check;row.append(check);inner.append(row);check.addEventListener('change',generate);}
   function generate(){inner.querySelector('.error')?.remove();try{generatorValue=generatePassword(Number(number.value),Object.fromEntries(Object.entries(checks).map(([k,v])=>[k,v.checked])));output.textContent=generatorValue;}catch(error){generatorValue='';output.textContent='';showError(inner,error);}}
   range.addEventListener('input',()=>{number.value=range.value;generate();});number.addEventListener('input',()=>{range.value=String(Math.min(24,Math.max(8,Number(number.value))));generate();});
-  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));dialogActions(inner,actions);inner.parentElement.querySelector('h2').append(hint(t('clipboardHelp'),t('generator')));if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
+  const actions=node('div','form-actions');actions.append(button(t('another'),generate),button(t(fromEditor?'use':'copyPassword'),async()=>{if(!generatorValue)return;const value=generatorValue;if(fromEditor&&editor)editor.password=value;await copyText(value);if(fromEditor&&editor)renderEditor();},'pill primary'));dialogActions(inner,actions);if(retained?.value){generatorValue=retained.value;output.textContent=generatorValue;}else generate();
 }
-function settingsAction(label,action,symbol,navigation=false){
+function settingsAction(label,action,symbol,navigation=false,help=''){
+  if(help){
+    // The action and help are sibling buttons with separate click handlers.
+    const row=node('div','settings-action settings-action-with-info'),mark=node('span','settings-action-icon'),content=node('span','settings-action-content');mark.append(icon(symbol));
+    content.append(button(label,action,'settings-action-label'),document.createTextNode('\u2060'),hint(help,label));row.append(mark,content);return row;
+  }
   const el=button(label,action,'settings-action');
   const mark=node('span','settings-action-icon');mark.append(icon(symbol));
   const content=node('span','settings-action-content');content.append(node('span','settings-action-title',label));
@@ -428,27 +435,27 @@ function settingsAction(label,action,symbol,navigation=false){
 function openSettings(){
   const inner=showDialog(t('settings'),'settings');
   function section(title,help=''){
-    const block=node('section','settings-block'),heading=node('h3','settings-section-title',title);if(help)heading.append(hint(help,title));block.append(heading);
+    const block=node('section','settings-block'),heading=node('h3','settings-section-title',title);if(help)addHint(heading,help);block.append(heading);
     const list=node('div','settings-list');block.append(list);inner.append(block);return list;
   }
-  const security=section(language==='zh'?'安全':'Security',language==='zh'?'切换标签页或离开窗口，密码本会立即锁定。Tenon 登录成功后有效 30 天，到期需重新登录。网页版无法使用 iPhone 的 Face ID 或阻止截图。已授权的浏览器无需重复输入恢复密钥，新浏览器仍需首次授权。':'Switching tabs or leaving the window locks your notebook. Your Tenon session lasts up to 30 days after sign-in. The web app cannot use iPhone Face ID or block screenshots. Authorized browsers need no recovery key; new browsers need initial authorization.');
+  const security=section(language==='zh'?'安全':'Security',language==='zh'?'网页无法使用 iPhone 的 Face ID 或阻止截图。密码本与 Tenon 登录分别保持各自的安全保护。':'The web app cannot use iPhone Face ID or block screenshots. Notebook locking and Tenon sign-in retain their separate protections.');
   const policy=node('div','settings-policy'),policyTitle=node('div','settings-policy-title');
-  policyTitle.append(node('strong','',t('automaticLock')));
+  policyTitle.append(addHint(node('strong','',t('automaticLock')),t('automaticLockHelp')));
   policy.append(policyTitle,node('span','settings-policy-value',language==='zh'?'离开即锁定':'Locks when you leave'));security.append(policy);
   const preferences=section(language==='zh'?'偏好':'Preferences');
   const row=node('div','settings-language-row'),label=node('label','',t('language'));label.htmlFor='app-language';
   row.append(label,choice([{id:'en',name:'English'},{id:'zh',name:'简体中文'}],language,t('language'),changeLanguage,'app-language'));preferences.append(row);
   if(session.key || trustBinding){
-    const notebook=section(language==='zh'?'密码本':'Notebook',trustBinding?(language==='zh'?'撤销浏览器授权后，下次打开需要重新输入恢复密钥。':'After forgetting this browser, your recovery key will be required next time.'):'');
+    const notebook=section(language==='zh'?'密码本':'Notebook');
     if(session.key){
       notebook.append(settingsAction(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'sync'),
         settingsAction(t('lock'),lock,'lock'));
     }
     if(trustBinding)notebook.append(settingsAction(language==='zh'?'撤销浏览器授权':'Forget this browser',async()=>{
       try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
-    },'browser'));
+    },'browser',false,language==='zh'?'撤销浏览器授权后，下次打开需要重新输入恢复密钥。此操作不会删除密码本。':'After forgetting this browser, your recovery key will be required next time. Your notebook is not deleted.'));
   }
-  const account=section(language==='zh'?'Tenon 账号':'Tenon Account',language==='zh'?'在 Tenon 验证身份并选择删除范围：仅删除 PassBy 登录，或删除整个 Tenon 账号。Apple 私有密码本、设备恢复密钥和浏览器授权保留。':'Verify in Tenon and choose to delete only PassBy sign-in or your entire Tenon account. Apple private notebooks, device recovery keys and browser authorization are retained.');
+  const account=section(language==='zh'?'Tenon 账号':'Tenon Account',language==='zh'?'Tenon 统一管理账号和登录方式。登录成功后有效 30 天，到期需重新登录；密码本锁定不等于退出账号。':'Tenon manages your account and sign-in methods. Sign-in lasts up to 30 days; sign in again when it expires. Locking your notebook does not sign out.');
   if(tenonIdentity){
     account.append(node('p','settings-identity',tenonIdentity.name));
   }
@@ -462,7 +469,7 @@ function openSettings(){
     try{location.assign(await requestProductDeletion());}
     catch{notify(language==='zh'?'暂时无法打开删除页面，请重试。':'Could not open the deletion page. Please try again.');}
     finally{setBusy(inner,false);}
-  },'account'));
+  },'account',false,language==='zh'?'在 Tenon 验证身份并选择删除范围：仅删除 PassBy 登录，或删除整个 Tenon 账号。Apple 私有密码本、设备恢复密钥和浏览器授权保留。确认前会直接展示具体影响。':'Verify in Tenon and choose to delete only PassBy sign-in or your entire Tenon account. Apple private notebooks, device recovery keys and browser authorization are retained. The exact effects are shown before confirmation.'));
   const product=section(language==='zh'?'产品':'Product');
   product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook',true));
 }

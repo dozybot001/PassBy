@@ -3,10 +3,11 @@ function element(tag,className,text){const el=document.createElement(tag);el.cla
 // Popovers live in the top layer, outside clipped dialog bodies.
 function position(panel,anchor){const r=anchor.getBoundingClientRect(),w=Math.min(260,innerWidth-32);panel.style.width=`${w}px`;panel.style.left=`${Math.max(16,Math.min(r.left,innerWidth-w-16))}px`;const height=panel.getBoundingClientRect().height;panel.style.top=`${Math.max(16,r.bottom+8+height<=innerHeight-16?r.bottom+8:r.top-height-8)}px`;}
 export function info(text,label){
-  const wrap=element('span','info-control'),trigger=element('button','info-trigger','i'),panel=element('div','info-panel',text);
+  const wrap=element('span','info-control'),trigger=element('button','info-trigger'),panel=element('div','info-panel',text);
+  trigger.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5"/><path d="M10 9v5"/><circle class="info-dot" cx="10" cy="6" r=".7"/></svg>';
   trigger.type='button';trigger.setAttribute('aria-label',label);panel.id=`info-${++serial}`;panel.popover='auto';trigger.setAttribute('aria-describedby',panel.id);trigger.setAttribute('aria-expanded','false');
   function show(){if(!panel.matches(':popover-open'))panel.showPopover();position(panel,trigger);}
-  trigger.addEventListener('click',()=>panel.matches(':popover-open')?panel.hidePopover():show());
+  trigger.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();panel.matches(':popover-open')?panel.hidePopover():show();});
   trigger.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')show();});trigger.addEventListener('focus',()=>{if(trigger.matches(':focus-visible'))show();});
   wrap.addEventListener('pointerleave',()=>{if(document.activeElement!==trigger)panel.hidePopover();});
   trigger.addEventListener('blur',()=>panel.hidePopover());
