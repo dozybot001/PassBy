@@ -55,10 +55,9 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     struct Grant: Codable {
         let token: String
         let identity: Identity
-        var version: Int? = nil
-        var refreshToken: String? = nil
-        var refreshExpires: Double? = nil
-        var isRemembered: Bool { version == 2 || version == 3 }
+        let version: Int
+        let refreshToken: String
+        let refreshExpires: Double
     }
     @Published private(set) var identity: Identity?
     @Published private(set) var working = false
@@ -92,37 +91,16 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
         guard person.issuer == "https://account.tenon.asia/api/auth", !person.sub.isEmpty, person.sub.count <= 256,
               ["admin", "user"].contains(person.role), person.expires.isFinite,
               value.token.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil else { return false }
-        if value.isRemembered {
-            guard let refresh = value.refreshToken, let expiry = value.refreshExpires,
-                  refresh.range(of: "^[A-Za-z0-9._~-]{32,4096}$", options: .regularExpression) != nil,
-                  expiry.isFinite, expiry > time, expiry <= time + Self.sessionLifetime,
-                  person.expires <= time + Self.sessionLifetime else { return false }
-            return restoring || person.expires > time
-        }
-        return value.version == nil && value.refreshToken == nil && value.refreshExpires == nil
-            && person.expires > time && person.expires <= time + Self.sessionLifetime
+        guard value.version == Self.sessionVersion,
+              value.refreshToken.range(of: "^[A-Za-z0-9._~-]{32,4096}$", options: .regularExpression) != nil,
+              value.refreshExpires.isFinite, value.refreshExpires > time, value.refreshExpires <= time + Self.sessionLifetime,
+              person.expires > 0, person.expires <= time + Self.sessionLifetime else { return false }
+        return restoring || person.expires > time
     }
     func validateRestoredSession() async {
-        guard restored, let previous = grant else { return }
+        guard restored, grant != nil else { return }
         restored = false
-        if previous.isRemembered { await renew(force: true); return }
-        let attempt = generation
-        var request = URLRequest(url: URL(string: api + "session")!)
-        request.timeoutInterval = 10; request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("Bearer \(previous.token)", forHTTPHeaderField: "Authorization")
-        do {
-            let (data, response) = try await transport(request)
-            guard generation == attempt, grant?.token == previous.token else { return }
-            if (response as? HTTPURLResponse)?.statusCode == 401 { invalidate(); return }
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return }
-            struct Result: Decodable { let identity: Identity }
-            let current = try JSONDecoder().decode(Result.self, from: data).identity
-            guard current.issuer == previous.identity.issuer, current.sub == previous.identity.sub,
-                  current.expires == previous.identity.expires, valid(Grant(token: previous.token, identity: current)) else {
-                invalidate(); return
-            }
-            checkExpiry()
-        } catch { checkExpiry() }
+        await renew(force: true)
     }
     func didBecomeActive() async {
         checkExpiry()
@@ -138,7 +116,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     }
     private func renew(force: Bool = false) async {
         if let task = refreshTask { await task.value; return }
-        guard let previous = grant, previous.isRemembered,
+        guard let previous = grant,
               force || previous.identity.expires <= time + 30000 else { return }
         guard valid(previous, restoring: true) else { invalidate(); return }
         let attempt = generation
@@ -153,7 +131,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: ["refreshToken": previous.refreshToken!,
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["refreshToken": previous.refreshToken,
                 "issuer": previous.identity.issuer, "sub": previous.identity.sub, "session_version": Self.sessionVersion])
             let (data, response) = try await transport(request)
             guard generation == attempt, grant?.refreshToken == previous.refreshToken, !Task.isCancelled else { return }
@@ -163,7 +141,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
             }
             guard status == 200 else { return } // A temporary outage must not erase a remembered account.
             let next = try JSONDecoder().decode(Grant.self, from: data)
-            guard next.isRemembered, valid(next), next.identity.issuer == previous.identity.issuer,
+            guard valid(next), next.identity.issuer == previous.identity.issuer,
                   next.identity.sub == previous.identity.sub, next.refreshToken != previous.refreshToken else {
                 invalidate(); message = L("Sign in to Tenon again to continue account services."); return
             }
@@ -232,7 +210,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
                         let (data, response) = try await self.transport(request)
                         guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.userAuthenticationRequired) }
                         let next = try JSONDecoder().decode(Grant.self, from: data)
-                        guard next.isRemembered, self.valid(next) else { throw URLError(.badServerResponse) }
+                        guard self.valid(next) else { throw URLError(.badServerResponse) }
                         guard self.generation == attempt else { return }
                         try self.store.write(JSONEncoder().encode(next))
                         self.grant = next; self.identity = next.identity; self.restored = false
@@ -256,10 +234,8 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
                 var request = URLRequest(url: URL(string: api + "logout")!)
                 request.httpMethod = "POST"; request.timeoutInterval = 15
                 request.setValue("Bearer \(previous.token)", forHTTPHeaderField: "Authorization")
-                if let refresh = previous.refreshToken {
-                    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                    request.httpBody = try? JSONSerialization.data(withJSONObject: ["refreshToken": refresh])
-                }
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = try? JSONSerialization.data(withJSONObject: ["refreshToken": previous.refreshToken])
                 _ = try? await transport(request)
             }
         }

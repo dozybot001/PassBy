@@ -1,19 +1,20 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { TenonAuth, readBody } from './auth.mjs';
+import { SessionStore } from './sessions.mjs';
 
-export function createApp(legacyAuth, webAuth = null) {
+export function createApp(primaryAuth, webAuth = null) {
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store'); res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('X-Frame-Options', 'DENY');
     const json = (status, data) => res.writeHead(status, { 'Content-Type': 'application/json' }).end(JSON.stringify(data));
     const path = (req.url || '').split('?')[0];
-    const auth = path.startsWith('/api/') ? webAuth : legacyAuth;
+    const auth = path.startsWith('/api/') ? webAuth : primaryAuth;
     if (!auth) return json(404, { error: 'not_found' });
     try {
       const url = new URL(req.url, auth.origin);
       const route = url.pathname.startsWith(auth.apiPath + '/') ? url.pathname.slice(auth.apiPath.length) : '';
-      if (route === '/health' && req.method === 'GET') return json(200, { ok: true });
+      if (route === '/health' && req.method === 'GET') { auth.sessionStore.health(); return json(200, { ok: true, sessionStorage: 'sqlite' }); }
       if (route === '/auth/start' && req.method === 'GET') return await auth.start(req, res, url);
       if (['/auth/callback', '/auth/ios/callback'].includes(route) && req.method === 'GET') return await auth.complete(req, res, url);
       if (route === '/auth/session' && req.method === 'GET') return json(200, { identity: auth.identity(req).session });
@@ -26,7 +27,7 @@ export function createApp(legacyAuth, webAuth = null) {
       if (route === '/auth/logout' && req.method === 'POST') {
         const bearer = /^Bearer [A-Za-z0-9_-]{43}$/.test(req.headers.authorization || '');
         if (!bearer && req.headers.origin !== auth.origin || req.headers.origin && req.headers.origin !== auth.origin) return json(403, { error: 'forbidden' });
-        try { auth.sessions.delete(auth.identity(req).key); } catch {}
+        auth.logout(req);
         if (req.headers['content-type'] === 'application/json') await auth.revoke(await readBody(req));
         res.setHeader('Set-Cookie', auth.cookie('session', '', 0)); return json(200, { ok: true });
       }
@@ -43,7 +44,11 @@ export function createApp(legacyAuth, webAuth = null) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const auth = new TenonAuth({ clientId: process.env.TENON_CLIENT_ID, clientSecret: process.env.TENON_CLIENT_SECRET, iosClientId: process.env.TENON_IOS_CLIENT_ID, iosClientSecret: process.env.TENON_IOS_CLIENT_SECRET });
-  const webAuth = process.env.TENON_WEB_CLIENT_ID ? new TenonAuth({ origin: 'https://passby.tenon.asia', clientId: process.env.TENON_WEB_CLIENT_ID, clientSecret: process.env.TENON_WEB_CLIENT_SECRET }) : null;
+  process.umask(0o077);
+  const sessionPath = process.env.SESSION_DB || '/data/sessions.sqlite';
+  if (sessionPath === ':memory:') throw Error('Persistent session storage is required');
+  const sessionStore = new SessionStore(sessionPath);
+  const auth = new TenonAuth({ clientId: process.env.TENON_CLIENT_ID, clientSecret: process.env.TENON_CLIENT_SECRET, iosClientId: process.env.TENON_IOS_CLIENT_ID, iosClientSecret: process.env.TENON_IOS_CLIENT_SECRET, sessionStore });
+  const webAuth = process.env.TENON_WEB_CLIENT_ID ? new TenonAuth({ origin: 'https://passby.tenon.asia', clientId: process.env.TENON_WEB_CLIENT_ID, clientSecret: process.env.TENON_WEB_CLIENT_SECRET, sessionStore }) : null;
   createApp(auth, webAuth).listen(Number(process.env.PORT || 7280), '127.0.0.1');
 }
