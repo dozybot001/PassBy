@@ -4,12 +4,21 @@
 
 - 开发者：Zeng Deyang；App 内名称：PassBy。
 - Bundle ID：`cn.tenonai.apps.passby`；Team：`3U6LT38JKB`。
-- 版本 1.0，当前构建 Build 11；iOS 17+，仅 iPhone，竖屏。
+- 版本 1.0，最新构建 Build 13 已归档、安装并上传 Apple；iOS 17+，仅 iPhone，竖屏。
 - 用户改为免费首发，已在 Connect 保存所有地区 $0.00；174 个海外地区，排除中国大陆、Mac 和 Vision Pro。此决定替代此前 US$1.99 买断方案。
 - 商店名称：`PassBy — Password Notebook`；补充简体中文 `PassBy — 私人密码本`。
 - 正式网页：`https://passby.tenon.asia/`；隐私 `/privacy/`；支持 `/support/`。
 - 公开支持邮箱：`support@tenonai.cn`。审核联系人沿用 WeSaid，私人联系信息不写入仓库。
-- 旧 Build 2 已从审核草稿移除；Build 10 的提交已按用户要求取消，Build 11 已重新提交，当前“等待审核”。采用手动发布。
+- 旧 Build 2 已从审核草稿移除；Build 10 的提交已按用户要求取消。上次核实（2026-10-05 00:41 SGT）的审核包仍为 Build 11“等待审核”；当前 Connect 网页登录过期，尚未核实新状态或替换为 Build 13。采用手动发布。
+
+## Build 13：30 天登录正式发布（2026-10-05）
+
+- 用户授权部署全部 PassBy 更新。网页与认证 BFF 均从干净 main 提交 `4c5a1719a101538bc26dab469fedd281d537804a` 发布，遵守静态站→v3 BFF→手机包的顺序。网页“关于”显示 `1.0 · Web 4c5a1719a101`，服务器静态链接与认证 active 记录均为该提交；公开健康返回 `ok: true, sessionStorage: sqlite`。
+- 中央 Tenon 已运行 `5ac95fbe4dafe0caf4f70bb48dee25aecc91ce8c`，其 30 天登录改造无需重复部署。PassBy 新服务使用稳定的私有 SQLite 挂载，首次切换旧内存会话需重登；普通发布不再丢失产品登录。旧 v2 手机包须升级，不保留兼容分支。
+- 原生全量 36 项、网页 15 项、认证 26 项测试通过；发布器另在隔离的正式 Node 运行时执行全部认证测试并校验生产数据库、路由、健康与匿名会话。实际归档核对 Build 13、Production CloudKit、完整文件保护和既有开发者团队。
+- Release 归档已更新安装到连接的 iPhone 并启动，未卸载或清除密码本。用户确认登录后彻底关闭再开只需 Face ID，设置页仍保留 Tenon 登录。这不代表两台真机恢复与所有离线场景已完成验收。
+- 2026-10-05 14:50 SGT，Build 13 上传成功，Xcode 显示 `Upload succeeded / EXPORT SUCCEEDED`，Apple 已开始处理。先前 Build 12 上传认证失败已解除；不能将上传成功等同于已关联审核版本或重新提交。
+- 待办：用户恢复 Connect 网页登录后，核对旧提交状态与 Build 13 处理结果，替换审核包并更新审核说明、重新提交。旧 Build 11 使用 v2，不能继续作为新服务的首发审核包。免费、174 个海外地区及手动发布继续沿用。没有审核通过或公开上架的证据。
 
 ## 免费首发提交（2026-10-04，21:52 SGT）
 
