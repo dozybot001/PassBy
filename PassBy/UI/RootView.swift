@@ -73,9 +73,6 @@ struct LockView: View {
                         .fixedSize(horizontal: false, vertical: true).padding(.bottom, 22)
                 }
                 if session.setup == .newNotebook {
-                    if let message = account.message {
-                        Text(message).font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
-                    }
                     if account.identity == nil {
                         Button { account.signIn() } label: {
                             OperationLabel(title: "Sign in with Tenon", working: account.working).tint(Palette.paper)
@@ -107,9 +104,21 @@ struct LockView: View {
                         else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? L("Restore with Face ID") : L("Unlock with Face ID"), systemImage: "faceid") }
                     }
                     .buttonStyle(PrimaryButton())
-                    .disabled(working || (session.setup == .newNotebook && !understood)
+                    .disabled(working || account.working || (session.setup == .newNotebook && !understood)
                         || (session.setup == .newNotebook && account.identity == nil)
                         || (needsRecovery && recovery.isEmpty))
+                }
+                if session.setup != .newNotebook && session.setup != .checking && account.identity == nil {
+                    Button { account.signIn() } label: {
+                        OperationLabel(title: "Sign in with Tenon", working: account.working)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(SecondaryButton())
+                    .disabled(account.working || working).padding(.top, 16)
+                }
+                if let message = account.message {
+                    Text(message).font(.subheadline).foregroundStyle(Palette.secondary)
+                        .fixedSize(horizontal: false, vertical: true).padding(.top, 16)
                 }
                 Text("Your notebook is encrypted before it syncs.")
                     .font(.footnote).foregroundStyle(Palette.secondary)
