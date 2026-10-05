@@ -52,6 +52,12 @@ the Apple authentication popup to communicate with its opener.
 
 ## Validation and deployment
 
+### Help title alignment (2026-10-05)
+
+Web release `074b044dfa319b4eeebf4852ec0e44ecdebf54a2` replaces the fixed-size help button with a title-sized circled i and a separate hit area. A word joiner keeps the icon with the title's final word when wrapping. Automatic lock, browser revocation, account deletion, generated passwords, length and recovery-key help each sit beside their own title. Action and help buttons are siblings; opening help does not trigger the action or toggle authorization.
+
+Verified English/Chinese, light/dark, 320px/390px layouts, long-title wrapping, viewport-contained popovers and Escape dismissal with an isolated fictional fixture. The existing 16 web tests and publisher's syntax, manifest and public-file checks passed. The production Settings page shows the new component and the matching Web release version. This static release does not alter the submitted iPhone Build 13.
+
 Run `node --test scripts/test-web.mjs` on this Mac (Node 24, Swift/CryptoKit).
 `scripts/web-interop.swift` generates deterministic **synthetic** data and checks
 both Swift → browser and browser → Swift. Other checks cover tampering, recovery
