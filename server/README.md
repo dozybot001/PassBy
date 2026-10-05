@@ -29,7 +29,8 @@ It does not store notebooks, keys, provider credentials, or central access token
   A new iPhone accepts v2/v3 responses and renews saved v2 credentials into v3.
   Concurrent v2/v3 requests coalesce central rotation while receiving their
   own compatible expiry; revocation retires both sessions.
-- Deploy the compatible BFF before distributing a v3 iPhone build. The old BFF
+- Deploy the new static site, then the compatible BFF, then distribute a v3
+  iPhone build. The old BFF
   does not request offline access for a v3 start; new first-time sign-in needs
   the updated BFF. Existing v2 iPhones continue working throughout that order.
 - The iPhone uses ASWebAuthenticationSession. Its held PKCE verifier binds a
@@ -52,8 +53,12 @@ Production private configuration is `/opt/passby-auth/config/tenon.env` (0600):
 `TENON_CLIENT_ID`, `TENON_CLIENT_SECRET`, `TENON_IOS_CLIENT_ID`,
 `TENON_IOS_CLIENT_SECRET`. Do not copy its contents to Git, logs or chats.
 
-From a clean main commit run `scripts/publish-auth.sh`, then
-`scripts/publish-site.sh`. The identity bundle includes lockfile-verified pure JS
+From a clean main commit run `scripts/publish-site.sh`, then
+`scripts/publish-auth.sh`. For the 30-day migration, the new static site accepts
+the old BFF's 60-second expiry, and the updated BFF supports both native v2
+and v3. Publish the v3 iPhone build later, after the compatible BFF is active.
+This order keeps web sign-in working during the switch. The identity bundle
+includes lockfile-verified pure JS
 packages, complete file checksums and a fixed Node image digest. The server
 runs a read-only unprivileged candidate, checks it, validates shared Caddy,
 then switches ingress with rollback on smoke failure. The website publisher
