@@ -205,3 +205,9 @@
 "Stay signed in to Tenon. Use Face ID each time you open your notebook. Manage your sign-in methods in Tenon Account." = "Stay signed in to Tenon. Use Face ID each time you open your notebook. Manage your sign-in methods in Tenon Account.";
 "Your account could not be verified. Connect to the internet and try again." = "Your account could not be verified. Connect to the internet and try again.";
 "Sign in to Tenon again to continue account services." = "Sign in to Tenon again to continue account services.";
+
+"Delete account" = "Delete account";
+
+"Could not open the deletion page. Please try again." = "Could not open the deletion page. Please try again.";
+
+"Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process." = "Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process.";

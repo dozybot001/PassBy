@@ -4,7 +4,7 @@ import { NotebookSession } from './session.mjs';
 import { generatePassword } from './crypto.mjs';
 import { newID } from './model.mjs';
 import { TrustedBrowser, bindingID } from './trusted-browser.mjs';
-import { validIdentity, scheduleExpiry } from './auth.mjs';
+import { validIdentity, scheduleExpiry, requestProductDeletion } from './auth.mjs';
 
 const copy = {
   en: {
@@ -448,7 +448,7 @@ function openSettings(){
       try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
     },'browser'));
   }
-  const account=section(language==='zh'?'Tenon 账号':'Tenon Account',language==='zh'?'Tenon 统一管理你的账号和登录方式。删除账号前需重新验证并确认，会影响所有 Tenon 产品。密码本内容与恢复密钥分别管理。':'Tenon manages your account and sign-in methods. Account deletion requires identity verification and confirmation and affects all Tenon products. Notebook contents and recovery keys are managed separately.');
+  const account=section(language==='zh'?'Tenon 账号':'Tenon Account',language==='zh'?'在 Tenon 验证身份并选择删除范围：仅删除 PassBy 登录，或删除整个 Tenon 账号。Apple 私有密码本、设备恢复密钥和浏览器授权保留。':'Verify in Tenon and choose to delete only PassBy sign-in or your entire Tenon account. Apple private notebooks, device recovery keys and browser authorization are retained.');
   if(tenonIdentity){
     account.append(node('p','settings-identity',tenonIdentity.name));
   }
@@ -457,10 +457,12 @@ function openSettings(){
   const manageContent=node('span','settings-action-content');manageContent.append(node('span','settings-action-title',language==='zh'?'管理账号与登录方式':'Manage account and sign-in methods'));manageAccount.append(manageMark,manageContent);
   const manageArrow=node('span','settings-action-arrow','›');manageArrow.setAttribute('aria-hidden','true');manageAccount.append(manageArrow);account.append(manageAccount);
   if(tenonIdentity)account.append(settingsAction(language==='zh'?'退出 PassBy':'Sign out of PassBy',signOutTenon,'account'));
-  const deleteAccount=node('a','settings-action');deleteAccount.href='https://account.tenon.asia/account/delete/';deleteAccount.target='_blank';deleteAccount.rel='noopener noreferrer';
-  const deleteMark=node('span','settings-action-icon');deleteMark.append(icon('account'));
-  const deleteContent=node('span','settings-action-content');deleteContent.append(node('span','settings-action-title',language==='zh'?'删除 Tenon 账号':'Delete Tenon Account'));deleteAccount.append(deleteMark,deleteContent);
-  const deleteArrow=node('span','settings-action-arrow','›');deleteArrow.setAttribute('aria-hidden','true');deleteAccount.append(deleteArrow);account.append(deleteAccount);
+  if(tenonIdentity)account.append(settingsAction(language==='zh'?'删除账号':'Delete account',async()=>{
+    setBusy(inner,true);
+    try{location.assign(await requestProductDeletion());}
+    catch{notify(language==='zh'?'暂时无法打开删除页面，请重试。':'Could not open the deletion page. Please try again.');}
+    finally{setBusy(inner,false);}
+  },'account'));
   const product=section(language==='zh'?'产品':'Product');
   product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook',true));
 }

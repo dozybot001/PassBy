@@ -39,7 +39,7 @@ port=7281 if previous.get('port')==7280 else 7280
 name=f'passby-auth-{sha[:12]}-{port}'
 release=base/'releases'/sha
 image='docker.m.daocloud.io/library/node@sha256:235600a8101ab264e117b1768e925532262668dc9b581ef1dd7d96ced463b8e7'
-changed=False; started=False
+changed=False; started=False; previous_stopped=False
 run=lambda args,**kw:subprocess.run(args,check=True,**kw)
 def request(url,expected,sqlite=False):
  try:
@@ -106,6 +106,10 @@ try:
  check=base/'candidate-Caddyfile';check.write_text(root)
  run(['caddy','validate','--config',str(check),'--adapter','caddyfile'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  assert site.read_bytes()==before,'Ingress changed during release'
+ # The first deletion-aware release must drain the previous writer before it
+ # becomes reachable. Older callbacks do not carry the deletion generation.
+ if previous.get('container'):
+  run(['docker','stop',previous['container']],stdout=subprocess.DEVNULL);previous_stopped=True
  (release/'ingress-before.caddy').write_bytes(before)
  temp=site.with_suffix('.candidate');temp.write_text(content);os.replace(temp,site);changed=True
  if web_content is not None:
@@ -117,11 +121,11 @@ try:
  (base/'current-route.caddy').write_text(route)
  state={'commit':sha,'port':port,'container':name,'image':image,'sessionDatabase':str(database),'sessionBackup':str(snapshot)}
  temp=active.with_suffix('.candidate');temp.write_text(json.dumps(state));os.replace(temp,active)
- if previous.get('container'):subprocess.run(['docker','stop',previous['container']],stdout=subprocess.DEVNULL)
  print('PassBy identity service deployed and public health/session checks passed: '+sha)
 except BaseException:
  # Roll back code and ingress only: restoring an older database could revive
  # sessions that were logged out or rotated after the snapshot.
+ if previous_stopped:run(['docker','start',previous['container']],stdout=subprocess.DEVNULL)
  if changed:
   site.write_bytes(before)
   if web_before is not None:web_site.write_bytes(web_before)

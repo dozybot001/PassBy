@@ -62,6 +62,7 @@ struct SettingsView: View {
     @EnvironmentObject private var session: VaultSession
     @EnvironmentObject private var account: TenonAccount
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     private var status: String {
         switch session.syncStatus {
         case .waiting: return L("Waiting to sync")
@@ -82,9 +83,12 @@ struct SettingsView: View {
                     } else {
                         Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working) }.disabled(account.working)
                     }
-                    Link("Delete Tenon Account", destination: URL(string: "https://account.tenon.asia/account/delete/")!)
+                    if account.identity != nil {
+                        Button { Task { if let url = await account.beginDeletion() { openURL(url) } } }
+                        label: { OperationLabel(title: "Delete account", working: account.working) }.disabled(account.working)
+                    }
                     DisclosureGroup("Account deletion details") {
-                        Text("Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key.")
+                        Text("Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process.")
                             .font(.footnote).foregroundStyle(Palette.secondary)
                     }
                     if let message = account.message { Text(message).font(.footnote).foregroundStyle(Palette.secondary) }

@@ -96,3 +96,15 @@ than editing these outputs separately.
 - Modal width/height, header, body and footer use centralized tokens. Only the body scrolls; visual viewport changes keep actions reachable on short screens. Settings, editor, generator, folders, search and About share this shell.
 - Notes grow and shrink with input, paste, deletion and width changes; neither notes nor generated passwords use an internal scrolling area. Long content scrolls in the shared modal body.
 - Privacy, support, language and publisher information form one horizontal row at the bottom left in every notebook access state. New password sits at the bottom right of the app content, above the separate global footer, with a labeled capsule on larger screens and a 48px accessible plus button on small phones; neither action obscures notebook content.
+
+## Tenon 产品级删除
+
+网页版设置的删除入口先调用同源 `POST /api/auth/tenon/delete/start`，iPhone 使用自己的产品 Bearer 会话调用 `/passby/api/auth/tenon/delete/start`。两者从服务器取得受控来源，进入中央删除页选择「仅删除 PassBy」或「删除整个 Tenon 账号」，不通过 GET 或浏览器传入的 sub 删除。
+
+[服务端执行器](../server/product-deletion.mjs) 只接受中央短期 operationId/grant，使用既有 confidential 客户端 Basic 向中央 claim。SQLite 在同事务移除此用户在两个部署入口的所有产品会话、标记原生续期摘要撤销、递增身份代次并保存回执。迟到的回调、兑换及刷新不能恢复已删除身份；同一操作重试不删除后来主动新登录的身份。中央 completed 而本地回执缺失时拒绝删除。Apple 私有密码本、设备恢复密钥、本机钥匙串和浏览器授权均保留，此流程不具备密码本的解密或擦除能力。
+
+邮件/中央登录会话仍独立。iPhone 从删除页面返回时检查一次 PassBy 会话；被撤销时清理本机产品登录并锁定密码本，不进行日常中央轮询。浏览器回到已登记入口重新读取本地登录状态。失败和未完成状态由中央呈现，不伪造成功。
+
+持久化扩展采用现有 schema1 的附加回执/代次表，旧代码回滚不恢复数据库；正式发布在新候选通过检查后、切流前停止旧 writer，关闭首次升级中旧回调写入窗口。新版 iPhone 源码须重新分发才能获得新的删除入口，网页/服务端发布不更新 App Store 二进制。
+
+验收：[后端](../server/test/product-deletion.test.mjs)、[网页](../scripts/test-web.mjs)、[原生](../PassByTests/SessionGateTests.swift) 使用隔离身份验证范围、近期请求的代次保护、重启/重复提交、真实请求与错误恢复，不删除生产账号。

@@ -70,6 +70,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     private let now: () -> Date
     private let transport: (URLRequest) async throws -> (Data, URLResponse)
     private var restored = false
+    private var deletionReturnPending = false
     private let api = "https://tenon.asia/passby/api/auth/"
     private var time: Double { now().timeIntervalSince1970 * 1000 }
     // An expired remembered profile is presentation only. Account-gated work
@@ -104,7 +105,51 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     }
     func didBecomeActive() async {
         checkExpiry()
+        if deletionReturnPending { await checkDeletionReturn() }
         await renew()
+    }
+    func beginDeletion() async -> URL? {
+        guard !working, let previous = grant, hasCurrentAuthorization else { return nil }
+        working = true
+        defer { working = false }
+        let attempt = generation
+        var request = URLRequest(url: URL(string: api + "tenon/delete/start")!)
+        request.httpMethod = "POST"; request.timeoutInterval = 15
+        request.setValue("Bearer \(previous.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = Data("{}".utf8)
+        do {
+            let (data, response) = try await transport(request)
+            guard generation == attempt else { return nil }
+            let status = (response as? HTTPURLResponse)?.statusCode
+            if status == 401 { invalidate(); return nil }
+            guard status == 200, let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let raw = payload["url"] as? String, let parts = URLComponents(string: raw),
+                  parts.scheme == "https", parts.host == "account.tenon.asia", parts.port == nil,
+                  parts.user == nil, parts.password == nil, parts.fragment == nil, parts.path == "/account/delete/",
+                  let source = parts.queryItems?.first(where: { $0.name == "request" })?.value,
+                  source.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil,
+                  let url = parts.url else { throw URLError(.badServerResponse) }
+            deletionReturnPending = true
+            return url
+        } catch {
+            if generation == attempt { message = L("Could not open the deletion page. Please try again.") }
+            return nil
+        }
+    }
+    private func checkDeletionReturn() async {
+        guard let previous = grant else { deletionReturnPending = false; return }
+        let attempt = generation
+        var request = URLRequest(url: URL(string: api + "session")!)
+        request.timeoutInterval = 15; request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("Bearer \(previous.token)", forHTTPHeaderField: "Authorization")
+        do {
+            let (_, response) = try await transport(request)
+            guard generation == attempt else { return }
+            let status = (response as? HTTPURLResponse)?.statusCode
+            if status == 401 || status == 403 { VaultSession.shared.lock(); invalidate() }
+            if status == 200 || status == 401 || status == 403 { deletionReturnPending = false }
+        } catch { /* Retry once on the next foreground visit; never poll Tenon. */ }
     }
     func ensureCurrentSession() async -> Bool {
         checkExpiry()

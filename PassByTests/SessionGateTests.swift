@@ -2,6 +2,46 @@ import XCTest
 @testable import PassBy
 
 final class SessionGateTests: XCTestCase {
+    @MainActor
+    func testProductDeletionStartKeepsIdentityUntilConfirmedAndChecksLocalSessionOnReturn() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        try savedTenonSession(store: store, time: now)
+        var requests = 0
+        let account = TenonAccount(store: store, now: { now }, transport: { request in
+            requests += 1
+            if requests == 1 {
+                XCTAssertEqual(request.url?.path, "/passby/api/auth/tenon/delete/start")
+                XCTAssertEqual(request.httpMethod, "POST")
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer " + String(repeating: "t", count: 43))
+                let payload = ["url": "https://account.tenon.asia/account/delete/?request=" + String(repeating: "q", count: 43)]
+                return (try JSONSerialization.data(withJSONObject: payload), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+            XCTAssertEqual(request.url?.lastPathComponent, "session")
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        })
+        let url = await account.beginDeletion()
+        XCTAssertEqual(url?.host, "account.tenon.asia")
+        XCTAssertNotNil(account.identity); XCTAssertNotNil(try store.read())
+        await account.didBecomeActive()
+        XCTAssertNil(account.identity); XCTAssertNil(try store.read())
+        await account.didBecomeActive(); XCTAssertEqual(requests, 2)
+    }
+    @MainActor
+    func testDeletionStartRejectsSpoofedURLsAndKeepsIdentityOnTemporaryFailure() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear() }
+        let now = Date(timeIntervalSince1970: 1000)
+        for target in ["https://attacker.invalid/account/delete/", "https://account.tenon.asia/account/delete/?request=forged"] {
+            try savedTenonSession(store: store, time: now)
+            let account = TenonAccount(store: store, now: { now }, transport: { request in
+                (try JSONSerialization.data(withJSONObject: ["url": target]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            })
+            let url = await account.beginDeletion()
+            XCTAssertNil(url); XCTAssertNotNil(account.identity); XCTAssertFalse(account.working)
+        }
+    }
     func testEveryDepartureLocksAnUnlockedSession() throws {
         var gate = SessionGate()
         let token = try XCTUnwrap(gate.beginAuthentication())

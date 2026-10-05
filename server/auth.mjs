@@ -67,12 +67,13 @@ export class TenonAuth {
     const challenge = url.searchParams.get('challenge'), nativeState = url.searchParams.get('state');
     if (native && (url.searchParams.get('session_version') !== String(SESSION_VERSION)
       || !/^[A-Za-z0-9_-]{43}$/.test(challenge || '') || !/^[A-Za-z0-9_-]{43}$/.test(nativeState || ''))) throw failure(400);
+    const authorizationGeneration = this.sessionStore.generation();
     const config = await this.config(native), browser = token(), verifier = this.protocol.randomPKCECodeVerifier();
     const state = this.protocol.randomState(), nonce = this.protocol.randomNonce();
     const location = this.protocol.buildAuthorizationUrl(config, { redirect_uri: native ? this.iosCallback : this.callback,
       scope: native ? 'openid profile email offline_access' : 'openid profile email', ...(native ? { prompt: 'consent' } : {}), state, nonce,
       code_challenge: await this.protocol.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256' });
-    this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState });
+    this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState, authorizationGeneration });
     res.setHeader('Set-Cookie', this.cookie('attempt', browser, 600, 'Lax'));
     if (url.searchParams.get('format') === 'json') {
       res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ url: location.href }));
@@ -87,6 +88,7 @@ export class TenonAuth {
     const tokens = await this.protocol.authorizationCodeGrant(config, url, { pkceCodeVerifier: attempt.verifier,
       expectedState: attempt.state, expectedNonce: attempt.nonce, idTokenExpected: true });
     const session = await this.verifiedIdentity(config, tokens);
+    this.sessionStore.assertGeneration(session.issuer, session.sub, attempt.authorizationGeneration);
     const refresh = attempt.native ? this.refreshCredential(tokens) : {};
     const expires = session.expires;
     if (attempt.native) {
@@ -96,7 +98,7 @@ export class TenonAuth {
       // is useless without the verifier held by the initiating iPhone.
       res.writeHead(303, { Location: `passby://auth?ticket=${ticket}&state=${attempt.nativeState}` }).end();
     } else {
-      const sessionToken = token(); this.sessionStore.create(this.origin, digest(sessionToken), session, this.now());
+      const sessionToken = token(); this.sessionStore.create(this.origin, digest(sessionToken), session, this.now(), { authorizationGeneration: attempt.authorizationGeneration });
       res.setHeader('Set-Cookie', [this.cookie('attempt', '', 0, 'Lax'), this.cookie('session', sessionToken, Math.floor((expires - this.now()) / 1000))]);
       res.writeHead(303, { Location: this.basePath }).end();
     }
@@ -133,7 +135,7 @@ export class TenonAuth {
     // An intercepted ticket cannot consume the legitimate flow without PKCE.
     if (!ticket || ticket.expires <= this.now() || !equal(digest(body.verifier), ticket.challenge) || !equal(body.state, ticket.nativeState)) throw failure(401);
     const sessionToken = token();
-    this.sessionStore.create(this.origin, digest(sessionToken), ticket.session, this.now(), { nativeRefreshHash: digest(ticket.refreshToken) });
+    this.sessionStore.create(this.origin, digest(sessionToken), ticket.session, this.now(), { nativeRefreshHash: digest(ticket.refreshToken), authorizationGeneration: ticket.authorizationGeneration });
     this.tickets.delete(key);
     return { token: sessionToken, identity: ticket.session, version: SESSION_VERSION,
       refreshToken: ticket.refreshToken, refreshExpires: ticket.refreshExpires };
@@ -144,6 +146,8 @@ export class TenonAuth {
       || body.session_version !== SESSION_VERSION) throw failure(400);
     this.sweep();
     const key = digest(body.refreshToken);
+    this.sessionStore.assertRefresh(this.origin, body.issuer, body.sub, key, this.now());
+    const authorizationGeneration = this.sessionStore.generation();
     const limit = this.refreshLimits.get(key) || { expires: this.now() + 60000, count: 0 };
     if (this.refreshLimits.size >= 1000 && !this.refreshLimits.has(key) || ++limit.count > 30) throw failure(429);
     this.refreshLimits.set(key, limit);
@@ -166,7 +170,7 @@ export class TenonAuth {
         // Retiring the old credential's sessions and persisting the response
         // is one transaction. No token is returned before it commits.
         this.sessionStore.create(this.origin, digest(sessionToken), identity, this.now(), {
-          nativeRefreshHash: digest(credential.refreshToken), retireRefreshHash: key });
+          nativeRefreshHash: digest(credential.refreshToken), retireRefreshHash: key, authorizationGeneration });
         return { token: sessionToken, identity, version: SESSION_VERSION, ...credential };
       })();
       this.refreshing.set(key, { sub: body.sub, operation });

@@ -2,8 +2,10 @@ import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { TenonAuth, readBody } from './auth.mjs';
 import { SessionStore } from './sessions.mjs';
+import { ProductDeletion } from './product-deletion.mjs';
 
-export function createApp(primaryAuth, webAuth = null) {
+export function createApp(primaryAuth, webAuth = null, { deletionTransport = fetch } = {}) {
+  const deletion = new Map([primaryAuth, webAuth].filter(Boolean).map(auth => [auth, new ProductDeletion({ auth, transport: deletionTransport })]));
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store'); res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('X-Frame-Options', 'DENY');
@@ -14,6 +16,19 @@ export function createApp(primaryAuth, webAuth = null) {
     try {
       const url = new URL(req.url, auth.origin);
       const route = url.pathname.startsWith(auth.apiPath + '/') ? url.pathname.slice(auth.apiPath.length) : '';
+      if (['/auth/tenon/delete/start', '/auth/tenon/delete/execute'].includes(route)) {
+        if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return json(405, { error: 'method_not_allowed' }); }
+        if (!/^application\/json(?:;|$)/i.test(req.headers['content-type'] || '')) return json(415, { error: 'invalid_request' });
+        const body = await readBody(req);
+        if (route.endsWith('/start')) {
+          const bearer = /^Bearer [A-Za-z0-9_-]{43}$/.test(req.headers.authorization || '');
+          if (req.headers['sec-fetch-site'] === 'cross-site' || req.headers.origin && req.headers.origin !== auth.origin || !bearer && req.headers.origin !== auth.origin) return json(403, { error: 'forbidden' });
+          if (Object.keys(body).length) return json(400, { error: 'invalid_request' });
+          return json(200, await deletion.get(auth).start(req));
+        }
+        if (req.headers.origin && req.headers.origin !== 'https://account.tenon.asia') return json(403, { error: 'forbidden' });
+        return json(200, await deletion.get(auth).execute(body));
+      }
       if (route === '/health' && req.method === 'GET') { auth.sessionStore.health(); return json(200, { ok: true, sessionStorage: 'sqlite' }); }
       if (route === '/auth/start' && req.method === 'GET') return await auth.start(req, res, url);
       if (['/auth/callback', '/auth/ios/callback'].includes(route) && req.method === 'GET') return await auth.complete(req, res, url);

@@ -21,3 +21,11 @@ export function scheduleExpiry(expires, onExpire, { now = Date.now, schedule = s
   check();
   return () => { stopped = true; cancel(timer); };
 }
+export async function requestProductDeletion(transport = fetch) {
+  const response = await transport('./api/auth/tenon/delete/start', { method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  if (!response.ok) throw Error('Deletion unavailable');
+  const result = await response.json(), url = new URL(result.url);
+  if (url.origin !== 'https://account.tenon.asia' || url.pathname !== '/account/delete/' || url.username || url.password || url.hash || !/^[A-Za-z0-9_-]{43}$/.test(url.searchParams.get('request') || '')) throw Error('Invalid deletion URL');
+  return url.href;
+}
