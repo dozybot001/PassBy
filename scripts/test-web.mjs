@@ -165,3 +165,19 @@ test('product deletion starts from the local server and rejects an unregistered 
   }
   await assert.rejects(requestProductDeletion(async () => new Response('', { status: 503 })));
 });
+
+test('website choices persist, invalid values keep prior choices, and blocked storage does not fail the page', async () => {
+  const {readFileSync}=await import('node:fs');
+  const {runInNewContext}=await import('node:vm');
+  const script=readFileSync(new URL('../public/web/preferences.js',import.meta.url),'utf8');
+  const boot=(search,saved={},blocked=false)=>{
+    const values=new Map(Object.entries(saved)),root={dataset:{},lang:'en'};
+    runInNewContext(script,{URLSearchParams,document:{documentElement:root},location:{search},localStorage:{getItem(key){if(blocked)throw Error();return values.get(key);},setItem(key,value){if(blocked)throw Error();values.set(key,value);}}});
+    return {root,values};
+  };
+  const first=boot('?theme=dark&lang=zh',{'passby.theme':'light','passby.language':'en'});
+  assert.deepEqual(first.root,{dataset:{theme:'dark',uiLanguage:'zh'},lang:'zh-CN'});
+  assert.deepEqual(boot('',Object.fromEntries(first.values)).root,first.root);
+  assert.deepEqual(boot('?theme=invalid&lang=fr',Object.fromEntries(first.values)).root,first.root);
+  assert.deepEqual(boot('?theme=light&lang=en',{},true).root.dataset,{theme:'light',uiLanguage:'en'});
+});

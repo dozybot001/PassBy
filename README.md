@@ -104,3 +104,7 @@ iPhone 17 Pro Max。密码生成器中文预览已检查，首次真机解锁与
 网页版首次用恢复密钥解密后，在 IndexedDB 保存不可导出的 AES-GCM CryptoKey，按 Tenon `(issuer, sub)` 与 Apple `userRecordName` 隔离。之后获得有效的 Tenon 会话与 Apple 存储授权时可自动打开；离开窗口、退出或到期清除内存密码本。设置提供撤销本浏览器授权。密钥原文、恢复字符串、密码本明文及 Tenon 令牌均不写入浏览器持久存储，也不上传解密密钥。
 
 这是可信浏览器授权，不是硬件密钥保护：具有该浏览器配置或同源脚本权限的代码仍可能使用不可导出的密钥，Tenon 校验是应用层门禁。适用于个人电脑，不能把它描述为与 iPhone Face ID 等价的保护。Apple 存储身份字段依据官方 CloudKit UserIdentity 文档： https://developer.apple.com/documentation/cloudkitjs/cloudkit.useridentity/userrecordname 。
+
+### 官网偏好衔接
+
+网页接收并保存 Tenon 官网传来的 `theme=dark|light`、`lang=en|zh`，未指定时保留网页选择并跟随设备默认设置。此处只传递显示偏好，不共享身份或密码本权限；iPhone 仍使用原生系统语言与外观。

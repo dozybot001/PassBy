@@ -18,7 +18,7 @@ page = root / 'public/index.html'
 page.write_text(page.read_text().replace('<title>', '<meta name="passby-version" content="' + version + ' · Web ' + sys.argv[2][:12] + '">\n  <title>', 1))
 # Give the whole module graph and styles a fresh URL on each release.
 # Versioning only app.mjs leaves imported modules reusable under old URLs.
-asset_pattern = re.compile(r'([\'"])([^\'"\s<>]+\.(?:mjs|css|svg))(?:\?[^\'"\s<>]*)?([\'"])')
+asset_pattern = re.compile(r'([\'"])([^\'"\s<>]+\.(?:mjs|js|css|svg))(?:\?[^\'"\s<>]*)?([\'"])')
 for asset in (root / 'public').rglob('*'):
     if asset.suffix not in ('.html', '.mjs'):
         continue

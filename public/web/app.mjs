@@ -18,7 +18,7 @@ const copy = {
     security:'设备端加密，绑定你的 Apple 账号。',signIn:'打开密码本',signInHelp:'登录你在 iPhone PassBy 中使用的 Apple 账号。',unlock:'解锁密码本',key:'恢复密钥',keyPlaceholder:'粘贴恢复密钥',keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',connect:'通过 Apple 继续',connecting:'连接中…',lock:'锁定密码本',locked:'密码本已锁定',settings:'设置',search:'搜索',generator:'密码生成器',privacy:'隐私',support:'支持',all:'全部',unfiled:'未分类',newPassword:'新建密码',newFolder:'新建文件夹',folders:'文件夹',empty:'密码本从这里开始',emptyHelp:'添加账号和密码，将细节保存在一起。',noResults:'没有匹配的条目',noResultsHelp:'试试其他标题或账号。',choose:'为你的密码，留一个位置。',chooseHelp:'选择条目，查看它的详细内容。',placeholder:'搜索标题或账号',edit:'编辑',save:'保存',saving:'保存中…',cancel:'取消',close:'关闭',back:'返回',account:'账号',password:'密码',title:'标题',notes:'备注',folder:'文件夹',noNotes:'没有备注',copy:'复制',copied:'已复制',show:'显示密码',hide:'隐藏密码',delete:'删除条目',deleteConfirm:'删除这个条目？',deleteHelp:'将从密码本中删除，无法撤销。',deleteFolder:'删除文件夹',deleteFolderHelp:'其中的密码将移至未分类，无法撤销。',confirm:'删除',saved:'密码本已同步',refreshed:'密码本已刷新',refresh:'立即同步',conflictCopy:'（冲突副本）',conflicts:'同时修改的内容已保留为冲突副本。',length:'长度',upper:'大写字母',lower:'小写字母',digits:'数字',symbols:'符号',another:'再生成一个',use:'使用并复制',copyPassword:'复制密码',lengthHelp:'滑块可选 8～24 位，也可手动输入最多 4096 位。',clipboardHelp:'已复制的密码遵循浏览器与系统的剪贴板规则，不会自动清除。',language:'语言',automaticLock:'自动锁定',automaticLockHelp:'切换标签页、离开窗口或 5 分钟无操作后，密码本会锁定。',browserHelp:'网页无法使用 iPhone 的 Face ID 或阻止截图，请用恢复密钥重新解锁。',discard:'放弃修改？',discardHelp:'这个未完成的条目尚未保存。',discardButton:'放弃',continueEditing:'继续编辑',required:'请填写标题和密码。',folderName:'文件夹名称',signedOut:'已退出登录',existingHelp:'请先在 iPhone PassBy 创建密码本，并等待 iCloud 同步。',invalidKey:'恢复密钥的长度或校验码不正确，请检查。',wrongKey:'此恢复密钥无法解锁这个密码本。',invalidNotebook:'无法验证密码本，iCloud 数据未被更改。',version:'密码本格式不受支持，请更新 PassBy。',service:'无法同步密码本，请重试。',noNotebook:'当前 iCloud 账号没有密码本，请先在 iPhone 创建并完成同步。',notConfigured:'网页版访问正在配置中，iPhone 密码本不受影响。',invalidLength:'请输入 8～4096 之间的整数。',selectCharacters:'至少选择一种字符类型。',conflict:'密码本又被修改了，请重试保存。',clipboard:'浏览器阻止了复制，请选中内容手动复制。',lockedError:'请重新解锁密码本。',generic:'操作未完成，请重试。',
   },
 };
-let language = navigator.language.startsWith('zh') ? 'zh' : 'en';
+let language = document.documentElement.dataset.uiLanguage || (navigator.language.startsWith('zh') ? 'zh' : 'en');
 Object.assign(copy.en, {
   connected:'Notebook connected', connect:'Connect notebook', checking:'Checking your notebook…',
   remember:'Keep the notebook connected on this trusted computer', rememberHelp:'Optional. This retains Apple private storage authorization on this computer; it does not extend your Tenon session. A new browser still needs initial authorization with your recovery key.',
@@ -157,7 +157,10 @@ function changeLanguage(value) {
     value:generatorValue, fromEditor:!!editor,
   } : null;
   const pendingDelete=deletion;
-  language=value;closeDialog();render();
+  language=value;
+  document.documentElement.dataset.uiLanguage=value;
+  try { localStorage.setItem('passby.language',value); } catch { /* private browsing */ }
+  closeDialog();render();
   if(kind==='editor')renderEditor();
   else if(kind==='generator')openGenerator(generator.fromEditor,generator);
   else if(kind==='newFolder'){openNewFolder(!!editor);$('field-folderName').value=folderName;}

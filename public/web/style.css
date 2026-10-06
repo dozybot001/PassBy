@@ -1,12 +1,13 @@
 /* PassBy owns its palette, original system typography, and layout tokens. */
 :root{
-  color-scheme:light dark;
+  color-scheme:light;
   --bg:#fafafa;--fg:#141414;--muted:#737373;--surface:#efefef;--hover:#e5e5e5;--border:#ddd;
   --button:#171717;--button-text:#fff;--dialog-width:600px;--dialog-height:640px;--dialog-padding:28px;
   --popover-shadow:0 12px 32px #00000016,0 2px 6px #00000008;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;
 }
-@media(prefers-color-scheme:dark){:root{--bg:#080808;--fg:#f6f6f6;--muted:#9a9a9a;--surface:#171717;--hover:#252525;--border:#333;--button:#f6f6f6;--button-text:#111;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}}
+:root[data-theme=dark]{color-scheme:dark;--bg:#080808;--fg:#f6f6f6;--muted:#9a9a9a;--surface:#171717;--hover:#252525;--border:#333;--button:#f6f6f6;--button-text:#111;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;--bg:#080808;--fg:#f6f6f6;--muted:#9a9a9a;--surface:#171717;--hover:#252525;--border:#333;--button:#f6f6f6;--button-text:#111;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg)}
 body:has(>.app){height:100dvh;min-height:460px;display:flex;flex-direction:column}
 button,input,textarea,select{font:inherit;color:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
