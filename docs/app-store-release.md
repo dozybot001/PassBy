@@ -1,5 +1,13 @@
 # PassBy 1.0 发布记录
 
+## 1.1（Build 14）提交审核（2026-10-29）
+
+- 1.0（13）已于 2026-10-17 公开上架（免费，`READY_FOR_SALE`），因此 1.0 无法再换包；Build 14 改为 1.1。
+- 网页、支持与隐私页从 `87bc35a` 发布，线上显示 `1.0 · Web 87bc35aaa4d7`。1.1（14）由 `875f983` 归档上传，处理状态 `VALID`，`usesNonExemptEncryption=false`。
+- Connect 网页界面多次卡住或报错，改用同一会话的 Connect 接口：创建 1.1、关联 Build 14、更新中英文描述/关键词/更新说明与审核说明（去掉价格表述），沿用截图、审核账号与联系人；手动发布。
+- 审核提交 `2511e798-1d96-4233-aab7-7b82c09f3efd`，版本状态 `WAITING_FOR_REVIEW`。
+- 价格仍为免费，尚未改为 US$0.99；真机验收仍未完成。
+
 ## Build 14 与 US$0.99 买断准备（2026-10-29）
 
 - 用户决定收敛为极简密码本（生成、记录、网页查看），不再增加 AutoFill、验证码、通行密钥等功能；收敛后以 US$0.99 买断上架。价格尚未在 Connect 修改。
@@ -103,7 +111,7 @@ When your iPhone is not nearby, open passby.tenon.asia on a trusted computer. Si
 
 Swipe down to keep an encrypted local draft while you switch apps. Tap New password to resume it. Save when finished, or Cancel to discard the draft. PassBy supports English and Simplified Chinese, light and dark appearances, and adjustable text sizes.
 
-PassBy is a one-time purchase, with no subscriptions, in-app purchases or ads. Requirements: iOS 17 or later, a device passcode, Face ID or Touch ID enrollment, an Apple Account signed in to iCloud, and a Tenon Account. Screen recording and mirroring prevent unlocking. Cold launch checks your Apple storage identity. This version does not provide AutoFill.
+PassBy has no subscriptions, in-app purchases or ads. Requirements: iOS 17 or later, a device passcode, Face ID or Touch ID enrollment, an Apple Account signed in to iCloud, and a Tenon Account. Screen recording and mirroring prevent unlocking. Cold launch checks your Apple storage identity. This version does not provide AutoFill.
 
 关键词：`password,notebook,vault,secure,faceid,touchid,generator,accounts,notes,folders,tenon`
 
@@ -133,7 +141,7 @@ iPhone 不在身边时，在可信电脑打开 passby.tenon.asia。登录 Tenon�
 
 下滑关闭编辑页会保留加密的本机草稿，点击“新建密码”恢复编辑；保存存入条目，取消丢弃草稿。支持中英文、深浅色外观及动态字号。
 
-一次购买，无订阅、应用内购买或广告。需要 iOS 17 或更新系统、设备密码、已登记 Face ID 或 Touch ID、登录系统 iCloud 的 Apple 账号和 Tenon 账号。录屏与镜像期间无法解锁；冷启动检查 Apple 存储身份。当前版本不提供自动填充。
+无订阅、应用内购买或广告。需要 iOS 17 或更新系统、设备密码、已登记 Face ID 或 Touch ID、登录系统 iCloud 的 Apple 账号和 Tenon 账号。录屏与镜像期间无法解锁；冷启动检查 Apple 存储身份。当前版本不提供自动填充。
 
 关键词：`密码本,密码,账户,笔记,文件夹,随机密码,生成器,加密,FaceID,TouchID,Tenon`
 
@@ -141,14 +149,14 @@ iPhone 不在身边时，在可信电脑打开 passby.tenon.asia。登录 Tenon�
 
 以下草稿包含后续产品级删除入口。Build 13 实际提交的说明仍描述既有中央 Tenon 删除页，原文保留在 `build/app-review-notes-build13.txt`；后续原生入口必须随新构建分发。
 
-PassBy is a paid (US$0.99) iPhone-only password notebook with no subscriptions, in-app purchases or ads. An iPhone with a device passcode, Face ID or Touch ID enrolled, and an Apple Account signed in to iCloud is required. Notebook data is encrypted before it is stored in the user's private CloudKit database.
+PassBy is an iPhone-only password notebook with no subscriptions, in-app purchases or ads. An iPhone with a device passcode, Face ID or Touch ID enrolled, and an Apple Account signed in to iCloud is required. Notebook data is encrypted before it is stored in the user's private CloudKit database.
 
 1. Launch PassBy and select Sign in with Tenon. Sign in using the dedicated Tenon demo account supplied in App Review Information. The central login page also offers Continue with Apple. Tenon identity is for sign-in only and does not hold notebook contents or recovery keys. The Apple Account signed in to iCloud on the review device independently authorizes its private notebook storage.
 2. Return to PassBy, read and acknowledge the recovery notice, and tap Create my notebook. Complete Face ID or Touch ID and save the displayed recovery key outside the app. Tap I have saved it and enter the requested four-character group to confirm. Do not send this key to the developer.
 3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
 4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
 5. Leave and return to the app: Face ID or Touch ID is required again. Tenon sign-in is securely stored in the device-only Keychain and remains valid for up to 30 days after verification, with secure session renewal. Closing the app does not sign out. An existing notebook remains accessible through Face ID offline; signing out or revoked credentials may require signing in again for account services. The web session also lasts up to 30 days after verification. Screen recording and mirroring intentionally prevent unlocking; iOS screenshots are permitted.
-6. Settings shows Tenon Account, sign-in method management, sync, Recently Deleted (deleted entries kept on this iPhone for 30 days), privacy, Show recovery key (after another biometric check), support and About PassBy. Apple storage authorization details are available under Sync details. Delete account opens the controlled Tenon deletion page after a product-authenticated request. Choose only PassBy sign-in or the entire Tenon identity, then verify and confirm in the central page. The Apple-stored notebook, device recovery keys and browser authorization are retained. The new native entry requires an updated distributed build; web/server publication does not update the installed iPhone package. A second iPhone using the same Apple storage account needs the saved recovery key.
+6. Settings shows Tenon Account, sign-in method management, sync, Recently Deleted (deleted entries kept on this iPhone for 30 days), privacy, Show recovery key (after another biometric check), support and About PassBy. Apple storage authorization details are available under Sync details. Delete account opens the controlled Tenon deletion page after a product-authenticated request. Choose only PassBy sign-in or the entire Tenon identity, then verify and confirm in the central page. The Apple-stored notebook, device recovery keys and browser authorization are retained. A second iPhone using the same Apple storage account needs the saved recovery key.
 7. Web access is available at https://passby.tenon.asia/. Tenon authentication and Apple private storage authorization are separate. A new browser requires the recovery key once; an authorized browser can reopen during a valid Tenon session.
 
 审核登录信息：用户提供的 `app-review@tenon.asia` 已填写并保存到 Connect，“需要登录”已勾选；重新加载后确认凭据仍在。已在正式 Tenon 登录页验证登录成功，账号权限为普通账号，随后退出测试会话。审核说明指向该专用账号，Apple 私有存储仍属于审核设备系统账号。密码按用户明确要求保存在本机产品规范，不进入 PassBy 仓库、应用包或公开日志。
