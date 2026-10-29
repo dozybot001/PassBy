@@ -57,7 +57,7 @@ struct EntryDetailView: View {
             Button("Delete password") {
                 if session.deleteEntry(id) { dismiss() }
             }
-        } message: { Text("This removes it from your notebook on all synced devices.") }
+        } message: { Text("This removes it from your notebook on all synced devices. This iPhone keeps a copy in Recently Deleted for 30 days.") }
         .onDisappear { revealed = false }
     }
 

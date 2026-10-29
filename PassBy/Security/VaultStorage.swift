@@ -81,7 +81,7 @@ struct VaultStorage {
         // Never choose an arbitrary version if two local books use this key.
         guard matches.allSatisfy({ $0 == first }) else { throw CloudError.notebookChanged }
         return LocalVaultState(current: first.current, base: Vault(),
-            recoveryConfirmed: true, draft: first.draft)
+            recoveryConfirmed: true, draft: first.draft, recentlyDeleted: first.recentlyDeleted)
     }
 
     func load(key: SymmetricKey) throws -> LocalVaultState {

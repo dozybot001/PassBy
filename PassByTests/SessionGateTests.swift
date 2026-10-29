@@ -95,6 +95,43 @@ final class SessionGateTests: XCTestCase {
         XCTAssertEqual(gate.phase, .locked)
     }
 
+    func testRecoveryKeyPromptKeepsNotebookOpenUntilTheAppIsLeft() throws {
+        var gate = SessionGate()
+        let token = try XCTUnwrap(gate.beginAuthentication())
+        gate.biometricPromptFinished(token)
+        XCTAssertTrue(gate.authenticationSucceeded(token))
+        let check = try XCTUnwrap(gate.beginReauthentication())
+        XCTAssertNil(gate.beginReauthentication())
+        gate.willResignActive()
+        XCTAssertEqual(gate.phase, .unlocked)
+        gate.didBecomeActive()
+        XCTAssertTrue(gate.reauthenticationFinished(check))
+        gate.willResignActive()
+        XCTAssertEqual(gate.phase, .locked)
+    }
+
+    func testBackgroundDuringRecoveryKeyPromptLocksAndRejectsLateResult() throws {
+        var gate = SessionGate()
+        let token = try XCTUnwrap(gate.beginAuthentication())
+        gate.biometricPromptFinished(token)
+        XCTAssertTrue(gate.authenticationSucceeded(token))
+        let check = try XCTUnwrap(gate.beginReauthentication())
+        gate.willResignActive()
+        gate.didEnterBackground()
+        XCTAssertEqual(gate.phase, .locked)
+        XCTAssertFalse(gate.reauthenticationFinished(check))
+        gate.didBecomeActive()
+        XCTAssertNil(gate.beginReauthentication())
+    }
+
+    func testUnlockingClearsThePromptSoLaterDeparturesLock() throws {
+        var gate = SessionGate()
+        let token = try XCTUnwrap(gate.beginAuthentication())
+        XCTAssertTrue(gate.authenticationSucceeded(token))
+        gate.willResignActive()
+        XCTAssertEqual(gate.phase, .locked)
+    }
+
     func testClipboardOnlyLocalAndExpiresInSixtySeconds() {
         let now = Date(timeIntervalSince1970: 100)
         let options = SecureClipboard.options(now: now)

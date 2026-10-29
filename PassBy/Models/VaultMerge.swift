@@ -1,10 +1,38 @@
 import Foundation
 
+struct DeletedEntry: Codable, Equatable, Identifiable {
+    var entry: VaultEntry
+    var deletedAt: Date
+    var id: UUID { entry.id }
+}
+
 struct LocalVaultState: Codable, Equatable {
+    static let deletedLifetime: TimeInterval = 30 * 24 * 60 * 60
+
     var current: Vault
     var base: Vault
     var recoveryConfirmed: Bool = true
     var draft: VaultEntry? = nil
+    /// Only in this device's encrypted state, like drafts; never synced.
+    var recentlyDeleted: [DeletedEntry] = []
+
+    /// Keeps entries that left `current`, whether deleted here or by sync.
+    mutating func keepDeleted(from previous: Vault, now: Date = Date()) {
+        let remaining = Set(current.entries.map(\.id))
+        let removed = previous.entries.filter { !remaining.contains($0.id) }
+        let removedIDs = Set(removed.map(\.id))
+        recentlyDeleted.removeAll { removedIDs.contains($0.id) }
+        recentlyDeleted += removed.map { DeletedEntry(entry: $0, deletedAt: now) }
+        pruneDeleted(now: now)
+    }
+
+    /// Drops expired copies and any entry that is back in the notebook.
+    mutating func pruneDeleted(now: Date = Date()) {
+        let present = Set(current.entries.map(\.id))
+        recentlyDeleted.removeAll {
+            present.contains($0.id) || now.timeIntervalSince($0.deletedAt) >= Self.deletedLifetime
+        }
+    }
 
     func integratingCloud(_ remote: Vault?, restoringMissingNotebook: Bool = false) throws -> MergeResult {
         guard remote != nil || base == Vault() || restoringMissingNotebook else {
@@ -14,6 +42,18 @@ struct LocalVaultState: Codable, Equatable {
         // every previously synced item. Existing remote books use normal merge.
         return VaultMerge.merge(base: remote == nil ? Vault() : base,
             local: current, remote: remote ?? Vault())
+    }
+}
+
+extension LocalVaultState {
+    // States saved before Recently Deleted have no list.
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        current = try values.decode(Vault.self, forKey: .current)
+        base = try values.decode(Vault.self, forKey: .base)
+        recoveryConfirmed = try values.decode(Bool.self, forKey: .recoveryConfirmed)
+        draft = try values.decodeIfPresent(VaultEntry.self, forKey: .draft)
+        recentlyDeleted = try values.decodeIfPresent([DeletedEntry].self, forKey: .recentlyDeleted) ?? []
     }
 }
 

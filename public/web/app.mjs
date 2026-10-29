@@ -21,7 +21,7 @@ const copy = {
 let language = document.documentElement.dataset.uiLanguage || (navigator.language.startsWith('zh') ? 'zh' : 'en');
 Object.assign(copy.en, {
   connected:'Notebook connected', connect:'Connect notebook', checking:'Checking your notebook…',
-  remember:'Keep the notebook connected on this trusted computer', rememberHelp:'Optional. This retains Apple private storage authorization on this computer; it does not extend your Tenon session. A new browser still needs initial authorization with your recovery key.',
+  remember:'Keep the notebook connected on this trusted computer', rememberHelp:'Optional. This retains Apple private storage authorization on this computer; it does not extend your Tenon session. While your Tenon sign-in is valid, anyone using this computer can then open the notebook without signing in to Apple. Turn it on only on a computer that only you use. A new browser still needs initial authorization with your recovery key.',
   keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
   switchAccount:'Change notebook connection', retry:'Try again', missingTitle:'Your notebook is not available on the web yet',
   missingHelp:'On your iPhone, update PassBy and finish syncing your notebook. If Settings offers “Enable web access”, choose it, then check again here.',
@@ -30,7 +30,7 @@ Object.assign(copy.en, {
 });
 Object.assign(copy.zh, {
   connected:'密码本已连接', connect:'连接密码本', checking:'正在检查密码本…',
-  remember:'在这台可信电脑上保留密码本连接', rememberHelp:'可选。此选项保留本机的 Apple 私有存储授权，不会延长 Tenon 登录。新浏览器仍需首次用恢复密钥授权。',
+  remember:'在这台可信电脑上保留密码本连接', rememberHelp:'可选。此选项保留本机的 Apple 私有存储授权，不会延长 Tenon 登录。开启后，在 Tenon 登录有效期内，任何使用这台电脑的人都无需登录 Apple 即可打开密码本。请只在仅你本人使用的电脑上开启。新浏览器仍需首次用恢复密钥授权。',
   keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',
   switchAccount:'更换密码本连接', retry:'重试', missingTitle:'密码本尚未同步至网页版',
   missingHelp:'请在 iPhone 更新 PassBy，并完成密码本同步。如果设置中出现“启用网页访问”，请点选，然后在这里重新检查。',

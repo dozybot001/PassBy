@@ -15,8 +15,23 @@ enum RecoveryKey {
         }.joined(separator: "-")
     }
 
+    /// Checks one requested group of the user's saved copy (zero-based), so a
+    /// new notebook opens only after the key was written down somewhere.
+    static func confirms(_ input: String, group: Int, of formatted: String) -> Bool {
+        let groups = formatted.split(separator: "-").map(String.init)
+        return groups.indices.contains(group) && normalize(input) == groups[group]
+    }
+
+    static func groupCount(_ formatted: String) -> Int {
+        formatted.split(separator: "-").count
+    }
+
+    private static func normalize(_ text: String) -> String {
+        text.filter { !$0.isWhitespace && $0 != "-" }.uppercased()
+    }
+
     static func parse(_ text: String) throws -> SymmetricKey {
-        let normalized = text.filter { !$0.isWhitespace && $0 != "-" }.uppercased()
+        let normalized = normalize(text)
         guard normalized.count == 68 else { throw RecoveryError.invalid }
         var data = Data()
         var index = normalized.startIndex

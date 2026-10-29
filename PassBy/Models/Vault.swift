@@ -72,9 +72,9 @@ enum VaultError: Error, LocalizedError, Equatable {
         switch self {
         case .unsupportedVersion: return L("This notebook was saved by a newer version of PassBy. Update the app to open it.")
         case .invalidData: return L("The notebook could not be verified. Your saved file has been kept unchanged.")
-        case .missingKey, .invalidKey: return L("The key for this notebook is unavailable. A change to Face ID or the device passcode may make local data unrecoverable.")
-        case .faceIDRequired: return L("Set up Face ID and a device passcode in iPhone Settings to use PassBy.")
-        case .authenticationFailed: return L("Face ID did not unlock the notebook. Please try again.")
+        case .missingKey, .invalidKey: return LB("The key for this notebook is unavailable. A change to Face ID or the device passcode may make local data unrecoverable.")
+        case .faceIDRequired: return LB("Set up Face ID and a device passcode in iPhone Settings to use PassBy.")
+        case .authenticationFailed: return LB("Face ID did not unlock the notebook. Please try again.")
         case .storageFailed: return L("Your changes could not be saved. Check available storage and try again.")
         case .captureActive: return L("Stop screen recording or mirroring before unlocking your notebook.")
         }

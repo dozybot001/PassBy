@@ -17,6 +17,7 @@ final class VaultSession: ObservableObject {
     @Published private(set) var syncMessage: String?
     @Published private(set) var needsCloudRestore = false
     @Published private(set) var recoveryToSave: String?
+    @Published private(set) var recentlyDeleted: [DeletedEntry] = []
     @Published var message: String?
     @Published private(set) var toast: String?
 
@@ -27,7 +28,12 @@ final class VaultSession: ObservableObject {
     private var storage: VaultStorage?
     private var keyStore: KeyStore?
     private var key: SymmetricKey?
-    private var localState: LocalVaultState?
+    private var localState: LocalVaultState? {
+        didSet {
+            let deleted = localState?.recentlyDeleted ?? []
+            if deleted != recentlyDeleted { recentlyDeleted = deleted }
+        }
+    }
     private var pending: (key: SymmetricKey, state: LocalVaultState)?
     private var context: LAContext?
     private var toastTask: Task<Void, Never>?
@@ -87,7 +93,7 @@ final class VaultSession: ObservableObject {
         do {
             var evaluationError: NSError?
             guard auth.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
-                error: &evaluationError), auth.biometryType == .faceID else {
+                error: &evaluationError), [.faceID, .touchID].contains(auth.biometryType) else {
                 throw VaultError.faceIDRequired
             }
             let success = try await auth.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
@@ -115,7 +121,8 @@ final class VaultSession: ObservableObject {
                         let previous = try storage.load(key: unlockedKey)
                         state = LocalVaultState(current: VaultMerge.merge(base: previous.base,
                             local: previous.current, remote: remote).vault, base: remote,
-                            recoveryConfirmed: true, draft: previous.draft)
+                            recoveryConfirmed: true, draft: previous.draft,
+                            recentlyDeleted: previous.recentlyDeleted)
                     } else {
                         state = LocalVaultState(current: remote, base: remote, recoveryConfirmed: true)
                     }
@@ -141,19 +148,49 @@ final class VaultSession: ObservableObject {
             clearSensitiveState()
             phase = gate.phase
             if let laError = error as? LAError {
-                switch laError.code {
-                case .userCancel, .systemCancel, .appCancel: message = nil
-                case .biometryLockout:
-                    message = L("Face ID is temporarily locked. Unlock your iPhone with its passcode, then try again.")
-                case .biometryNotAvailable, .biometryNotEnrolled, .passcodeNotSet:
-                    message = VaultError.faceIDRequired.localizedDescription
-                default: message = VaultError.authenticationFailed.localizedDescription
-                }
+                message = biometryMessage(laError)
             } else {
                 if let vaultError = error as? VaultError,
                    vaultError == .missingKey || vaultError == .invalidKey { setup = .recovery }
                 message = error.localizedDescription
             }
+        }
+    }
+
+    private func biometryMessage(_ error: LAError) -> String? {
+        switch error.code {
+        case .userCancel, .systemCancel, .appCancel: return nil
+        case .biometryLockout:
+            return LB("Face ID is temporarily locked. Unlock your iPhone with its passcode, then try again.")
+        case .biometryNotAvailable, .biometryNotEnrolled, .passcodeNotSet:
+            return VaultError.faceIDRequired.localizedDescription
+        default: return VaultError.authenticationFailed.localizedDescription
+        }
+    }
+
+    /// Shows the recovery key again after a fresh biometric check. The key
+    /// already unlocks this session; the check keeps a bystander from copying it.
+    /// Returns nil when cancelled or when the notebook locked meanwhile.
+    func revealRecoveryKey() async throws -> String? {
+        guard !UIScreen.main.isCaptured else { throw VaultError.captureActive }
+        guard let token = gate.beginReauthentication() else { return nil }
+        let auth = LAContext()
+        auth.localizedFallbackTitle = ""
+        auth.localizedCancelTitle = L("Cancel")
+        auth.touchIDAuthenticationAllowableReuseDuration = 0
+        defer { auth.invalidate() }
+        do {
+            let success = try await auth.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                localizedReason: L("Show your recovery key."))
+            guard gate.reauthenticationFinished(token), success, let key else { return nil }
+            return RecoveryKey.format(key)
+        } catch {
+            guard gate.reauthenticationFinished(token) else { return nil }
+            if let laError = error as? LAError {
+                guard let text = biometryMessage(laError) else { return nil }
+                throw RevealError(message: text)
+            }
+            throw error
         }
     }
 
@@ -182,9 +219,12 @@ final class VaultSession: ObservableObject {
 
     private func publishIfReady() {
         if gate.phase == .unlocked, let pending {
+            var state = pending.state
+            state.pruneDeleted()
+            if state != pending.state { try? storage?.save(state, key: pending.key) }
             key = pending.key
-            localState = pending.state
-            vault = pending.state.current
+            localState = state
+            vault = state.current
             recoveryToSave = pending.state.recoveryConfirmed ? nil : RecoveryKey.format(pending.key)
             self.pending = nil
             context?.invalidate()
@@ -215,7 +255,9 @@ final class VaultSession: ObservableObject {
     private func commit(_ next: Vault, clearingDraft: Bool = false) -> Bool {
         guard gate.phase == .unlocked, gate.isActive, let key, let storage,
               var state = localState else { return false }
+        let previous = state.current
         state.current = next
+        state.keepDeleted(from: previous)
         if clearingDraft { state.draft = nil }
         do {
             try storage.save(state, key: key)
@@ -274,6 +316,31 @@ final class VaultSession: ObservableObject {
         var next = vault
         next.entries.removeAll { $0.id == id }
         return commit(next)
+    }
+
+    /// Puts a recently deleted entry back. Its folder may be gone; it then
+    /// returns to Unfiled.
+    @discardableResult
+    func restoreDeleted(_ id: UUID) -> Bool {
+        guard let item = recentlyDeleted.first(where: { $0.id == id }) else { return false }
+        var next = vault
+        next.save(item.entry)
+        return commit(next)
+    }
+
+    @discardableResult
+    func purgeDeleted(_ id: UUID) -> Bool {
+        guard gate.phase == .unlocked, gate.isActive, let key, let storage,
+              var state = localState else { return false }
+        state.recentlyDeleted.removeAll { $0.id == id }
+        do {
+            try storage.save(state, key: key)
+            localState = state
+            return true
+        } catch {
+            message = VaultError.storageFailed.localizedDescription
+            return false
+        }
     }
 
     @discardableResult
@@ -360,7 +427,11 @@ final class VaultSession: ObservableObject {
                 }
                 needsCloudRestore = false
                 let merge = try state.integratingCloud(remote, restoringMissingNotebook: restoringMissingNotebook)
+                let previous = state.current
                 state.current = merge.vault
+                // Entries deleted on the web or another device stay in this
+                // iPhone's Recently Deleted.
+                state.keepDeleted(from: previous)
                 // The remote changes are now integrated locally. Advance the
                 // base even if upload fails, so retries do not merge them twice.
                 state.base = remote ?? Vault()
@@ -423,4 +494,29 @@ enum SecureClipboard {
     static func copy(_ value: String) {
         UIPasteboard.general.setItems([["public.utf8-plain-text": value]], options: options())
     }
+}
+
+struct RevealError: Error, LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
+}
+
+/// The iPhone's unlock biometry. iPhone SE models use Touch ID; the Keychain's
+/// `biometryCurrentSet` protection is the same for both.
+enum Biometry {
+    case faceID, touchID
+    static let current: Biometry = {
+        let context = LAContext()
+        // biometryType is set by this call whatever it returns.
+        _ = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        return context.biometryType == .touchID ? .touchID : .faceID
+    }()
+    var symbol: String { self == .touchID ? "touchid" : "faceid" }
+}
+
+/// Localized copy is written with "Face ID". Both languages use the product
+/// name untranslated, so Touch ID iPhones get the same sentence with their own.
+func LB(_ key: String) -> String {
+    let text = L(key)
+    return Biometry.current == .touchID ? text.replacingOccurrences(of: "Face ID", with: "Touch ID") : text
 }

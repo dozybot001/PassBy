@@ -31,6 +31,7 @@ struct SessionGate {
     mutating func authenticationSucceeded(_ token: UInt64) -> Bool {
         guard accepts(token) else { return false }
         pendingSuccess = true
+        biometricPromptActive = false
         if isActive { phase = .unlocked }
         return true
     }
@@ -40,9 +41,24 @@ struct SessionGate {
         lock()
     }
 
+    /// A second check while unlocked, before showing the recovery key. Its
+    /// prompt may make the scene inactive; leaving the app still locks.
+    mutating func beginReauthentication() -> UInt64? {
+        guard isActive, phase == .unlocked, !biometricPromptActive else { return nil }
+        biometricPromptActive = true
+        return generation
+    }
+
+    @discardableResult
+    mutating func reauthenticationFinished(_ token: UInt64) -> Bool {
+        guard token == generation, phase == .unlocked else { return false }
+        biometricPromptActive = false
+        return true
+    }
+
     mutating func willResignActive() {
         isActive = false
-        if phase != .authenticating || !biometricPromptActive { lock() }
+        if !biometricPromptActive { lock() }
     }
 
     mutating func didEnterBackground() {

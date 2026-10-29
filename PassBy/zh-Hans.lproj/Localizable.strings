@@ -35,7 +35,6 @@
 "For example, personal email" = "例如，个人邮箱";
 "Four fields. One quiet place to keep them." = "四项信息，妥善收好。";
 "Hide password" = "隐藏密码";
-"I have saved my recovery key" = "我已妥善保存恢复密钥";
 "I understand how recovery works" = "我了解恢复方式";
 "Its passwords will move to Unfiled." = "其中的密码将移至「未分组」。";
 "Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key." = "请在 PassBy 之外妥善保存恢复密钥。更换设备或重设 Face ID 后需要使用它，我们无法找回丢失的密钥。";
@@ -81,7 +80,6 @@
 "The notebook could not be verified. Your saved file has been kept unchanged." = "无法验证密码本，已有文件未被修改。";
 "This notebook was saved by a newer version of PassBy. Update the app to open it." = "密码本由更新版本的 PassBy 保存，请更新应用后打开。";
 "This recovery key does not unlock your notebook." = "此恢复密钥无法解锁你的密码本。";
-"This removes it from your notebook on all synced devices." = "这会从所有已同步设备的密码本中删除此条目。";
 "Title" = "标题";
 "Try a different title or account." = "试试其他标题或账户。";
 "Try again" = "重试";
@@ -148,7 +146,7 @@
 "Clipboard and drafts" = "剪贴板与草稿";
 "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud." = "复制的内容仅保留在本机，60 秒后过期。接收粘贴的应用可以读取内容。未完成的条目以加密草稿保存在本机，不同步至 iCloud。";
 "Retention and deletion" = "保存与删除";
-"Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy." = "在 PassBy 中删除条目和文件夹后，请等待 iCloud 同步完成，使删除同步至密码本。卸载应用会删除本机文件，不会删除 iCloud 密码本。Apple 按其隐私政策管理 iCloud 存储及服务元数据。";
+"Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy." = "在 PassBy 中删除条目和文件夹后，请等待 iCloud 同步完成，使删除同步至密码本。每台 iPhone 会在「最近删除」中加密保留已删除的密码 30 天，不会同步；你也可以在那里提前删除。卸载应用会删除本机文件，不会删除 iCloud 密码本。Apple 按其隐私政策管理 iCloud 存储及服务元数据。";
 "Support and your choices" = "支持与你的选择";
 "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes." = "如有技术或隐私问题，可联系 support@tenonai.cn。你主动提供的信息仅用于处理支持请求。请勿发送密码、恢复密钥、Apple 验证码或设备密码。";
 "Online privacy policy" = "在线隐私政策";
@@ -179,7 +177,7 @@
 
 "Could not clear the saved sign-in. Please try again." = "无法清除保存的登录状态，请重试。";
 
-"Effective October 4, 2026 · Zeng Deyang" = "生效日期：2026 年 10 月 4 日 · Zeng Deyang";
+"Effective October 29, 2026 · Zeng Deyang" = "生效日期：2026 年 10 月 29 日 · Zeng Deyang";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "本机 Apple 账号用于识别私有密码本存储。PassBy 不接收你的 Apple 密码。选择 Apple 登录时，它可能向 Tenon 提供身份信息。Face ID 由 iOS 处理，PassBy 只接收验证结果，不接收面部数据。";
 
 "Working…" = "处理中…";
@@ -211,3 +209,22 @@
 "Could not open the deletion page. Please try again." = "暂时无法打开删除页面，请重试。";
 
 "Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process." = "可以选择仅删除 PassBy 登录，或删除整个 Tenon 账号。此流程保留 Apple 私有密码本、设备恢复密钥及浏览器授权。";
+"Show your recovery key." = "显示你的恢复密钥。";
+"I have saved it" = "我已保存";
+"Check your saved copy." = "核对你保存的副本。";
+"Enter group %d of %d from the recovery key you saved. Groups are separated by hyphens." = "请输入你保存的恢复密钥中的第 %d 组（共 %d 组）。各组之间以连字符分隔。";
+"Group %d" = "第 %d 组";
+"This group does not match. Check your saved copy." = "这一组不匹配，请核对你保存的副本。";
+"Show the key again" = "重新查看密钥";
+"Recently Deleted" = "最近删除";
+"Deleted passwords stay encrypted on this iPhone for 30 days, including those deleted on the web or another device. They are not synced." = "删除的密码会在这台 iPhone 上加密保留 30 天，包括在网页或其他设备上删除的密码。这些副本不会同步。";
+"Show recovery key" = "查看恢复密钥";
+"Hide recovery key" = "隐藏恢复密钥";
+"Showing the key requires Face ID again. Anyone with it can open your notebook on another device." = "查看前需要再次通过 Face ID。任何人拿到恢复密钥都能在其他设备上打开你的密码本。";
+"No recently deleted passwords" = "没有最近删除的密码";
+"Deleted %@" = "删除于 %@";
+"Kept for 30 days on this iPhone, then removed automatically." = "在这台 iPhone 上保留 30 天，之后自动移除。";
+"Restore password" = "恢复密码";
+"Delete now" = "立即删除";
+"Restoring returns it to your notebook on all synced devices. Deleting now removes this iPhone’s copy." = "恢复后，它会回到所有已同步设备的密码本中。立即删除会移除这台 iPhone 上的副本。";
+"This removes it from your notebook on all synced devices. This iPhone keeps a copy in Recently Deleted for 30 days." = "这会从所有已同步设备的密码本中删除此条目。这台 iPhone 会在「最近删除」中保留副本 30 天。";

@@ -48,11 +48,11 @@ struct LockView: View {
                     .font(.body).foregroundStyle(Palette.secondary).padding(.bottom, 34)
                 if session.setup == .newNotebook {
                     VStack(alignment: .leading, spacing: 18) {
-                        securityLine("Face ID, every time", icon: "faceid")
+                        securityLine("Face ID, every time", icon: Biometry.current.symbol)
                         securityLine("Encrypted before syncing", icon: "icloud")
                         securityLine("One Tenon Account", icon: "person.crop.circle")
                     }.padding(.bottom, 30)
-                    Text("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key.")
+                    Text(LB("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key."))
                         .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 14)
                     Toggle("I understand how recovery works", isOn: $understood).tint(Palette.control)
                         .font(.subheadline).padding(.bottom, 24)
@@ -101,7 +101,7 @@ struct LockView: View {
                         }
                     } label: {
                         if working { ProgressView().tint(Palette.paper) }
-                        else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? L("Restore with Face ID") : L("Unlock with Face ID"), systemImage: "faceid") }
+                        else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? LB("Restore with Face ID") : LB("Unlock with Face ID"), systemImage: Biometry.current.symbol) }
                     }
                     .buttonStyle(PrimaryButton())
                     .disabled(working || account.working || (session.setup == .newNotebook && !understood)
@@ -131,10 +131,10 @@ struct LockView: View {
         .onDisappear { recovery = "" }
     }
 
-    private func securityLine(_ text: LocalizedStringKey, icon: String) -> some View {
+    private func securityLine(_ text: String, icon: String) -> some View {
         HStack(spacing: 13) {
             Image(systemName: icon).font(.title3).foregroundStyle(Palette.accent).frame(width: 26)
-            Text(text).font(.subheadline)
+            Text(LB(text)).font(.subheadline)
         }
     }
 }
@@ -142,33 +142,68 @@ struct LockView: View {
 struct RecoverySetupView: View {
     @EnvironmentObject private var session: VaultSession
     let recovery: String
-    @State private var saved = false
+    @State private var confirming = false
+    @State private var group = 0
+    @State private var typed = ""
+    @State private var mismatch = false
+    private var groups: Int { RecoveryKey.groupCount(recovery) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 NotebookMark(size: 54)
-                Text("Keep your recovery key.").font(.largeTitle.weight(.semibold))
-                Text("Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords.")
-                    .foregroundStyle(Palette.secondary)
-                Text(recovery).font(.system(.body, design: .monospaced)).lineSpacing(8)
-                    .padding(20).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
-                    .privacySensitive()
-                Button {
-                    session.copy(recovery, label: L("Recovery key copied for 60 seconds"))
-                } label: { Label("Copy recovery key", systemImage: "doc.on.doc") }
-                    .buttonStyle(SecondaryButton())
-                Text("PassBy never uploads this key. If you lose every device and this key, your passwords cannot be recovered.")
-                    .font(.footnote).foregroundStyle(Palette.secondary)
-                Toggle("I have saved my recovery key", isOn: $saved).tint(Palette.control).font(.subheadline)
-                Button("Open my notebook") { session.confirmRecoverySaved() }
-                    .buttonStyle(PrimaryButton()).disabled(!saved)
+                if confirming { confirmation } else { key }
                 if let message = session.message {
                     InlineError(text: message)
                 }
             }
             .padding(PageMetrics.horizontalPadding).frame(maxWidth: 540).frame(maxWidth: .infinity)
         }
+        .onDisappear { typed = "" }
+    }
+
+    @ViewBuilder private var key: some View {
+        Text("Keep your recovery key.").font(.largeTitle.weight(.semibold))
+        Text("Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords.")
+            .foregroundStyle(Palette.secondary)
+        Text(recovery).font(.system(.body, design: .monospaced)).lineSpacing(8)
+            .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
+            .privacySensitive()
+        Button {
+            session.copy(recovery, label: L("Recovery key copied for 60 seconds"))
+        } label: { Label("Copy recovery key", systemImage: "doc.on.doc") }
+            .buttonStyle(SecondaryButton())
+        Text("PassBy never uploads this key. If you lose every device and this key, your passwords cannot be recovered.")
+            .font(.footnote).foregroundStyle(Palette.secondary)
+        Button("I have saved it") {
+            // A random group, so the check reads the saved copy, not memory.
+            group = Int.random(in: 0..<groups)
+            typed = ""
+            mismatch = false
+            confirming = true
+        }.buttonStyle(PrimaryButton())
+    }
+
+    @ViewBuilder private var confirmation: some View {
+        Text("Check your saved copy.").font(.largeTitle.weight(.semibold))
+        Text(String(format: L("Enter group %d of %d from the recovery key you saved. Groups are separated by hyphens."), group + 1, groups))
+            .foregroundStyle(Palette.secondary)
+        TextField(String(format: L("Group %d"), group + 1), text: $typed)
+            .textInputAutocapitalization(.characters).autocorrectionDisabled()
+            .font(.system(.title3, design: .monospaced))
+            .padding(16).background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 14))
+            .privacySensitive()
+            .onChange(of: typed) { mismatch = false }
+        if mismatch {
+            InlineError(text: L("This group does not match. Check your saved copy."))
+        }
+        Button("Open my notebook") {
+            if RecoveryKey.confirms(typed, group: group, of: recovery) { session.confirmRecoverySaved() }
+            else { mismatch = true }
+        }
+        .buttonStyle(PrimaryButton()).disabled(typed.isEmpty)
+        Button("Show the key again") { confirming = false }
+            .buttonStyle(SecondaryButton())
     }
 }

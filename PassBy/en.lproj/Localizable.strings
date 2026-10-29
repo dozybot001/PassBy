@@ -35,7 +35,6 @@
 "For example, personal email" = "For example, personal email";
 "Four fields. One quiet place to keep them." = "Four fields. One quiet place to keep them.";
 "Hide password" = "Hide password";
-"I have saved my recovery key" = "I have saved my recovery key";
 "I understand how recovery works" = "I understand how recovery works";
 "Its passwords will move to Unfiled." = "Its passwords will move to Unfiled.";
 "Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key." = "Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key.";
@@ -81,7 +80,6 @@
 "The notebook could not be verified. Your saved file has been kept unchanged." = "The notebook could not be verified. Your saved file has been kept unchanged.";
 "This notebook was saved by a newer version of PassBy. Update the app to open it." = "This notebook was saved by a newer version of PassBy. Update the app to open it.";
 "This recovery key does not unlock your notebook." = "This recovery key does not unlock your notebook.";
-"This removes it from your notebook on all synced devices." = "This removes it from your notebook on all synced devices.";
 "Title" = "Title";
 "Try a different title or account." = "Try a different title or account.";
 "Try again" = "Try again";
@@ -148,7 +146,7 @@
 "Clipboard and drafts" = "Clipboard and drafts";
 "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud." = "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.";
 "Retention and deletion" = "Retention and deletion";
-"Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy." = "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.";
+"Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy." = "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.";
 "Support and your choices" = "Support and your choices";
 "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes." = "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.";
 "Online privacy policy" = "Online privacy policy";
@@ -179,7 +177,7 @@
 
 "Could not clear the saved sign-in. Please try again." = "Could not clear the saved sign-in. Please try again.";
 
-"Effective October 4, 2026 · Zeng Deyang" = "Effective October 4, 2026 · Zeng Deyang";
+"Effective October 29, 2026 · Zeng Deyang" = "Effective October 29, 2026 · Zeng Deyang";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.";
 
 "Working…" = "Working…";
@@ -211,3 +209,22 @@
 "Could not open the deletion page. Please try again." = "Could not open the deletion page. Please try again.";
 
 "Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process." = "Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process.";
+"Show your recovery key." = "Show your recovery key.";
+"I have saved it" = "I have saved it";
+"Check your saved copy." = "Check your saved copy.";
+"Enter group %d of %d from the recovery key you saved. Groups are separated by hyphens." = "Enter group %d of %d from the recovery key you saved. Groups are separated by hyphens.";
+"Group %d" = "Group %d";
+"This group does not match. Check your saved copy." = "This group does not match. Check your saved copy.";
+"Show the key again" = "Show the key again";
+"Recently Deleted" = "Recently Deleted";
+"Deleted passwords stay encrypted on this iPhone for 30 days, including those deleted on the web or another device. They are not synced." = "Deleted passwords stay encrypted on this iPhone for 30 days, including those deleted on the web or another device. They are not synced.";
+"Show recovery key" = "Show recovery key";
+"Hide recovery key" = "Hide recovery key";
+"Showing the key requires Face ID again. Anyone with it can open your notebook on another device." = "Showing the key requires Face ID again. Anyone with it can open your notebook on another device.";
+"No recently deleted passwords" = "No recently deleted passwords";
+"Deleted %@" = "Deleted %@";
+"Kept for 30 days on this iPhone, then removed automatically." = "Kept for 30 days on this iPhone, then removed automatically.";
+"Restore password" = "Restore password";
+"Delete now" = "Delete now";
+"Restoring returns it to your notebook on all synced devices. Deleting now removes this iPhone’s copy." = "Restoring returns it to your notebook on all synced devices. Deleting now removes this iPhone’s copy.";
+"This removes it from your notebook on all synced devices. This iPhone keeps a copy in Recently Deleted for 30 days." = "This removes it from your notebook on all synced devices. This iPhone keeps a copy in Recently Deleted for 30 days.";

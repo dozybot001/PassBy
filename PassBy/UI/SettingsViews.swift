@@ -59,6 +59,9 @@ struct FoldersView: View {
 struct SettingsView: View {
     @State private var confirmWebAccess = false
     @State private var syncing = false
+    @State private var shownRecovery: String?
+    @State private var revealing = false
+    @State private var revealMessage: String?
     @EnvironmentObject private var session: VaultSession
     @EnvironmentObject private var account: TenonAccount
     @Environment(\.dismiss) private var dismiss
@@ -93,7 +96,7 @@ struct SettingsView: View {
                     }
                     if let message = account.message { Text(message).font(.footnote).foregroundStyle(Palette.secondary) }
                 } header: { Text("Tenon Account") } footer: {
-                    Text("Stay signed in to Tenon. Use Face ID each time you open your notebook. Manage your sign-in methods in Tenon Account.")
+                    Text(LB("Stay signed in to Tenon. Use Face ID each time you open your notebook. Manage your sign-in methods in Tenon Account."))
                 }
                 Section("Sync") {
                     LabeledContent("Status", value: status)
@@ -120,15 +123,40 @@ struct SettingsView: View {
                     }
                 }
                 Section {
-                    Label("Locked whenever you leave", systemImage: "faceid")
+                    NavigationLink { RecentlyDeletedView() } label: {
+                        LabeledContent {
+                            Text("\(session.recentlyDeleted.count)").monospacedDigit()
+                        } label: { Label("Recently Deleted", systemImage: "trash") }
+                    }
+                } footer: {
+                    Text("Deleted passwords stay encrypted on this iPhone for 30 days, including those deleted on the web or another device. They are not synced.")
+                }
+                Section {
+                    Label("Locked whenever you leave", systemImage: Biometry.current.symbol)
                     Label("Encrypted before syncing", systemImage: "lock.shield")
                     Label("Clipboard expires after 60 seconds", systemImage: "doc.on.clipboard")
                 } header: { Text("Privacy") } footer: {
                     Text("Copying makes a password temporarily available to the app you paste into. Copies stay on this iPhone and do not use Universal Clipboard.")
                 }
-                Section("Recovery") {
-                    Text("Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys.")
+                Section {
+                    Text(LB("Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys."))
                         .font(.subheadline).foregroundStyle(Palette.secondary)
+                    if let shownRecovery {
+                        Text(shownRecovery).font(.system(.body, design: .monospaced)).lineSpacing(6)
+                            .privacySensitive()
+                        Button {
+                            session.copy(shownRecovery, label: L("Recovery key copied for 60 seconds"))
+                        } label: { Label("Copy recovery key", systemImage: "doc.on.doc") }
+                        Button("Hide recovery key") { self.shownRecovery = nil }
+                    } else {
+                        Button { reveal() } label: { OperationLabel(title: "Show recovery key", working: revealing) }
+                            .disabled(revealing)
+                    }
+                    if let revealMessage {
+                        Text(revealMessage).font(.footnote).foregroundStyle(Palette.secondary)
+                    }
+                } header: { Text("Recovery") } footer: {
+                    Text(LB("Showing the key requires Face ID again. Anyone with it can open your notebook on another device."))
                 }
                 Section {
                     Link(destination: URL(string: UIApplication.openSettingsURLString)!) {
@@ -158,6 +186,7 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden).background(Palette.paper)
             .navigationTitle("Settings").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .onDisappear { shownRecovery = nil }
             .alert("Enable web access?", isPresented: $confirmWebAccess) {
                 Button("Cancel", role: .cancel) {}
                 Button("Enable web access") { sync(enableWeb: true) }
@@ -166,6 +195,17 @@ struct SettingsView: View {
             }
         }
     }
+    private func reveal() {
+        guard !revealing else { return }
+        revealing = true
+        revealMessage = nil
+        Task {
+            defer { revealing = false }
+            do { shownRecovery = try await session.revealRecoveryKey() }
+            catch { revealMessage = error.localizedDescription }
+        }
+    }
+
     private func sync(enableWeb: Bool = false) {
         guard !syncing, session.syncStatus != .syncing else { return }
         syncing = true
@@ -178,12 +218,58 @@ struct SettingsView: View {
 
 }
 
+struct RecentlyDeletedView: View {
+    @EnvironmentObject private var session: VaultSession
+    @State private var selected: DeletedEntry?
+
+    var body: some View {
+        Group {
+            if session.recentlyDeleted.isEmpty {
+                ContentUnavailableView("No recently deleted passwords", systemImage: "trash")
+            } else {
+                List {
+                    Section {
+                        ForEach(session.recentlyDeleted.sorted { $0.deletedAt > $1.deletedAt }) { item in
+                            Button { selected = item } label: {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(item.entry.title).font(.body.weight(.semibold)).lineLimit(1)
+                                    Text(String(format: L("Deleted %@"),
+                                        item.deletedAt.formatted(date: .abbreviated, time: .omitted)))
+                                        .font(.subheadline).foregroundStyle(Palette.secondary)
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+                                .foregroundStyle(Palette.ink)
+                            }
+                            .privacySensitive()
+                        }
+                    } footer: { Text("Kept for 30 days on this iPhone, then removed automatically.") }
+                }
+                .listStyle(.insetGrouped)
+            }
+        }
+        .scrollContentBackground(.hidden).background(Palette.paper)
+        .navigationTitle("Recently Deleted").navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(selected?.entry.title ?? "", isPresented: Binding(
+            get: { selected != nil }, set: { if !$0 { selected = nil } }
+        ), titleVisibility: .visible) {
+            Button("Restore password") {
+                if let selected { _ = session.restoreDeleted(selected.id) }
+                selected = nil
+            }
+            Button("Delete now") {
+                if let selected { _ = session.purgeDeleted(selected.id) }
+                selected = nil
+            }
+        } message: { Text("Restoring returns it to your notebook on all synced devices. Deleting now removes this iPhone’s copy.") }
+    }
+}
+
 struct PrivacyPolicyView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Privacy policy").font(.largeTitle.weight(.semibold))
-                Text("Effective October 4, 2026 · Zeng Deyang")
+                Text("Effective October 29, 2026 · Zeng Deyang")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                 policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
                 policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy account sessions last up to 30 days after verification. A rotating sign-in credential in this iPhone’s device-only Keychain securely renews the session. Closing the app does not sign you out. Sign out, credential revocation or 30 days without renewal may require a new sign-in. Face ID is still required to open the notebook, including offline. No passwords or recovery keys are sent to the account service.")
@@ -192,7 +278,7 @@ struct PrivacyPolicyView: View {
                 policySection("Apple Account and Face ID", "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.")
                 policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")
                 policySection("Clipboard and drafts", "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.")
-                policySection("Retention and deletion", "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.")
+                policySection("Retention and deletion", "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.")
                 Text("Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon.")
                     .foregroundStyle(Palette.secondary)
                 policySection("Support and your choices", "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.")
@@ -205,10 +291,10 @@ struct PrivacyPolicyView: View {
         .background(Palette.paper).navigationBarTitleDisplayMode(.inline)
     }
 
-    private func policySection(_ title: LocalizedStringKey, _ body: LocalizedStringKey) -> some View {
+    private func policySection(_ title: String, _ body: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.headline)
-            Text(body).font(.body).foregroundStyle(Palette.secondary)
+            Text(LB(title)).font(.headline)
+            Text(LB(body)).font(.body).foregroundStyle(Palette.secondary)
         }
     }
 }
@@ -224,7 +310,7 @@ struct AboutPassByView: View {
                 NotebookTitle()
                 LabeledContent("Version", value: version).font(.subheadline).foregroundStyle(Palette.secondary)
                 Text("PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.")
-                Text("Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser.")
+                Text(LB("Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser."))
                     .foregroundStyle(Palette.secondary)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Publisher").font(.footnote).foregroundStyle(Palette.secondary)
