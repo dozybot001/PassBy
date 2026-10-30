@@ -157,7 +157,7 @@ iPhone 不在身边时，在可信电脑打开 passby.tenon.asia。登录 Tenon�
 
 PassBy is an iPhone-only password notebook with no subscriptions, in-app purchases or ads. An iPhone with a device passcode, Face ID or Touch ID enrolled, and an Apple Account signed in to iCloud is required. Notebook data is encrypted before it is stored in the user's private CloudKit database.
 
-1. Launch PassBy and select Sign in with Tenon. Sign in using the dedicated Tenon demo account supplied in App Review Information. The central login page also offers Continue with Apple. Tenon identity is for sign-in only and does not hold notebook contents or recovery keys. The Apple Account signed in to iCloud on the review device independently authorizes its private notebook storage.
+1. Launch PassBy and select Continue with email. Sign in using the dedicated Tenon demo account supplied in App Review Information. Continue with Apple and More options are also offered; a first sign-in creates a Tenon Account. Tenon identity is for sign-in only and does not hold notebook contents or recovery keys. The Apple Account signed in to iCloud on the review device independently authorizes its private notebook storage.
 2. Return to PassBy, read and acknowledge the recovery notice, and tap Create my notebook. Complete Face ID or Touch ID and save the displayed recovery key outside the app. Tap I have saved it and enter the requested four-character group to confirm. Do not send this key to the developer.
 3. Add a fictional entry, generate a password, select Use this password, and Save. A folder can be created from the editor.
 4. Search, open the entry, reveal/copy the password and edit it. Swipe down while editing to retain an encrypted local draft. Tap New password to resume; Cancel discards it.
