@@ -1,5 +1,13 @@
 # PassBy 1.0 发布记录
 
+## 1.1 付费上架与 1.1.1（Build 15）提交审核（2026-10-31）
+
+- 1.1（Build 14）已手动发布，Connect 状态 `READY_FOR_SALE`；同时把基准价（美国）从免费改为 US$0.99。Apple 自动换算示例：中国大陆 ¥8、香港 HK$8、新加坡 S$0.98、英国 £0.99、日本 ¥150。付费 App 协议、银行账户与税表在 Connect 均有效。
+- 1.1.1（Build 15）由 `a482322` 归档上传，含 `6339549` 的登录方式与临时登录会话，处理状态 `VALID`，`usesNonExemptEncryption=false`。版本沿用 1.1 的描述、截图、审核账号与联系人；更新说明为新内容，审核说明第 1 步改为 Continue with email。
+- 审核提交 `6b5ac7df-3bfb-4cc2-8f60-4e4a9a2c3832`，状态 `WAITING_FOR_REVIEW`，过审后自动发布（`AFTER_APPROVAL`）。
+- 网页与认证服务已是 `6339549`，Build 15 需要的服务端改动先于手机包生效；这次版本号提交不含网页代码，未重发网页。
+- 未验证：Xcode 27.2 更新后缺系统组件（CoreSimulator 1174.9.2 低于构建版本 1174.21.0），需由用户执行 `sudo xcodebuild -runFirstLaunch`，因此本次未跑原生测试。`PassBy/Models`、`PassBy/Security`、`PassByTests` 自 Build 14 未改，Build 15 通过 Release 归档编译。真机验收仍未完成。
+
 ## 网页与认证改为从 Gitee 拉取发布（2026-10-30）
 
 - 发布改为先推 Gitee、服务器再拉取：`scripts/publish.sh site|auth` 推送 main（Gitee 与 GitHub）并回读 Gitee 精确 SHA；服务器用 PassBy 专属只读部署公钥 `passby-server-gitee-read`（Gitee 已登记，仅拉取）获取同一 Commit，自行导出、构建并发布。旧的本机打包上传脚本已删除。
