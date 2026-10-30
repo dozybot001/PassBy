@@ -1,5 +1,11 @@
 # PassBy 1.0 发布记录
 
+## 网页与认证改为从 Gitee 拉取发布（2026-10-30）
+
+- 发布改为先推 Gitee、服务器再拉取：`scripts/publish.sh site|auth` 推送 main（Gitee 与 GitHub）并回读 Gitee 精确 SHA；服务器用 PassBy 专属只读部署公钥 `passby-server-gitee-read`（Gitee 已登记，仅拉取）获取同一 Commit，自行导出、构建并发布。旧的本机打包上传脚本已删除。
+- 首次走新流程：网页与认证服务均从 `90e1b0a642891d35e2b84b63a6e9c7a2d17540ea` 发布。网页显示 `1.1 · Web 90e1b0a64289`；认证切至 7281 槽，两个入口健康检查均为 `ok: true, sessionStorage: sqlite`。两者代码内容与上一版相同，登录会话保留。
+- 已清理服务器 `/tmp` 中旧上传流程遗留的发布包与一次性脚本；对应发布仍完整保存在各自 `releases/` 下。
+
 ## 1.1（Build 14）提交审核（2026-10-29）
 
 - 1.0（13）已于 2026-10-17 公开上架（免费，`READY_FOR_SALE`），因此 1.0 无法再换包；Build 14 改为 1.1。
