@@ -57,12 +57,13 @@ Production private configuration is `/opt/passby-auth/config/tenon.env` (0600):
 `TENON_CLIENT_ID`, `TENON_CLIENT_SECRET`, `TENON_IOS_CLIENT_ID`,
 `TENON_IOS_CLIENT_SECRET`. Do not copy its contents to Git, logs or chats.
 
-From a clean main commit run `scripts/publish-site.sh`, then
-`scripts/publish-auth.sh`. For the 30-day migration, the new static site accepts
+From a clean main commit run `scripts/publish.sh site`, then
+`scripts/publish.sh auth`. Both push to Gitee first; the server pulls that exact
+commit from Gitee and builds it (see `docs/web-app.md`). For the 30-day migration, the new static site accepts
 the old BFF's 60-second expiry. Publish the v3 iPhone build after the updated BFF
 is active; existing v2 builds must upgrade.
-This order keeps web sign-in working during the switch. The identity bundle
-includes lockfile-verified pure JS
+This order keeps web sign-in working during the switch. The server builds the identity bundle
+from the Gitee commit with lockfile-verified pure JS
 packages, complete file checksums and a fixed Node image digest. Node 24 or newer
 uses its built-in SQLite module without native addon dependencies. The server
 runs an unprivileged candidate with a read-only application filesystem, checks

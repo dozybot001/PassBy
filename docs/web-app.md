@@ -70,10 +70,29 @@ token deliberately does not authorize localhost. UI verification used an
 isolated `/tmp` harness with a fake cloud transport and example entries; no
 test transport or vault is shipped in `public/`.
 
-Commit on main, then run `bash scripts/publish-site.sh`. It runs the tests/checks,
-exports exact committed static files, validates the SHA-256 manifest, validates
-Caddy, reloads with rollback on failure, compares every publicly served file,
-and only then updates `/opt/passby-site/current`. No native app binary changes.
+Commit on main, then run `bash scripts/publish.sh site` (website) or
+`bash scripts/publish.sh auth` (identity service). Every release goes to Gitee
+first, and the server pulls it from there:
+
+1. Locally: require a clean `main`, run the tests/checks, `git push origin main`
+   (Gitee and GitHub), and read back Gitee `main` as the exact same commit.
+   GitHub is a mirror only; its failure warns but never blocks a release.
+2. On the server, `scripts/release-from-gitee.sh` (sent over SSH, run as root)
+   fetches Gitee `main` into `/opt/passby-release/builder/source.git` with the
+   project's read-only deploy key and pinned Gitee host keys, requires it to
+   equal the requested commit, and exports that commit. Nothing else is uploaded.
+3. The site export runs `scripts/release-site.sh` from that commit: it stamps the
+   version, builds the SHA-256 manifest, validates Caddy, reloads with rollback
+   on failure, compares every publicly served file, and only then updates
+   `/opt/passby-site/current`. The auth export runs `npm ci` from the lockfile in
+   the pinned Node image, builds the checksummed bundle and runs
+   `scripts/release-auth.py`. No native app binary changes.
+
+The server key is `/opt/passby-release/builder/gitee_read_ed25519` (root 0600),
+registered on Gitee `dozybot/PassBy` as a pull-only deploy key; it is not a
+personal identity and is not shared with other projects. To rotate, delete the
+key and run a publish: the controller creates a new key, prints its public key
+and stops until it is added on Gitee and the old deploy key is removed.
 
 Native build 2 explicitly signs with the Production CloudKit environment,
 including development installs, matching the web client. The provisioning

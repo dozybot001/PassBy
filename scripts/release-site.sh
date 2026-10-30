@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
+# Runs on the server from the exact Gitee export prepared by release-from-gitee.sh.
 set -Eeuo pipefail
-root="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$root"
-[[ -z "$(git status --porcelain)" ]] || { echo 'Commit changes before publishing.' >&2; exit 1; }
-release="$(git rev-parse HEAD)"
-node --test scripts/test-web.mjs
-for module in public/web/*.mjs; do node --check "$module"; done
-staging="$(mktemp -d)"
-trap 'rm -rf "$staging"' EXIT
-git archive "$release" public | tar -x -C "$staging"
-python3 - "$staging" "$release" <<'PY'
-import hashlib, json, pathlib, sys, subprocess, re
+stage="$1"
+release="$2"
+[[ "$release" =~ ^[0-9a-f]{40}$ && -d "$stage/public" ]]
+bundle="$stage/bundle"
+mkdir "$bundle"
+cp -R "$stage/public" "$bundle/public"
+python3 - "$bundle" "$release" "$stage/PassBy.xcodeproj/project.pbxproj" <<'PY'
+import hashlib, json, pathlib, sys, re
 root = pathlib.Path(sys.argv[1])
-project = subprocess.check_output(['git', 'show', sys.argv[2] + ':PassBy.xcodeproj/project.pbxproj'], text=True)
+project = pathlib.Path(sys.argv[3]).read_text()
 version = re.search(r'"MARKETING_VERSION" = "([^";]+)";', project).group(1)
 page = root / 'public/index.html'
 page.write_text(page.read_text().replace('<title>', '<meta name="passby-version" content="' + version + ' · Web ' + sys.argv[2][:12] + '">\n  <title>', 1))
@@ -32,14 +30,6 @@ files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in sorted((root / 'public').rglob('*')) if p.is_file()}
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
 PY
-COPYFILE_DISABLE=1 tar --no-xattrs -czf "$staging/site.tar.gz" -C "$staging" public manifest.json
-incoming="/tmp/passby-site-$release.tar.gz"
-scp -q "$staging/site.tar.gz" "wesaid-prod:$incoming"
-ssh -o BatchMode=yes wesaid-prod sudo -n bash -s -- "$release" "$incoming" <<'REMOTE'
-set -Eeuo pipefail
-release="$1"
-incoming="$2"
-[[ "$release" =~ ^[0-9a-f]{40}$ ]]
 directory="/opt/passby-site/releases/$release"
 config=/etc/caddy/sites-enabled/tenon-ai.caddy
 web_config=/etc/caddy/sites-enabled/passby.caddy
@@ -48,8 +38,7 @@ mkdir -p /opt/passby-site/releases
 mkdir "$lock" || { echo 'PassBy site publication is already running.' >&2; exit 1; }
 trap 'rmdir "$lock"' EXIT
 if [[ ! -d "$directory" ]]; then
-    mkdir "$directory"
-    tar -xzf "$incoming" -C "$directory"
+    cp -R "$bundle" "$directory"
 fi
 python3 - "$directory" "$release" <<'PY'
 import hashlib, json, pathlib, sys
@@ -143,7 +132,5 @@ cp "$lock/previous.caddy" "$directory/ingress-before.caddy"
 find "$directory" -type f -exec chmod 0444 {} +
 ln -sfn "$directory" /opt/passby-site/current
 printf '%s\n' "$release" > /opt/passby-site/last-successful-commit
-rm -f "$incoming"
 rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/candidate.caddy" "$lock/previous.caddy" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
 echo "Published PassBy web app, support and privacy pages: $release"
-REMOTE
