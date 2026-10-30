@@ -17,6 +17,7 @@ const validRefresh = value => typeof value === 'string' && /^[A-Za-z0-9._~-]{32,
 // Web tokens are discarded after the callback. Native refresh credentials
 // pass through a one-use ticket to the device Keychain, never to cookies, logs
 // or disk. Tickets are discarded within 60 seconds.
+const LOGIN_METHODS = new Set(['apple', 'github', 'email']);
 export class TenonAuth {
   constructor({ origin = 'https://tenon.asia', clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol = oidc, now = Date.now }) {
     if (!['https://tenon.asia', 'https://passby.tenon.asia'].includes(origin) || !clientId || !clientSecret || !sessionStore) throw Error('Incomplete authentication configuration');
@@ -70,9 +71,12 @@ export class TenonAuth {
     const authorizationGeneration = this.sessionStore.generation();
     const config = await this.config(native), browser = token(), verifier = this.protocol.randomPKCECodeVerifier();
     const state = this.protocol.randomState(), nonce = this.protocol.randomNonce();
+    // The chosen method only selects the central page; identity checks are unchanged.
+    const method = url.searchParams.get('method');
     const location = this.protocol.buildAuthorizationUrl(config, { redirect_uri: native ? this.iosCallback : this.callback,
       scope: native ? 'openid profile email offline_access' : 'openid profile email', ...(native ? { prompt: 'consent' } : {}), state, nonce,
-      code_challenge: await this.protocol.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256' });
+      code_challenge: await this.protocol.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256',
+      ...(LOGIN_METHODS.has(method) ? { tenon_method: method } : {}) });
     this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState, authorizationGeneration });
     res.setHeader('Set-Cookie', this.cookie('attempt', browser, 600, 'Lax'));
     if (url.searchParams.get('format') === 'json') {

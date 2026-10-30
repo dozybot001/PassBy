@@ -163,7 +163,11 @@
 
 "Sync" = "同步";
 
-"Sign in with Tenon" = "使用 Tenon 账号登录";
+"Continue with Apple" = "使用 Apple 继续";
+"Continue with email" = "使用邮箱继续";
+"More options" = "其他登录方式";
+"Last used" = "上次使用";
+"Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address." = "首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。";
 "Tenon Account" = "Tenon 账号";
 "Manage sign-in methods" = "管理登录方式";
 "Sign out of PassBy" = "退出 PassBy";

@@ -55,6 +55,7 @@ footer{display:flex;align-items:center;font-size:12px;color:var(--muted);gap:24p
 .unlock-card h2{margin:0 0 12px;font-size:18px;line-height:1.5}.unlock-card p{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 20px}
 .unlock-card .access-intro{margin:0}.access-identity{font-size:12px;color:var(--muted);margin-top:20px}
 .tenon-actions,.access-actions{display:flex;flex-direction:column;gap:0;margin-top:28px}.tenon-actions{gap:12px}
+.provider-logo{width:18px;height:18px;flex:none;fill:currentColor}.last-used{padding:1px 8px;border-radius:999px;background:color-mix(in srgb,currentColor 14%,transparent);font-size:11px;font-weight:500}.more-methods{align-self:center;padding:4px 8px;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px}.unlock-card .access-note{margin:20px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
 .unlock-card .pill{width:100%;min-height:48px;font-size:15px}.unlock-card [role=alert]{margin:20px 0 0;color:var(--fg)}
 .unlock-card form{margin:0}.unlock-card form label{display:block;font-size:14px;font-weight:550;margin-bottom:10px}
 .unlock-card input[type=password]{background:var(--bg);color:var(--fg);width:100%;border:1px solid var(--border);border-radius:14px;padding:14px 16px;min-height:52px;margin:0 0 20px}

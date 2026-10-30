@@ -221,7 +221,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
         data.base64EncodedString().replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
     }
-    func signIn() {
+    func signIn(method: String? = nil) {
         guard !working else { return }
         VaultSession.shared.lock(); generation += 1
         refreshTask?.cancel(); refreshTask = nil
@@ -233,6 +233,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
             var start = URLComponents(string: api + "start")!
             start.queryItems = [URLQueryItem(name: "platform", value: "ios"), URLQueryItem(name: "session_version", value: String(Self.sessionVersion)),
                 URLQueryItem(name: "challenge", value: challenge), URLQueryItem(name: "state", value: state)]
+            if let method { start.queryItems?.append(URLQueryItem(name: "method", value: method)) }
             let browser = ASWebAuthenticationSession(url: start.url!, callbackURLScheme: "passby") { [weak self] url, error in
                 Task { @MainActor in
                     guard let self, self.generation == attempt else { return }
@@ -264,6 +265,8 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
                 }
             }
             browser.presentationContextProvider = self
+            // Skips the system "wants to use tenon.asia" prompt before a method the person just chose.
+            browser.prefersEphemeralWebBrowserSession = true
             self.browser = browser
             if !browser.start() { self.browser = nil; working = false; message = L("Tenon sign-in could not be completed. Please try again.") }
         } catch { working = false; message = L("Tenon sign-in could not be completed. Please try again.") }

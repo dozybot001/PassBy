@@ -207,6 +207,34 @@ struct ControlSurface: ViewModifier {
     .background(Palette.paper).preferredColorScheme(.dark)
 }
 
+/// Sign-in methods; each goes straight to that method on the central account page.
+struct SignInOptions: View {
+    @EnvironmentObject private var account: TenonAccount
+    @AppStorage("passby.last-method") private var lastMethod = ""
+    var body: some View {
+        VStack(spacing: 10) {
+            Button { choose("apple") } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "apple.logo").accessibilityHidden(true)
+                    OperationLabel(title: "Continue with Apple", working: account.working).tint(Palette.paper)
+                    if lastMethod == "apple" { Text("Last used").font(.caption2) }
+                }
+            }.buttonStyle(PrimaryButton())
+            Button { choose("email") } label: {
+                HStack(spacing: 8) {
+                    OperationLabel(title: "Continue with email", working: account.working)
+                    if lastMethod == "email" { Text("Last used").font(.caption2) }
+                }.frame(maxWidth: .infinity)
+            }.buttonStyle(SecondaryButton())
+            Button("More options") { account.signIn() }.font(.footnote).foregroundStyle(Palette.secondary).buttonStyle(.plain)
+            Text("Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.")
+                .font(.footnote).foregroundStyle(Palette.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+        .disabled(account.working)
+    }
+    private func choose(_ method: String) { lastMethod = method; account.signIn(method: method) }
+}
+
 struct OperationLabel: View {
     let title: LocalizedStringKey
     let working: Bool

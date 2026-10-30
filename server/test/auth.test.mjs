@@ -222,6 +222,17 @@ test('refresh and native logout enforce origin/content type and invoke central r
 });
 
 
+test('only a known login method reaches the authorization request', async () => {
+  const f = fixture(); let options;
+  const build = f.auth.protocol.buildAuthorizationUrl;
+  f.auth.protocol.buildAuthorizationUrl = (config, values) => { options = values; return build(config, values); };
+  await begin(f, '?format=json&method=apple');
+  assert.equal(options.tenon_method, 'apple');
+  await begin(f, '?format=json&method=https://evil.test');
+  assert.equal(options.tenon_method, undefined);
+  await begin(f, '?format=json');
+  assert.equal(options.tenon_method, undefined);
+});
 test('dedicated web origin uses exact callbacks, host-only cookies and isolated sessions', async t => {
   const legacy = fixture(), web = fixture({ origin: 'https://passby.tenon.asia' });
   assert.equal(web.auth.callback, 'https://passby.tenon.asia/api/auth/callback');

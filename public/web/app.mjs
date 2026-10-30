@@ -243,19 +243,29 @@ function renderWelcome() {
   if (!tenonIdentity) {
     card.classList.add('tenon-entry');
     card.append(node('img','access-mark'),node('h1','',language==='zh'?'登录 PassBy':'Sign in to PassBy'),
-      node('p','access-intro',language==='zh'?'用 Tenon 账号打开你的私人密码本。':'Open your private password notebook with Tenon.'));
+      node('p','access-intro',language==='zh'?'登录后打开你的私人密码本。':'Sign in to open your private password notebook.'));
     if (tenonLoading) {
       const pending=button(t('connecting'),()=>{},'pill primary');pending.disabled=true;pending.classList.add('is-loading');pending.setAttribute('aria-busy','true');card.append(pending);
     }
     else {
       if (tenonError) { const error=node('p','',language==='zh'?'账号服务暂时不可用，请重试。':'Account service unavailable. Please try again.');error.setAttribute('role','alert');card.append(error); }
       const actions=node('div','tenon-actions');
-      const login=node('a','pill primary',language==='zh'?'使用 Tenon 账号登录':'Sign in with Tenon');login.href='./auth/redirect/?lang='+language;login.addEventListener('click',event=>{
-        if(login.getAttribute('aria-busy')==='true'){event.preventDefault();return;}
-        login.setAttribute('aria-busy','true');login.classList.add('is-loading');
-      });actions.append(login);
+      let lastMethod=null;try{lastMethod=localStorage.getItem('passby.last-method');}catch{/* The marker is only a convenience. */}
+      const methodLink=(method,label,className)=>{
+        const link=node('a',className,label);link.href=`./auth/redirect/?method=${method}&lang=${language}`;
+        if(method==='apple')link.insertAdjacentHTML('afterbegin','<svg class="provider-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>');
+        if(lastMethod===method)link.append(node('span','last-used',language==='zh'?'上次使用':'Last used'));
+        link.addEventListener('click',event=>{
+          if(link.getAttribute('aria-busy')==='true'){event.preventDefault();return;}
+          link.setAttribute('aria-busy','true');link.classList.add('is-loading');
+          try{localStorage.setItem('passby.last-method',method);}catch{/* The marker is only a convenience. */}
+        });
+        return link;
+      };
+      const more=node('a','more-methods',language==='zh'?'其他登录方式':'More options');more.href='./auth/redirect/?lang='+language;
+      actions.append(methodLink('apple',language==='zh'?'使用 Apple 继续':'Continue with Apple','pill primary'),methodLink('email',language==='zh'?'使用邮箱继续':'Continue with email','pill'),more);
       if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
-      card.append(actions);
+      card.append(actions,node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.'));
     }
     card.querySelector('.access-mark').src='./web/icon.svg';card.querySelector('.access-mark').alt='';
     addHint(card.querySelector('h1'),language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.');

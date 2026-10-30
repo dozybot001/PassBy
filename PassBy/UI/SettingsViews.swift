@@ -84,7 +84,7 @@ struct SettingsView: View {
                         Link("Manage sign-in methods", destination: URL(string: "https://account.tenon.asia/account/")!)
                         Button("Sign out of PassBy") { account.signOut() }
                     } else {
-                        Button { account.signIn() } label: { OperationLabel(title: "Sign in with Tenon", working: account.working) }.disabled(account.working)
+                        SignInOptions().listRowSeparator(.hidden)
                     }
                     if account.identity != nil {
                         Button { Task { if let url = await account.beginDeletion() { openURL(url) } } }

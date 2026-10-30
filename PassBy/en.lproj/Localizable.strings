@@ -163,7 +163,11 @@
 
 "Sync" = "Sync";
 
-"Sign in with Tenon" = "Sign in with Tenon";
+"Continue with Apple" = "Continue with Apple";
+"Continue with email" = "Continue with email";
+"More options" = "More options";
+"Last used" = "Last used";
+"Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address." = "Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.";
 "Tenon Account" = "Tenon Account";
 "Manage sign-in methods" = "Manage sign-in methods";
 "Sign out of PassBy" = "Sign out of PassBy";

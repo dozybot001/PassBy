@@ -74,10 +74,7 @@ struct LockView: View {
                 }
                 if session.setup == .newNotebook {
                     if account.identity == nil {
-                        Button { account.signIn() } label: {
-                            OperationLabel(title: "Sign in with Tenon", working: account.working).tint(Palette.paper)
-                        }.buttonStyle(PrimaryButton())
-                            .disabled(account.working).padding(.bottom, 16)
+                        SignInOptions().padding(.bottom, 16)
                     } else if let identity = account.identity {
                         Text("Tenon: \(identity.name)").font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
                     }
@@ -109,12 +106,7 @@ struct LockView: View {
                         || (needsRecovery && recovery.isEmpty))
                 }
                 if session.setup != .newNotebook && session.setup != .checking && account.identity == nil {
-                    Button { account.signIn() } label: {
-                        OperationLabel(title: "Sign in with Tenon", working: account.working)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(SecondaryButton())
-                    .disabled(account.working || working).padding(.top, 16)
+                    SignInOptions().disabled(working).padding(.top, 16)
                 }
                 if let message = account.message {
                     Text(message).font(.subheadline).foregroundStyle(Palette.secondary)
