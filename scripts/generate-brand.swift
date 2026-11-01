@@ -17,11 +17,6 @@ func draw(_ context: CGContext, appIcon: Bool = false) {
     if appIcon {
         context.setFillColor(CGColor(gray: 0.9, alpha: 1))
         context.fill(CGRect(x: 0, y: 0, width: 100, height: 100))
-    } else {
-        context.setFillColor(CGColor(gray: 0, alpha: 0.1))
-        context.addPath(CGPath(roundedRect: CGRect(x: 0, y: 0, width: 100, height: 100),
-                               cornerWidth: 22, cornerHeight: 22, transform: nil))
-        context.fillPath()
     }
     for bar in bars {
         context.setFillColor(CGColor(gray: 0, alpha: bar.opacity))
@@ -34,9 +29,10 @@ func draw(_ context: CGContext, appIcon: Bool = false) {
 let asset = URL(fileURLWithPath: "PassBy/Assets.xcassets/BrandMark.imageset", isDirectory: true)
 try FileManager.default.createDirectory(at: asset, withIntermediateDirectories: true)
 let pdfData = NSMutableData()
-var bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+// Everything but the App Store icon is the bars alone, trimmed to this square as on tenon.asia.
+var bounds = CGRect(x: 0, y: 0, width: 56, height: 56)
 let pdf = CGContext(consumer: CGDataConsumer(data: pdfData)!, mediaBox: &bounds, nil)!
-pdf.beginPDFPage(nil); draw(pdf); pdf.endPDFPage(); pdf.closePDF()
+pdf.beginPDFPage(nil); pdf.translateBy(x: -22, y: -22); draw(pdf); pdf.endPDFPage(); pdf.closePDF()
 try pdfData.write(to: asset.appendingPathComponent("BrandMark.pdf"))
 try """
 {"images":[{"filename":"BrandMark.pdf","idiom":"universal"}],"info":{"author":"xcode","version":1},"properties":{"preserves-vector-representation":true,"template-rendering-intent":"template"}}
@@ -52,7 +48,15 @@ let rectangles = bars.map { bar in
     "<rect x=\"\(bar.x)\" y=\"\(bar.y)\" width=\"\(bar.width)\" height=\"\(bar.height)\" rx=\"3.25\" opacity=\"\(bar.opacity)\"/>"
 }.joined()
 let svg = """
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><style>:root{color:#111}@media(prefers-color-scheme:dark){:root{color:#f6f6f6}}</style><g fill="currentColor"><rect width="100" height="100" rx="22" opacity=".1"/>\(rectangles)</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 56 56"><style>:root{color:#111}@media(prefers-color-scheme:dark){:root{color:#f6f6f6}}</style><g fill="currentColor">\(rectangles)</g></svg>
 """
 try svg.write(toFile: "public/web/icon.svg", atomically: true, encoding: .utf8)
-print("Generated in-app vector, opaque App Store icon and web mark from one geometry.")
+// Pages inline the mark so it follows the in-app theme, which an <img> cannot.
+let symbol = "<svg class=\"product-symbol\" viewBox=\"22 22 56 56\" aria-hidden=\"true\">\(rectangles)</svg>"
+for path in ["public/index.html", "public/privacy/index.html", "public/support/index.html"] {
+    var page = try String(contentsOfFile: path, encoding: .utf8)
+    let start = page.range(of: "<svg class=\"product-symbol\"")!.lowerBound
+    page.replaceSubrange(start..<page.range(of: "</svg>", range: start..<page.endIndex)!.upperBound, with: symbol)
+    try page.write(toFile: path, atomically: true, encoding: .utf8)
+}
+print("Generated in-app vector, opaque App Store icon, web mark and inline page marks from one geometry.")

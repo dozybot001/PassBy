@@ -78,6 +78,8 @@ const paths = {
   delete:'<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',
   notebook:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/>',
 };
+// Inline, because an <img> follows the system theme and not the page's.
+function accessMark() { const mark = document.querySelector('.product-symbol').cloneNode(true); mark.classList.add('access-mark'); return mark; }
 function icon(name) { const span = document.createElement('span'); span.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.notebook}</svg>`; return span.firstElementChild; }
 function node(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text !== undefined) el.textContent = text; return el; }
 function button(label, action, className='pill', symbol) {
@@ -233,7 +235,7 @@ function renderWelcome() {
   const welcome = node('section', 'welcome'), card = node('section', 'unlock-card');
   // Automatic checks are one progress state, never an incomplete authorization form.
   if(tenonLoading || tenonSigningOut || (tenonIdentity && (connecting || (signedIn && notebookState==='checking')))){
-    card.classList.add('access-progress');const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
+    card.classList.add('access-progress');const mark=accessMark();
     const title=tenonSigningOut?(language==='zh'?'正在退出 PassBy':'Signing out of PassBy'):(language==='zh'?'正在打开密码本':'Opening your notebook');
     const progress=node('div','access-progress-status is-loading',tenonSigningOut?(language==='zh'?'正在退出…':'Signing out…'):(language==='zh'?'连接中…':'Connecting…'));progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');
     card.append(mark,node('h1','',title),progress);
@@ -242,7 +244,7 @@ function renderWelcome() {
   }
   if (!tenonIdentity) {
     card.classList.add('tenon-entry');
-    card.append(node('img','access-mark'),node('h1','',language==='zh'?'登录 PassBy':'Sign in to PassBy'),
+    card.append(accessMark(),node('h1','',language==='zh'?'登录 PassBy':'Sign in to PassBy'),
       node('p','access-intro',language==='zh'?'登录后打开你的私人密码本。':'Sign in to open your private password notebook.'));
     if (tenonLoading) {
       const pending=button(t('connecting'),()=>{},'pill primary');pending.disabled=true;pending.classList.add('is-loading');pending.setAttribute('aria-busy','true');card.append(pending);
@@ -267,11 +269,10 @@ function renderWelcome() {
       if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
       card.append(actions,node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.'));
     }
-    card.querySelector('.access-mark').src='./web/icon.svg';card.querySelector('.access-mark').alt='';
     addHint(card.querySelector('h1'),language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.');
     welcome.append(card);main.replaceChildren(welcome);return;
   }
-  const mark=node('img','access-mark');mark.src='./web/icon.svg';mark.alt='';
+  const mark=accessMark();
   if(tenonSigningOut){
     const loading=button(language==='zh'?'正在退出…':'Signing out…',()=>{},'pill primary');loading.disabled=true;loading.classList.add('is-loading');loading.setAttribute('aria-busy','true');
     card.append(mark,loading);welcome.append(card);main.replaceChildren(welcome);return;
@@ -490,7 +491,8 @@ function openSettings(){
 function openAbout(){
   const inner=showDialog(language==='zh'?'关于 PassBy':'About PassBy','about');
   const logo=node('div','wordmark');logo.setAttribute('role','img');logo.setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品':'PassBy, by Tenon');
-  const mark=node('img','tenon-mark');mark.src='./web/tenon-mark.svg';mark.alt='';logo.append(node('span','','PassBy'),mark);
+  const name=node('span','product-name'),mark=node('img','tenon-mark');mark.src='./web/tenon-mark.svg';mark.alt='';
+  name.append(node('span','','PassBy'),mark);logo.append(document.querySelector('.product-symbol').cloneNode(true),name);
   const version=document.querySelector('meta[name="passby-version"]')?.content;
   inner.append(logo,node('p','helper',`${language==='zh'?'版本':'Version'}: ${version || (language==='zh'?'网页 · 本地构建':'Web · Local build')}`),
     node('p','about-description',language==='zh'?'PassBy 是你的私人密码本。将标题、账号、密码和备注保存在一起，按文件夹整理，并生成强密码，复制到其他应用中使用。':'PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.'),
