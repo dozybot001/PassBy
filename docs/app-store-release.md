@@ -3,7 +3,8 @@
 ## 一句话定义定稿（2026-11-02）
 
 - 用户定稿：`一个简单的密码本` / `A simple password notebook`。网页、README 和 GitHub About 已换；iPhone 关于页随下一次构建。
-- 下文商店副标题和描述首句已改，但 1.1.1（Build 15）在审核中，Connect 未动，提交下一版时填入。商店名称未改。
+- 下文商店名称、副标题和描述首句已改，Connect 未动。1.1.1（Build 15）已上架（2026-11-02 公开接口：版本 1.1.1、US$0.99），这些资料只能随新版本送审；按用户决定不单独提审，提交下一版时填入。
+- 商店名称中英文都改为 `PassBy`，定义由副标题承担；`PassBy — A simple password notebook` 有 35 个字符，超过 Apple 的 30 字符上限。Connect 若提示名称已被占用，中文用 `PassBy — 一个简单的密码本`，英文保留 `PassBy — Password Notebook`。
 
 ## 产品图形进入完整标志（2026-11-02，随下一次构建发布）
 
@@ -114,6 +115,8 @@ Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱�
 
 ## 商店英文文案
 
+名称：`PassBy`
+
 副标题：`A simple password notebook`
 
 推广文本：`Keep accounts in one quiet place. Organize folders, generate passwords, and open your encrypted notebook on iPhone or a trusted computer.`
@@ -142,7 +145,7 @@ PassBy has no subscriptions, in-app purchases or ads. Requirements: iOS 17 or la
 
 ## 商店中文文案
 
-名称：`PassBy — 私人密码本`
+名称：`PassBy`
 
 副标题：`一个简单的密码本`
 
