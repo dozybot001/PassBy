@@ -309,7 +309,7 @@ struct AboutPassByView: View {
             VStack(alignment: .leading, spacing: 24) {
                 NotebookTitle()
                 LabeledContent("Version", value: version).font(.subheadline).foregroundStyle(Palette.secondary)
-                Text("PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.")
+                Text("PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.")
                 Text(LB("Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser."))
                     .foregroundStyle(Palette.secondary)
                 VStack(alignment: .leading, spacing: 12) {

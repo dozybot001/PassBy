@@ -1,5 +1,10 @@
 # PassBy 1.0 发布记录
 
+## 一句话定义定稿（2026-11-02）
+
+- 用户定稿：`一个简单的密码本` / `A simple password notebook`。网页、README 和 GitHub About 已换；iPhone 关于页随下一次构建。
+- 下文商店副标题和描述首句已改，但 1.1.1（Build 15）在审核中，Connect 未动，提交下一版时填入。商店名称未改。
+
 ## 产品图形进入完整标志（2026-11-02，随下一次构建发布）
 
 - iPhone 的标题改为产品图形、字标和 Tenon 小标，用在登录、顶栏和关于页；密码本顶栏在放不下时从 34pt 降到 28pt。解锁页去掉了紧贴标题的大图形，隐私遮罩只留图形。`BrandMark` 去掉底板并裁到官网的取景。
@@ -109,13 +114,13 @@ Tenon 是唯一账号服务，支持在其固定登录页使用 Apple 或邮箱�
 
 ## 商店英文文案
 
-副标题：`Your private password notebook`
+副标题：`A simple password notebook`
 
 推广文本：`Keep accounts in one quiet place. Organize folders, generate passwords, and open your encrypted notebook on iPhone or a trusted computer.`
 
 描述：
 
-PassBy is a simple password notebook for iPhone. Keep each entry in four fields: title, account, password and notes. Organize entries into folders and find them with search.
+PassBy is a simple password notebook. Keep each entry in four fields: title, account, password and notes. Organize entries into folders and find them with search.
 
 Generate random passwords with lowercase letters, uppercase letters, numbers and symbols. The default is 16 characters; the slider covers 8–24, and you can enter a longer length up to 4096. Copy a password and paste it into another app.
 
@@ -139,13 +144,13 @@ PassBy has no subscriptions, in-app purchases or ads. Requirements: iOS 17 or la
 
 名称：`PassBy — 私人密码本`
 
-副标题：`四个字段，安心记录账户密码`
+副标题：`一个简单的密码本`
 
 推广文本：`为账户密码留一个安静的位置。文件夹分类、随机密码生成，在 iPhone 和可信电脑上打开你的加密密码本。`
 
 描述：
 
-PassBy 是一款简洁的 iPhone 密码本。每项记录包含标题、账户、密码、备注，支持文件夹分类、搜索、编辑和删除。
+PassBy 是一个简单的密码本。每项记录包含标题、账户、密码、备注，支持文件夹分类、搜索、编辑和删除。
 
 内置随机密码生成器，可选择大小写字母、数字与符号。默认生成 16 位密码，滑块选择 8～24 位，也可手动输入至 4096 位。生成后复制，切回其他应用即可粘贴。
 

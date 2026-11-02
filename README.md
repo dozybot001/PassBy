@@ -1,6 +1,6 @@
 # PassBy
 
-原生 SwiftUI iPhone 密码本。开发者：Zeng Deyang。
+一个简单的密码本。iPhone 端为原生 SwiftUI 应用。开发者：Zeng Deyang。
 
 ## 首版范围
 

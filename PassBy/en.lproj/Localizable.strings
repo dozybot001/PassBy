@@ -187,7 +187,7 @@
 "Working…" = "Working…";
 "PassBy, by Tenon" = "PassBy, by Tenon";
 "Publisher" = "Publisher";
-"PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps." = "PassBy is a private password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.";
+"PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps." = "PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.";
 "Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser." = "Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser.";
 
 "Account information" = "Account information";
