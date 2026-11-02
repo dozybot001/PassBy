@@ -88,17 +88,16 @@ calling the central service and covers already committed successors; a late
 refresh cannot recreate a session after logout, including across containers.
 Rotation links, revocation and session creation use the same SQLite transactions.
 
-Before starting a candidate against an existing database, the publisher uses
-SQLite's online backup API, verifies the snapshot with `quick_check`, then
-atomically saves it under `/opt/passby-auth/backups` (0700) as a 0600 file.
-For the first deployment, Node creates the database and the publisher takes
-the first snapshot after database-backed health succeeds. Tests run with
-independent temporary databases in an isolated container `/tmp`; they never
-mount production session storage or insert fake production identities.
-Code/ingress rollback preserves the shared database and does not restore a
-snapshot automatically. Disaster recovery requires stopping writers before a
-deliberate restore; older snapshots may revive sessions already logged out or
-rotated, and lose sessions created after the snapshot.
+The database is not backed up, neither daily nor at deploy (since 2026-11-02).
+Nothing in it is user data: session digests and identity snapshots, plus digest
+tombstones whose protection the central service duplicates, because logout and
+product deletion also revoke the refresh credentials centrally. Losing it means
+web users sign in again and iPhones renew with a still-valid credential;
+restoring an older copy would instead revive sessions already logged out or
+rotated. Disaster recovery is therefore an empty database created by Node.
+Tests run with independent temporary databases in an isolated container `/tmp`;
+they never mount production session storage or insert fake production identities.
+Code/ingress rollback preserves the shared database.
 
 The first migration cannot recover sessions from the old process's memory:
 existing users need to sign in once after the switch. Rolling back to an older

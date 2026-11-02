@@ -1,32 +1,5 @@
 """Verify the immutable PassBy identity bundle, test a candidate, then switch ingress."""
-import hashlib,json,pathlib,sys,subprocess,tarfile,time,re,urllib.request,urllib.error,shutil,os,sqlite3,tempfile,contextlib
-
-def backup_database(source,destination):
- """Make a private, consistent SQLite snapshot without replacing live state."""
- source=pathlib.Path(source);destination=pathlib.Path(destination)
- assert source.is_file() and not source.is_symlink(),'Session database must be a regular file'
- assert source.resolve()!=destination.resolve(),'Backup must not replace the live database'
- destination.parent.mkdir(mode=0o700,exist_ok=True)
- assert destination.parent.is_dir() and not destination.parent.is_symlink(),'Backup directory must be a real directory'
- destination.parent.chmod(0o700)
- descriptor,temporary=tempfile.mkstemp(prefix='.sessions-',suffix='.sqlite',dir=destination.parent)
- os.close(descriptor)
- temporary=pathlib.Path(temporary)
- deadline=time.monotonic()+30
- def progress(status,remaining,total):
-  if time.monotonic()>deadline:raise TimeoutError('Session database backup timed out')
- try:
-  with contextlib.closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True,timeout=5)) as current,contextlib.closing(sqlite3.connect(temporary,timeout=5)) as snapshot:
-   current.backup(snapshot,pages=64,progress=progress,sleep=.05)
-   assert snapshot.execute('PRAGMA quick_check').fetchall()==[('ok',)],'Session database backup failed verification'
-  temporary.chmod(0o600)
-  with temporary.open('rb') as snapshot:os.fsync(snapshot.fileno())
-  os.replace(temporary,destination)
-  descriptor=os.open(destination.parent,os.O_RDONLY|os.O_DIRECTORY)
-  try:os.fsync(descriptor)
-  finally:os.close(descriptor)
- finally:
-  temporary.unlink(missing_ok=True)
+import hashlib,json,pathlib,sys,subprocess,tarfile,time,re,urllib.request,urllib.error,shutil,os
 
 sha=sys.argv[1]
 assert re.fullmatch('[0-9a-f]{40}',sha)
@@ -67,18 +40,16 @@ try:
  run(isolated+[image,'node','--test',*tests])
  if previous.get('commit')==sha:
   request('https://tenon.asia/passby/api/health',200,sqlite=True);print('This authentication release is already active.');sys.exit()
- data=base/'data';backups=base/'backups';database=data/'sessions.sqlite'
- for directory in [data,backups]:
-  directory.mkdir(mode=0o700,exist_ok=True)
-  assert directory.is_dir() and not directory.is_symlink(),'Session storage must use real directories'
-  directory.chmod(0o700)
+ # No snapshot: the database holds only session digests and tombstones the
+ # central service also enforces, and restoring one would revive logouts.
+ data=base/'data';database=data/'sessions.sqlite'
+ data.mkdir(mode=0o700,exist_ok=True)
+ assert data.is_dir() and not data.is_symlink(),'Session storage must use a real directory'
+ data.chmod(0o700)
  os.chown(data,10001,10001)
- initialized=database.exists()
- snapshot=backups/f'sessions-{sha}-{time.time_ns()}.sqlite'
- if initialized:
+ if database.exists():
   assert database.is_file() and not database.is_symlink(),'Session database must be a regular file'
   os.chown(database,10001,10001);database.chmod(0o600)
-  backup_database(database,snapshot)
  args=['docker','run','-d','--name',name,'--restart','unless-stopped','--network','host','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--user','10001:10001','--memory','192m','--cpus','0.5','--pids-limit','64','--mount',f'type=bind,src={release}/server,dst=/app,readonly','--mount',f'type=bind,src={data},dst=/data','--workdir','/app','--env-file',str(base/'config/tenon.env'),'--env',f'PORT={port}','--env','SESSION_DB=/data/sessions.sqlite',image,'node','server.mjs']
  run(args,stdout=subprocess.DEVNULL);started=True
  for attempt in range(20):
@@ -90,7 +61,6 @@ try:
  request(f'http://127.0.0.1:{port}/api/auth/session',401)
  metadata=database.stat()
  assert database.is_file() and not database.is_symlink() and metadata.st_uid==10001 and metadata.st_gid==10001 and metadata.st_mode&0o777==0o600,'Session database must be owned by 10001:10001 with mode 0600'
- if not initialized:backup_database(database,snapshot)
  route=f'\t# BEGIN PASSBY AUTH\n\thandle /passby/api/* {{\n\t\theader {{\n\t\t\tCache-Control \"no-store\"\n\t\t\tReferrer-Policy \"no-referrer\"\n\t\t}}\n\t\treverse_proxy 127.0.0.1:{port}\n\t}}\n\t# END PASSBY AUTH\n'
  content=re.sub(r'\t# BEGIN PASSBY AUTH\n.*?\t# END PASSBY AUTH\n','',before.decode(),flags=re.S)
  assert content.count('\t# BEGIN PASSBY\n')==1
@@ -119,7 +89,7 @@ try:
   request('https://passby.tenon.asia/api/health',200,sqlite=True);request('https://passby.tenon.asia/api/auth/session',401)
  request('https://tenon.asia/passby/api/health',200,sqlite=True);request('https://tenon.asia/passby/api/auth/session',401)
  (base/'current-route.caddy').write_text(route)
- state={'commit':sha,'port':port,'container':name,'image':image,'sessionDatabase':str(database),'sessionBackup':str(snapshot)}
+ state={'commit':sha,'port':port,'container':name,'image':image,'sessionDatabase':str(database)}
  temp=active.with_suffix('.candidate');temp.write_text(json.dumps(state));os.replace(temp,active)
  print('PassBy identity service deployed and public health/session checks passed: '+sha)
 except BaseException:
