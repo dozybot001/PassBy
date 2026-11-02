@@ -67,6 +67,7 @@ assert port in (7280,7281)
 web="""passby.tenon.asia {
     encode zstd gzip
     header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
         Cache-Control "no-store"
         Referrer-Policy "no-referrer"
         X-Content-Type-Options "nosniff"
@@ -103,13 +104,15 @@ cp "$lock/web-candidate.caddy" "$web_config"
 if ! systemctl reload caddy; then rollback; exit 1; fi
 if ! python3 - "$directory" <<'PY'
 import hashlib, json, pathlib, sys, time, urllib.request
+hsts = 'max-age=31536000; includeSubDomains'
 for attempt in range(6):
     try:
-        urllib.request.urlopen('https://passby.tenon.asia/api/health',timeout=10)
+        health = urllib.request.urlopen('https://passby.tenon.asia/api/health',timeout=10)
         break
     except Exception:
         if attempt==5: raise
         time.sleep(3)
+assert health.headers.get('Strict-Transport-Security') == hsts
 root = pathlib.Path(sys.argv[1])
 for name, digest in json.loads((root / 'manifest.json').read_text())['files'].items():
     path = name.removeprefix('public/')
@@ -117,6 +120,7 @@ for name, digest in json.loads((root / 'manifest.json').read_text())['files'].it
     response = urllib.request.urlopen('https://passby.tenon.asia/' + path, timeout=20)
     assert hashlib.sha256(response.read()).hexdigest() == digest, name
     if path == '':
+        assert response.headers.get('Strict-Transport-Security') == hsts
         assert response.headers.get('X-Frame-Options') == 'DENY'
         assert 'no-store' in response.headers.get('Cache-Control', '')
         assert "frame-ancestors 'none'" in response.headers.get('Content-Security-Policy', '')

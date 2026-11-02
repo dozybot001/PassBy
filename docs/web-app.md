@@ -46,7 +46,8 @@ an unlocked page. The notebook client is static. A separate identity BFF handles
 
 CSP permits only this origin and Apple's SDK/services. Asset downloads allow
 Apple iCloud/CDN HTTPS hosts only. All user text is assigned via textContent;
-the only innerHTML is a fixed SF-symbol-style SVG path map. Caddy denies frame
+the only innerHTML is a fixed SF-symbol-style SVG path map. Caddy sends HSTS
+(one year, including subdomains; the publisher checks it), denies frame
 embedding, disables sensitive peripheral permissions, uses no-store and allows
 the Apple authentication popup to communicate with its opener.
 
