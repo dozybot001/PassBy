@@ -44,8 +44,11 @@ main() {
     stage="$(mktemp -d)"
     trap 'rm -rf "$stage"' EXIT
     git --git-dir="$source" archive "$release" public server scripts PassBy.xcodeproj/project.pbxproj | tar -x -C "$stage"
+    # Housekeeping after an accepted release never fails it.
+    retain() { python3 "$stage/scripts/retention.py" "$1" || echo 'Release retention skipped.' >&2; }
     if [[ "$component" == site ]]; then
         bash "$stage/scripts/release-site.sh" "$stage" "$release"
+        retain site
         exit
     fi
 
@@ -68,5 +71,6 @@ PY
     tar --no-xattrs -czf "/tmp/passby-auth-$release.tar.gz" -C "$bundle" server scripts manifest.json
     python3 "$stage/scripts/release-auth.py" "$release"
     rm -f "/tmp/passby-auth-$release.tar.gz"
+    retain auth
 }
 main "$@" </dev/null

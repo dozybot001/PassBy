@@ -87,6 +87,14 @@ first, and the server pulls it from there:
    `/opt/passby-site/current`. The auth export runs `npm ci` from the lockfile in
    the pinned Node image, builds the checksummed bundle and runs
    `scripts/release-auth.py`. No native app binary changes.
+4. After an accepted release, `scripts/retention.py` keeps the current and
+   previous releases plus the newest three by time. For the site it also keeps
+   any release a Caddy file still serves; for auth, any running container's
+   release. Older release directories go, with the stopped identity containers
+   of removed releases. All identity containers share the one pinned Node image
+   the running one uses, so no image is removed. An older commit is rebuilt from
+   Gitee. Retention failure only warns; `scripts/test_retention.py` checks it
+   before every publish.
 
 The server key is `/opt/passby-release/builder/gitee_read_ed25519` (root 0600),
 registered on Gitee `dozybot/PassBy` as a pull-only deploy key; it is not a

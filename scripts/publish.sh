@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 [[ "$(git symbolic-ref --short HEAD)" == main ]] || { echo 'Publish from main.' >&2; exit 1; }
 [[ -z "$(git status --porcelain)" ]] || { echo 'Commit the complete release before publishing.' >&2; exit 1; }
 release="$(git rev-parse HEAD)"
+python3 scripts/test_retention.py
 if [[ "$component" == site ]]; then
     node --test scripts/test-web.mjs
     for module in public/web/*.mjs; do node --check "$module"; done

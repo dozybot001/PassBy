@@ -130,6 +130,10 @@ then
 fi
 cp "$lock/previous.caddy" "$directory/ingress-before.caddy"
 find "$directory" -type f -exec chmod 0444 {} +
+# Retention keeps the release this one replaced.
+if [[ -L /opt/passby-site/current && "$(readlink /opt/passby-site/current)" != "$directory" ]]; then
+    ln -sfn "$(readlink /opt/passby-site/current)" /opt/passby-site/previous
+fi
 ln -sfn "$directory" /opt/passby-site/current
 printf '%s\n' "$release" > /opt/passby-site/last-successful-commit
 rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/candidate.caddy" "$lock/previous.caddy" "$lock/web-before.caddy" "$lock/web-candidate.caddy"

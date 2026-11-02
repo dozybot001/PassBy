@@ -89,7 +89,7 @@ try:
   request('https://passby.tenon.asia/api/health',200,sqlite=True);request('https://passby.tenon.asia/api/auth/session',401)
  request('https://tenon.asia/passby/api/health',200,sqlite=True);request('https://tenon.asia/passby/api/auth/session',401)
  (base/'current-route.caddy').write_text(route)
- state={'commit':sha,'port':port,'container':name,'image':image,'sessionDatabase':str(database)}
+ state={'commit':sha,'previous':previous.get('commit'),'port':port,'container':name,'image':image,'sessionDatabase':str(database)}
  temp=active.with_suffix('.candidate');temp.write_text(json.dumps(state));os.replace(temp,active)
  print('PassBy identity service deployed and public health/session checks passed: '+sha)
 except BaseException:
