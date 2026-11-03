@@ -148,7 +148,6 @@
 "Retention and deletion" = "保存与删除";
 "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy." = "在 PassBy 中删除条目和文件夹后，请等待 iCloud 同步完成，使删除同步至密码本。每台 iPhone 会在「最近删除」中加密保留已删除的密码 30 天，不会同步；你也可以在那里提前删除。卸载应用会删除本机文件，不会删除 iCloud 密码本。Apple 按其隐私政策管理 iCloud 存储及服务元数据。";
 "Support and your choices" = "支持与你的选择";
-"You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes." = "如有技术或隐私问题，可联系 support@tenonai.cn。你主动提供的信息仅用于处理支持请求。请勿发送密码、恢复密钥、Apple 验证码或设备密码。";
 "Online privacy policy" = "在线隐私政策";
 "Apple privacy policy" = "Apple 隐私政策";
 
@@ -181,7 +180,6 @@
 
 "Could not clear the saved sign-in. Please try again." = "无法清除保存的登录状态，请重试。";
 
-"Effective November 3, 2026 · Zeng Deyang" = "生效日期：2026 年 11 月 3 日 · Zeng Deyang";
 "To keep our network secure, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months." = "为保障网络安全，服务器会记录访问日志和安全日志，包括访问时间、IP 地址和访问的页面，不含网址中的参数；这些日志保存 6 个月后自动删除。";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "本机 Apple 账号用于识别私有密码本存储。PassBy 不接收你的 Apple 密码。选择 Apple 登录时，它可能向 Tenon 提供身份信息。Face ID 由 iOS 处理，PassBy 只接收验证结果，不接收面部数据。";
 
@@ -196,7 +194,6 @@
 
 "Delete Tenon Account" = "删除 Tenon 账号";
 "Account deletion opens Tenon for identity verification and confirmation. It affects all Tenon products, but does not delete your Apple-stored notebook or recovery key." = "删除账号会打开 Tenon，由你重新验证身份并确认。这会影响所有 Tenon 产品，不会删除 Apple 私有存储中的密码本或恢复密钥。";
-"Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon." = "可在设置中进入“删除 Tenon 账号”。Tenon 会重新验证身份，并在你确认后删除中央账号资料、撤销可用的 Apple 登录令牌。这会影响所有 Tenon 产品。Apple 私有存储中的密码本与恢复密钥分别管理，不会由 Tenon 删除。";
 
 "One Tenon Account" = "统一使用 Tenon 账号";
 "Enter your recovery key to open your notebook on this iPhone." = "输入恢复密钥，在这台 iPhone 上打开密码本。";
@@ -233,3 +230,13 @@
 "Delete now" = "立即删除";
 "Restoring returns it to your notebook on all synced devices. Deleting now removes this iPhone’s copy." = "恢复后，它会回到所有已同步设备的密码本中。立即删除会移除这台 iPhone 上的副本。";
 "This removes it from your notebook on all synced devices. This iPhone keeps a copy in Recently Deleted for 30 days." = "这会从所有已同步设备的密码本中删除此条目。这台 iPhone 会在「最近删除」中保留副本 30 天。";
+"Choose Delete account in Settings. Tenon verifies your identity, then you choose the scope. Deleting only PassBy removes your PassBy sessions and its link to your Tenon identity, and keeps your Tenon Account for other products. Deleting your Tenon Account removes central account information and revokes available Apple sign-in tokens, which affects all Tenon products. Neither deletes your Apple-stored notebook or recovery key, which are managed separately. PassBy keeps a record that the deletion happened, holding only a hashed account identifier, so a repeated request cannot delete an account you create later." = "可在设置中选择“删除账号”。Tenon 重新验证身份后，由你选择删除范围。仅删除 PassBy：移除 PassBy 的登录会话及其与 Tenon 身份的关联，保留 Tenon 账号供其他产品使用。删除 Tenon 账号：删除中央账号资料并撤销可用的 Apple 登录令牌，会影响所有 Tenon 产品。两种方式都不会删除 Apple 私有存储中的密码本与恢复密钥，它们分别管理。PassBy 会保留一条已删除的记录，只含账号标识的摘要，使重复的请求不会删除你之后新建的账号。";
+"View and change your notebook in the app, and your account details in Tenon Account. Delete your account as described above. You can contact support@tenonai.cn for technical or privacy questions, or to ask what we hold about you. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes." = "密码本可在应用内查看和修改，账号资料可在 Tenon 账号中心查看和修改，删除方式见上文。如有技术或隐私问题，或想了解我们保存了你的哪些信息，可联系 support@tenonai.cn。你主动提供的信息仅用于处理支持请求。请勿发送密码、恢复密钥、Apple 验证码或设备密码。";
+"PassBy sign-in sessions last up to 30 days. Signed-out and rotated sign-in credentials are remembered only as hashes for 30 days, so they cannot be reused." = "PassBy 登录会话最长 30 天。已退出或已轮换的登录凭据只以摘要形式记录 30 天，防止被再次使用。";
+"PassBy shares data only with the services it needs: Tenon Account for sign-in, operated by the same publisher; Apple for iCloud storage under your Apple Account and, if you choose it, Sign in with Apple; and our hosting provider. The PassBy server is in mainland China, and PassBy does not send your personal information outside mainland China. Apple stores your notebook according to your Apple Account region, and the Tenon Account privacy notice covers Apple sign-in." = "PassBy 只与运行所需的服务共享数据：Tenon 账号负责登录，与 PassBy 同一出品方；Apple 按你的 Apple 账号提供 iCloud 存储，并在你选择时提供 Apple 登录；以及我们的服务器托管商。PassBy 服务器位于中国境内，PassBy 不向境外提供你的个人信息。密码本由 Apple 按你的 Apple 账号所在地区存储；Apple 登录的处理见 Tenon 账号隐私说明。";
+"Service providers and location" = "服务提供方与所在地";
+"Terms of Service" = "用户协议";
+"Sign in to PassBy" = "登录 PassBy";
+"Send feedback" = "发送反馈";
+"榫卯 Tenon AI" = "榫卯 Tenon AI";
+"Version 2 · Effective November 3, 2026 · Zeng Deyang" = "第 2 版 · 生效日期：2026 年 11 月 3 日 · Zeng Deyang";

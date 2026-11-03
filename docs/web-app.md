@@ -57,6 +57,17 @@ publishers validate candidates through the root Caddyfile that defines it. URL
 paths carry no secrets: sign-in codes and tickets travel only in query strings
 or request bodies. The privacy policy states the six-month log retention.
 
+Every response is `no-store`, including versioned static assets, so standard
+19.3's long-lived immutable caching is not adopted: a shared or stale cache of a
+password app's code is a larger risk than the extra transfer, and each release
+already changes every asset URL. Missing pages get `404.html`; other errors get
+`500.html`, and an unreachable identity service `maintenance.html` for pages or
+an RFC 9457 503 for `/api/*`. The publisher checks the 404 page. API errors are
+RFC 9457 problem details carrying a request ID (also in `X-Request-Id`); the web
+app shows that ID when the account service fails, and the service logs only the
+ID, path and status to journald. Rate limits return `Retry-After`. Planned
+maintenance is announced 24 hours ahead (standard 12.4).
+
 ## Validation and deployment
 
 ### Help title alignment (2026-10-05)

@@ -84,6 +84,22 @@ web="""passby.tenon.asia {
         root * DIRECTORY/public
         file_server
     }
+    handle_errors {
+        @api path /api/*
+        handle @api {
+            header Content-Type application/problem+json
+            respond `{"type":"about:blank","title":"Service Unavailable","status":503}` 503
+        }
+        handle {
+            root * DIRECTORY/public
+            @missing expression `{err.status_code} == 404`
+            rewrite @missing /404.html
+            @down expression `{err.status_code} in [502, 503, 504]`
+            rewrite @down /maintenance.html
+            rewrite * /500.html
+            file_server
+        }
+    }
 }
 """.replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
 pathlib.Path(sys.argv[4]).write_text(web)
@@ -111,7 +127,7 @@ cp "$lock/candidate.caddy" "$config"
 cp "$lock/web-candidate.caddy" "$web_config"
 if ! systemctl reload caddy; then rollback; exit 1; fi
 if ! python3 - "$directory" <<'PY'
-import hashlib, json, pathlib, sys, time, urllib.request
+import hashlib, json, pathlib, sys, time, urllib.error, urllib.request
 hsts = 'max-age=31536000; includeSubDomains'
 for attempt in range(6):
     try:
@@ -132,6 +148,11 @@ for name, digest in json.loads((root / 'manifest.json').read_text())['files'].it
         assert response.headers.get('X-Frame-Options') == 'DENY'
         assert 'no-store' in response.headers.get('Cache-Control', '')
         assert "frame-ancestors 'none'" in response.headers.get('Content-Security-Policy', '')
+try:
+    urllib.request.urlopen('https://passby.tenon.asia/release-check-missing',timeout=20)
+    raise AssertionError('A missing page must return 404')
+except urllib.error.HTTPError as missing:
+    assert missing.code == 404 and b'Page not found' in missing.read()
 legacy=urllib.request.urlopen('https://tenon.asia/passby/',timeout=20)
 assert legacy.url=='https://passby.tenon.asia/'
 assert urllib.request.urlopen('https://tenon.asia/passby/api/health',timeout=20).status==200

@@ -215,6 +215,7 @@ struct SignInOptions: View {
     @AppStorage("passby.last-method") private var lastMethod = ""
     var body: some View {
         VStack(spacing: 10) {
+            Text("Sign in to PassBy").font(.headline).frame(maxWidth: .infinity, alignment: .leading)
             Button { choose("apple") } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "apple.logo").accessibilityHidden(true)
@@ -231,6 +232,9 @@ struct SignInOptions: View {
             Button("More options") { account.signIn() }.font(.footnote).foregroundStyle(Palette.secondary).buttonStyle(.plain)
             Text("Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.")
                 .font(.footnote).foregroundStyle(Palette.secondary).fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenon.asia/account/privacy.html")!)
+                .font(.footnote).tint(Palette.secondary).frame(maxWidth: .infinity, alignment: .leading)
         }
         .disabled(account.working)
     }

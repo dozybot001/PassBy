@@ -10,12 +10,12 @@ const copy = {
   en: {
     security:'A simple password notebook. Device encryption.', signIn:'Open your notebook', signInHelp:'Connect the encrypted notebook you use on iPhone.',
     unlock:'Unlock notebook', key:'Recovery key', keyPlaceholder:'Paste your recovery key', keyHelp:'Your recovery key and passwords stay in this page’s memory. Leaving the window locks your notebook.',
-    connect:'Continue with Apple', connecting:'Connecting…', lock:'Lock notebook', locked:'Notebook locked', settings:'Settings', search:'Search', generator:'Password generator', privacy:'Privacy', support:'Support',
+    connect:'Continue with Apple', connecting:'Connecting…', lock:'Lock notebook', locked:'Notebook locked', settings:'Settings', search:'Search', generator:'Password generator', privacy:'Privacy', terms:'Terms', support:'Support',
     all:'All', unfiled:'Unfiled', newPassword:'New password', newFolder:'New folder', folders:'Folders', empty:'Your notebook starts here', emptyHelp:'Add an account and password. Keep the details in one place.', noResults:'No matching entries', noResultsHelp:'Try another title or account.', choose:'A little space for your passwords.', chooseHelp:'Choose an entry to see its details.', placeholder:'Search titles or accounts', edit:'Edit', save:'Save', saving:'Saving…', cancel:'Cancel', close:'Close', back:'Back', account:'Account', password:'Password', title:'Title', notes:'Notes', folder:'Folder', noNotes:'No notes added', copy:'Copy', copied:'Copied', show:'Show password', hide:'Hide password', delete:'Delete entry', deleteConfirm:'Delete this entry?', deleteHelp:'It will be removed from your notebook. This cannot be undone.', deleteFolder:'Delete folder', deleteFolderHelp:'Its passwords will move to Unfiled. This cannot be undone.', confirm:'Delete', saved:'Notebook synced', refreshed:'Notebook refreshed', refresh:'Sync now', conflictCopy:' (Conflict copy)', conflicts:'Concurrent changes were kept as conflict copies.', length:'Length', upper:'Uppercase letters', lower:'Lowercase letters', digits:'Numbers', symbols:'Symbols', another:'Generate another', use:'Use & copy', copyPassword:'Copy password', lengthHelp:'Choose 8–24 with the slider, or enter up to 4096 characters.', clipboardHelp:'Copied passwords follow your browser and operating system’s clipboard rules. They are not automatically cleared.', language:'Language', automaticLock:'Automatic lock', automaticLockHelp:'Switching tabs, leaving the window or 5 minutes without activity locks this notebook.', browserHelp:'The web app cannot use iPhone Face ID or block screenshots. Unlock again with your recovery key.', discard:'Discard changes?', discardHelp:'This unfinished entry has not been saved.', discardButton:'Discard', continueEditing:'Keep editing', required:'Enter a title and password.', folderName:'Folder name', signedOut:'Signed out', existingHelp:'Create your notebook in PassBy on iPhone first, then wait for iCloud sync.',
     invalidKey:'Check the recovery key. Its length or checksum is incorrect.', wrongKey:'This recovery key does not unlock your notebook.', invalidNotebook:'The notebook could not be verified. Your iCloud data has not been changed.', version:'This notebook uses an unsupported format. Update PassBy.', service:'Unable to sync your notebook. Please try again.', noNotebook:'No notebook found in this iCloud account. Create one in PassBy on iPhone and let it sync first.', notConfigured:'Web access is being configured. Your iPhone notebook is unchanged.', invalidLength:'Choose a whole number from 8 to 4096.', selectCharacters:'Select at least one character type.', conflict:'The notebook changed again. Please try saving again.', clipboard:'Copy was blocked by the browser. Select the value and copy it manually.', lockedError:'Unlock your notebook again.', generic:'Something went wrong. Please try again.',
   },
   zh: {
-    security:'设备端加密，绑定你的 Apple 账号。',signIn:'打开密码本',signInHelp:'登录你在 iPhone PassBy 中使用的 Apple 账号。',unlock:'解锁密码本',key:'恢复密钥',keyPlaceholder:'粘贴恢复密钥',keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',connect:'通过 Apple 继续',connecting:'连接中…',lock:'锁定密码本',locked:'密码本已锁定',settings:'设置',search:'搜索',generator:'密码生成器',privacy:'隐私',support:'支持',all:'全部',unfiled:'未分类',newPassword:'新建密码',newFolder:'新建文件夹',folders:'文件夹',empty:'密码本从这里开始',emptyHelp:'添加账号和密码，将细节保存在一起。',noResults:'没有匹配的条目',noResultsHelp:'试试其他标题或账号。',choose:'为你的密码，留一个位置。',chooseHelp:'选择条目，查看它的详细内容。',placeholder:'搜索标题或账号',edit:'编辑',save:'保存',saving:'保存中…',cancel:'取消',close:'关闭',back:'返回',account:'账号',password:'密码',title:'标题',notes:'备注',folder:'文件夹',noNotes:'没有备注',copy:'复制',copied:'已复制',show:'显示密码',hide:'隐藏密码',delete:'删除条目',deleteConfirm:'删除这个条目？',deleteHelp:'将从密码本中删除，无法撤销。',deleteFolder:'删除文件夹',deleteFolderHelp:'其中的密码将移至未分类，无法撤销。',confirm:'删除',saved:'密码本已同步',refreshed:'密码本已刷新',refresh:'立即同步',conflictCopy:'（冲突副本）',conflicts:'同时修改的内容已保留为冲突副本。',length:'长度',upper:'大写字母',lower:'小写字母',digits:'数字',symbols:'符号',another:'再生成一个',use:'使用并复制',copyPassword:'复制密码',lengthHelp:'滑块可选 8～24 位，也可手动输入最多 4096 位。',clipboardHelp:'已复制的密码遵循浏览器与系统的剪贴板规则，不会自动清除。',language:'语言',automaticLock:'自动锁定',automaticLockHelp:'切换标签页、离开窗口或 5 分钟无操作后，密码本会锁定。',browserHelp:'网页无法使用 iPhone 的 Face ID 或阻止截图，请用恢复密钥重新解锁。',discard:'放弃修改？',discardHelp:'这个未完成的条目尚未保存。',discardButton:'放弃',continueEditing:'继续编辑',required:'请填写标题和密码。',folderName:'文件夹名称',signedOut:'已退出登录',existingHelp:'请先在 iPhone PassBy 创建密码本，并等待 iCloud 同步。',invalidKey:'恢复密钥的长度或校验码不正确，请检查。',wrongKey:'此恢复密钥无法解锁这个密码本。',invalidNotebook:'无法验证密码本，iCloud 数据未被更改。',version:'密码本格式不受支持，请更新 PassBy。',service:'无法同步密码本，请重试。',noNotebook:'当前 iCloud 账号没有密码本，请先在 iPhone 创建并完成同步。',notConfigured:'网页版访问正在配置中，iPhone 密码本不受影响。',invalidLength:'请输入 8～4096 之间的整数。',selectCharacters:'至少选择一种字符类型。',conflict:'密码本又被修改了，请重试保存。',clipboard:'浏览器阻止了复制，请选中内容手动复制。',lockedError:'请重新解锁密码本。',generic:'操作未完成，请重试。',
+    security:'设备端加密，绑定你的 Apple 账号。',signIn:'打开密码本',signInHelp:'登录你在 iPhone PassBy 中使用的 Apple 账号。',unlock:'解锁密码本',key:'恢复密钥',keyPlaceholder:'粘贴恢复密钥',keyHelp:'恢复密钥和密码只留在当前页面内存中。离开窗口后，密码本会锁定。',connect:'通过 Apple 继续',connecting:'连接中…',lock:'锁定密码本',locked:'密码本已锁定',settings:'设置',search:'搜索',generator:'密码生成器',privacy:'隐私', terms:'用户协议',support:'支持',all:'全部',unfiled:'未分类',newPassword:'新建密码',newFolder:'新建文件夹',folders:'文件夹',empty:'密码本从这里开始',emptyHelp:'添加账号和密码，将细节保存在一起。',noResults:'没有匹配的条目',noResultsHelp:'试试其他标题或账号。',choose:'为你的密码，留一个位置。',chooseHelp:'选择条目，查看它的详细内容。',placeholder:'搜索标题或账号',edit:'编辑',save:'保存',saving:'保存中…',cancel:'取消',close:'关闭',back:'返回',account:'账号',password:'密码',title:'标题',notes:'备注',folder:'文件夹',noNotes:'没有备注',copy:'复制',copied:'已复制',show:'显示密码',hide:'隐藏密码',delete:'删除条目',deleteConfirm:'删除这个条目？',deleteHelp:'将从密码本中删除，无法撤销。',deleteFolder:'删除文件夹',deleteFolderHelp:'其中的密码将移至未分类，无法撤销。',confirm:'删除',saved:'密码本已同步',refreshed:'密码本已刷新',refresh:'立即同步',conflictCopy:'（冲突副本）',conflicts:'同时修改的内容已保留为冲突副本。',length:'长度',upper:'大写字母',lower:'小写字母',digits:'数字',symbols:'符号',another:'再生成一个',use:'使用并复制',copyPassword:'复制密码',lengthHelp:'滑块可选 8～24 位，也可手动输入最多 4096 位。',clipboardHelp:'已复制的密码遵循浏览器与系统的剪贴板规则，不会自动清除。',language:'语言',automaticLock:'自动锁定',automaticLockHelp:'切换标签页、离开窗口或 5 分钟无操作后，密码本会锁定。',browserHelp:'网页无法使用 iPhone 的 Face ID 或阻止截图，请用恢复密钥重新解锁。',discard:'放弃修改？',discardHelp:'这个未完成的条目尚未保存。',discardButton:'放弃',continueEditing:'继续编辑',required:'请填写标题和密码。',folderName:'文件夹名称',signedOut:'已退出登录',existingHelp:'请先在 iPhone PassBy 创建密码本，并等待 iCloud 同步。',invalidKey:'恢复密钥的长度或校验码不正确，请检查。',wrongKey:'此恢复密钥无法解锁这个密码本。',invalidNotebook:'无法验证密码本，iCloud 数据未被更改。',version:'密码本格式不受支持，请更新 PassBy。',service:'无法同步密码本，请重试。',noNotebook:'当前 iCloud 账号没有密码本，请先在 iPhone 创建并完成同步。',notConfigured:'网页版访问正在配置中，iPhone 密码本不受影响。',invalidLength:'请输入 8～4096 之间的整数。',selectCharacters:'至少选择一种字符类型。',conflict:'密码本又被修改了，请重试保存。',clipboard:'浏览器阻止了复制，请选中内容手动复制。',lockedError:'请重新解锁密码本。',generic:'操作未完成，请重试。',
   },
 };
 let language = document.documentElement.dataset.uiLanguage || (navigator.language.startsWith('zh') ? 'zh' : 'en');
@@ -57,6 +57,9 @@ let authError = null, notebookState = 'checking', notebookError = null, notebook
 let rememberApple = false;
 let tenonIdentity = null, tenonLoading = true, tenonError = false, tenonExpiry, tenonSigningOut = false;
 const tenonCallbackFailed = new URLSearchParams(location.search).has('auth_error');
+// Support locates a failure by the server's request ID; only a UUID is shown.
+const requestId = value => /^[0-9a-f-]{36}$/.test(value || '') ? value : null;
+let tenonRequestId = requestId(new URLSearchParams(location.search).get('request_id'));
 try { rememberApple = localStorage.getItem('passby.rememberApple') === 'true'; } catch {}
 let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTimer;
 let dialogCleanups = [];
@@ -140,8 +143,9 @@ dialog.addEventListener('cancel',event=>{ if(editor){event.preventDefault();if(d
 function render() {
   document.querySelector('.app').classList.toggle('entry-mode',!session.key);
   document.documentElement.lang=language==='zh'?'zh-Hans':'en';
+  document.title=language==='zh'?'PassBy — 一个简单的密码本':'PassBy — A simple password notebook';
   document.querySelector('.header .wordmark').setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品，首页':'PassBy, by Tenon, home');
-  $('privacy-link').textContent=t('privacy'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
+  $('privacy-link').textContent=t('privacy'); $('terms-link').textContent=t('terms'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
   tools.replaceChildren(button(t('generator'),()=>openGenerator(),'icon-button','generator'),button(t('settings'),openSettings,'icon-button','settings'));
   if(session.key) tools.prepend(button(t('search'),()=>openSearch(),'icon-button','search'));
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
@@ -243,14 +247,17 @@ function renderWelcome() {
     welcome.append(card);main.replaceChildren(welcome);return;
   }
   if (!tenonIdentity) {
-    card.classList.add('tenon-entry');
+    card.classList.add('tenon-entry');document.title=language==='zh'?'登录 PassBy':'Sign in to PassBy';
     card.append(accessMark(),node('h1','',language==='zh'?'登录 PassBy':'Sign in to PassBy'),
       node('p','access-intro',language==='zh'?'一个简单的密码本':'A simple password notebook'));
     if (tenonLoading) {
       const pending=button(t('connecting'),()=>{},'pill primary');pending.disabled=true;pending.classList.add('is-loading');pending.setAttribute('aria-busy','true');card.append(pending);
     }
     else {
-      if (tenonError) { const error=node('p','',language==='zh'?'账号服务暂时不可用，请重试。':'Account service unavailable. Please try again.');error.setAttribute('role','alert');card.append(error); }
+      if (tenonError) {
+        const error=node('p','',language==='zh'?'账号服务暂时不可用，请重试。':'Account service unavailable. Please try again.');error.setAttribute('role','alert');card.append(error);
+        if(tenonRequestId)card.append(node('p','error-id',`${language==='zh'?'错误编号：':'Error ID: '}${tenonRequestId}`));
+      }
       const actions=node('div','tenon-actions');
       let lastMethod=null;try{lastMethod=localStorage.getItem('passby.last-method');}catch{/* The marker is only a convenience. */}
       const methodLink=(method,label,className)=>{
@@ -267,7 +274,9 @@ function renderWelcome() {
       const more=node('a','more-methods',language==='zh'?'其他登录方式':'More options');more.href='./auth/redirect/?lang='+language;
       actions.append(methodLink('apple',language==='zh'?'使用 Apple 继续':'Continue with Apple','pill primary'),methodLink('email',language==='zh'?'使用邮箱继续':'Continue with email','pill'),more);
       if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
-      card.append(actions,node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.'));
+      const note=node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.');
+      const notice=node('a','',language==='zh'?'Tenon 账号隐私说明':'Tenon Account privacy notice');notice.href='https://account.tenon.asia/account/privacy.html';
+      note.append(' ',notice);card.append(actions,note);
     }
     addHint(card.querySelector('h1'),language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.');
     welcome.append(card);main.replaceChildren(welcome);return;
@@ -498,18 +507,20 @@ function openAbout(){
     node('p','about-description',language==='zh'?'PassBy 是一个简单的密码本。将标题、账号、密码和备注保存在一起，按文件夹整理，并生成强密码，复制到其他应用中使用。':'PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.'),
     node('p','about-description',language==='zh'?'密码本先在设备上加密，再同步至 Apple 私有云存储。手机端离开应用即锁定，再次打开需要 Face ID。网页版首次用恢复密钥授权浏览器，密码只在页面内存中解密，离开窗口后自动锁定。':'Your notebook is encrypted on your device before syncing to Apple private storage. On iPhone, leaving the app locks it and Face ID unlocks it. Authorize a browser once with your recovery key. The web app decrypts the notebook in page memory and locks when you leave the window.'));
   const publisher=node('div','about-publisher'),publisherMark=node('img');publisherMark.src='./web/tenon-mark.svg';publisherMark.alt='';
-  publisher.append(node('p','helper',language==='zh'?'出品方':'Publisher'),publisherMark,node('span','','榫卯 Tenon AI'));
+  publisher.append(node('p','helper',language==='zh'?'出品方':'Publisher'),publisherMark,node('span','',language==='zh'?'榫卯 Tenon AI':'Tenon AI'));
   const website=node('a','about-website','tenon.asia');website.href='https://tenon.asia/';
-  inner.append(publisher,website);const actions=node('div','form-actions');actions.append(button(t('back'),openSettings,'pill'));dialogActions(inner,actions);
+  const links=node('nav','about-links');links.setAttribute('aria-label',language==='zh'?'政策与反馈':'Policies and feedback');
+  for(const [label,href] of [[language==='zh'?'隐私政策':'Privacy Policy','./privacy/'],[language==='zh'?'用户协议':'Terms of Service','./terms/'],[language==='zh'?'反馈':'Feedback','mailto:support@tenonai.cn?subject=PassBy%20Feedback']]){const link=node('a','',label);link.href=href;links.append(link);}
+  inner.append(publisher,website,links);const actions=node('div','form-actions');actions.append(button(t('back'),openSettings,'pill'));dialogActions(inner,actions);
 }
 
 render();
 async function prepareTenon() {
-  tenonLoading=true;tenonError=false;render();
+  tenonLoading=true;tenonError=false;tenonRequestId=null;render();
   try {
     const response=await fetch('./api/auth/session',{cache:'no-store',credentials:'same-origin'});
     if(response.status===401){tenonIdentity=null;tenonError=tenonCallbackFailed;return;}
-    if(!response.ok)throw Error('Service unavailable');
+    if(!response.ok){tenonRequestId=requestId(response.headers.get('x-request-id'));throw Error('Service unavailable');}
     const {identity}=await response.json();
     if(!validIdentity(identity))throw Error('Invalid identity');
     tenonIdentity=identity;tenonExpiry?.();

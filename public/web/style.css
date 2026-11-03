@@ -1,7 +1,7 @@
 /* PassBy owns its palette, original system typography, and layout tokens. */
 :root{
   color-scheme:light;
-  --bg:#fafafa;--fg:#141414;--muted:#737373;--surface:#efefef;--hover:#e5e5e5;--border:#ddd;
+  --bg:#fafafa;--fg:#141414;--muted:#6b6b6b;--surface:#efefef;--hover:#e5e5e5;--border:#ddd;
   --button:#171717;--button-text:#fff;--dialog-width:600px;--dialog-height:640px;--dialog-padding:28px;
   --popover-shadow:0 12px 32px #00000016,0 2px 6px #00000008;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;
@@ -42,7 +42,7 @@ svg:not(.apple-auth-button-text,.product-symbol){width:21px;height:21px;stroke:c
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;height:100%;text-align:center;color:var(--muted);padding:28px 16px}.empty svg{width:36px;height:36px;margin-bottom:20px}.empty h2{color:var(--fg);font-size:20px;line-height:1.4;margin:0 0 8px}.empty p{font-size:14px;line-height:1.7;max-width:290px;margin:0}
 .mobile-back{display:none}
 .page-bottom{max-width:1500px;width:100%;margin:0 auto;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex:none}
-footer{display:flex;align-items:center;font-size:12px;color:var(--muted);gap:24px;min-width:0}footer nav{display:flex;gap:20px;align-items:center}footer span,footer nav{white-space:nowrap}footer .text-button{font-size:inherit}.filing{display:flex;flex-wrap:wrap;gap:2px 12px;margin:0}.filing a{color:inherit;text-decoration:none;white-space:nowrap}
+footer{display:flex;align-items:center;font-size:12px;color:var(--muted);gap:24px;min-width:0}footer nav{display:flex;gap:20px;align-items:center}footer span,footer nav{white-space:nowrap}footer .text-button{font-size:inherit}.filing{display:flex;flex-wrap:wrap;gap:0 12px;margin:0}.filing a{display:inline-block;padding:4px 0}.filing a{color:inherit;text-decoration:none;white-space:nowrap}
 #page-actions{grid-area:actions;display:flex;justify-content:flex-end;flex:none}.new-password{min-height:48px;padding:12px 24px;white-space:nowrap}
 #status{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 32px);padding:12px 20px;border-radius:999px;background:var(--button);color:var(--button-text);font-size:14px;z-index:20;box-shadow:0 6px 30px #0002}
 
@@ -130,3 +130,6 @@ input.capsule-switch{appearance:none!important;width:40px!important;height:24px!
 
 /* A real product route paints immediately before the central login request. */
 .login-transition{width:min(360px,calc(100vw - 48px));min-height:100dvh;margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 0}.login-transition h1{font-size:22px;line-height:1.5;letter-spacing:-.4px;margin:24px 0 12px}.transition-progress{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:14px;margin:0}.login-transition .tenon-actions{align-self:stretch;margin-top:28px}
+.about-links{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:12px}.about-links a{text-decoration:underline;text-underline-offset:3px}
+.error-id{font-size:12px;color:var(--muted);user-select:all;margin:-8px 0 16px}
+.access-note a{color:inherit;text-decoration:underline;text-underline-offset:3px}

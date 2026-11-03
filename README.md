@@ -2,6 +2,31 @@
 
 一个简单的密码本。iPhone 端为原生 SwiftUI 应用。开发者：Zeng Deyang。
 
+## 访问
+
+- iPhone：[App Store](https://apps.apple.com/app/id6817881529)，iOS 17 及以上，一次性购买。
+- 网页：<https://passby.tenon.asia/>，用于打开已在 iPhone 上创建的密码本。
+
+## 快速开始
+
+1. 在 iPhone 上安装 PassBy，用 Tenon 账号登录并创建密码本，把恢复密钥保存在 PassBy 之外。
+2. 在电脑浏览器打开网页版，登录同一个 Tenon 账号，连接同一个 Apple 账号，用恢复密钥授权这台浏览器。
+
+开发与测试见下文「工程」。
+
+## 文档
+
+- [网页版与发布](docs/web-app.md)
+- [认证服务](server/README.md)
+- [隐私与数据清单](docs/privacy.md)
+- [App Store 发布记录](docs/app-store-release.md)
+- [更新记录](CHANGELOG.md)
+- 线上：[隐私政策](https://passby.tenon.asia/privacy/)、[用户协议](https://passby.tenon.asia/terms/)、[支持](https://passby.tenon.asia/support/)
+
+## 许可证
+
+版权所有 © 2026 Zeng Deyang，保留所有权利。本仓库不开源。
+
 ## 首版范围
 
 - 条目包含标题、账户、密码、备注，支持文件夹、搜索、编辑和删除。

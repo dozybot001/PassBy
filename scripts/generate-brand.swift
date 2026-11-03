@@ -53,7 +53,8 @@ let svg = """
 try svg.write(toFile: "public/web/icon.svg", atomically: true, encoding: .utf8)
 // Pages inline the mark so it follows the in-app theme, which an <img> cannot.
 let symbol = "<svg class=\"product-symbol\" viewBox=\"22 22 56 56\" aria-hidden=\"true\">\(rectangles)</svg>"
-for path in ["public/index.html", "public/privacy/index.html", "public/support/index.html"] {
+for path in ["public/index.html", "public/privacy/index.html", "public/support/index.html", "public/terms/index.html",
+             "public/404.html", "public/500.html", "public/maintenance.html"] {
     var page = try String(contentsOfFile: path, encoding: .utf8)
     let start = page.range(of: "<svg class=\"product-symbol\"")!.lowerBound
     page.replaceSubrange(start..<page.range(of: "</svg>", range: start..<page.endIndex)!.upperBound, with: symbol)

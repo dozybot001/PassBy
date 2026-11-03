@@ -174,6 +174,7 @@ struct SettingsView: View {
                 }
                 Section {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
+                    Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
                     Link("Support", destination: URL(string: "https://passby.tenon.asia/support/")!)
                     Link("Email support", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Support")!)
                     NavigationLink("About PassBy") { AboutPassByView() }
@@ -269,7 +270,7 @@ struct PrivacyPolicyView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Privacy policy").font(.largeTitle.weight(.semibold))
-                Text("Effective November 3, 2026 · Zeng Deyang")
+                Text("Version 2 · Effective November 3, 2026 · Zeng Deyang")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                 policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
                 policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy account sessions last up to 30 days after verification. A rotating sign-in credential in this iPhone’s device-only Keychain securely renews the session. Closing the app does not sign you out. Sign out, credential revocation or 30 days without renewal may require a new sign-in. Face ID is still required to open the notebook, including offline. No passwords or recovery keys are sent to the account service.")
@@ -279,12 +280,16 @@ struct PrivacyPolicyView: View {
                 policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")
                 policySection("Clipboard and drafts", "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.")
                 policySection("Retention and deletion", "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.")
+                Text("PassBy sign-in sessions last up to 30 days. Signed-out and rotated sign-in credentials are remembered only as hashes for 30 days, so they cannot be reused.")
+                    .foregroundStyle(Palette.secondary)
                 Text("To keep our network secure, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months.")
                     .foregroundStyle(Palette.secondary)
-                Text("Delete your Tenon Account from Settings. Tenon verifies your identity and asks you to confirm before deleting central account information and revoking available Apple sign-in tokens. This affects all Tenon products. Your Apple-stored notebook and recovery key are managed separately and are not deleted by Tenon.")
+                Text("Choose Delete account in Settings. Tenon verifies your identity, then you choose the scope. Deleting only PassBy removes your PassBy sessions and its link to your Tenon identity, and keeps your Tenon Account for other products. Deleting your Tenon Account removes central account information and revokes available Apple sign-in tokens, which affects all Tenon products. Neither deletes your Apple-stored notebook or recovery key, which are managed separately. PassBy keeps a record that the deletion happened, holding only a hashed account identifier, so a repeated request cannot delete an account you create later.")
                     .foregroundStyle(Palette.secondary)
-                policySection("Support and your choices", "You can contact support@tenonai.cn for technical or privacy questions. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.")
+                policySection("Service providers and location", "PassBy shares data only with the services it needs: Tenon Account for sign-in, operated by the same publisher; Apple for iCloud storage under your Apple Account and, if you choose it, Sign in with Apple; and our hosting provider. The PassBy server is in mainland China, and PassBy does not send your personal information outside mainland China. Apple stores your notebook according to your Apple Account region, and the Tenon Account privacy notice covers Apple sign-in.")
+                policySection("Support and your choices", "View and change your notebook in the app, and your account details in Tenon Account. Delete your account as described above. You can contact support@tenonai.cn for technical or privacy questions, or to ask what we hold about you. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.")
                 Link("Online privacy policy", destination: URL(string: "https://passby.tenon.asia/privacy/")!)
+                Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
                 Link("Apple privacy policy", destination: URL(string: "https://www.apple.com/legal/privacy/")!)
             }
             .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)
@@ -321,6 +326,11 @@ struct AboutPassByView: View {
                         Text("榫卯 Tenon AI")
                     }
                     Link("tenon.asia", destination: URL(string: "https://tenon.asia/")!)
+                }
+                VStack(alignment: .leading, spacing: 12) {
+                    NavigationLink("Privacy policy") { PrivacyPolicyView() }
+                    Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
+                    Link("Send feedback", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Feedback")!)
                 }
             }
             .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)

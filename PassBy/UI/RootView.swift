@@ -114,6 +114,11 @@ struct LockView: View {
                 Text("Your notebook is encrypted before it syncs.")
                     .font(.footnote).foregroundStyle(Palette.secondary)
                     .padding(.top, 22).frame(maxWidth: .infinity, alignment: .center)
+                HStack(spacing: 20) {
+                    Link("Privacy policy", destination: URL(string: "https://passby.tenon.asia/privacy/")!)
+                    Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
+                }
+                .font(.footnote).tint(Palette.secondary).padding(.top, 10).frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(.horizontal, PageMetrics.horizontalPadding).padding(.top, 32).padding(.bottom, 32)
             .frame(maxWidth: 540)
