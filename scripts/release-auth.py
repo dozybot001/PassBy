@@ -50,7 +50,11 @@ try:
  if database.exists():
   assert database.is_file() and not database.is_symlink(),'Session database must be a regular file'
   os.chown(database,10001,10001);database.chmod(0o600)
- args=['docker','run','-d','--name',name,'--restart','unless-stopped','--network','host','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--user','10001:10001','--memory','192m','--cpus','0.5','--pids-limit','64','--mount',f'type=bind,src={release}/server,dst=/app,readonly','--mount',f'type=bind,src={data},dst=/data','--workdir','/app','--env-file',str(base/'config/tenon.env'),'--env',f'PORT={port}','--env','SESSION_DB=/data/sessions.sqlite',image,'node','server.mjs']
+ # A private network keeps the service away from other containers; the port is published on 127.0.0.1 only.
+ if subprocess.run(['docker','network','inspect','passby-auth'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
+  run(['docker','network','create','passby-auth'],stdout=subprocess.DEVNULL)
+ args=['docker','run','-d','--name',name,'--restart','unless-stopped','--network','passby-auth','--publish',f'127.0.0.1:{port}:{port}','--env','HOST=0.0.0.0',
+  '--log-driver','journald','--log-opt','tag=passby-auth','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--user','10001:10001','--memory','192m','--cpus','0.5','--pids-limit','64','--mount',f'type=bind,src={release}/server,dst=/app,readonly','--mount',f'type=bind,src={data},dst=/data','--workdir','/app','--env-file',str(base/'config/tenon.env'),'--env',f'PORT={port}','--env','SESSION_DB=/data/sessions.sqlite',image,'node','server.mjs']
  run(args,stdout=subprocess.DEVNULL);started=True
  for attempt in range(20):
   try:request(f'http://127.0.0.1:{port}/passby/api/health',200,sqlite=True);break

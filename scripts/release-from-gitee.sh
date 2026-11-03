@@ -8,7 +8,7 @@ set -Eeuo pipefail
 main() {
     component="${1:-}"
     release="${2:-}"
-    [[ "$component" =~ ^(site|auth)$ && "$release" =~ ^[0-9a-f]{40}$ ]] || { echo 'usage: site|auth <commit>' >&2; exit 2; }
+    [[ "$component" =~ ^(site|auth)$ && "$release" =~ ^[0-9a-f]{40}$ ]] || { echo 'usage: site|auth <commit> <gitee-keys>' >&2; exit 2; }
     builder=/opt/passby-release/builder
     key="$builder/gitee_read_ed25519"
     hosts="$builder/gitee_known_hosts"
@@ -18,11 +18,10 @@ main() {
     exec 9>/opt/passby-release/.controller-lock
     flock -n 9 || { echo 'Another PassBy release is running.' >&2; exit 1; }
 
-    if [[ ! -s "$hosts" ]]; then
-        ssh-keyscan -T 5 -t ed25519,ecdsa,rsa gitee.com > "$hosts.candidate" 2>/dev/null
-        [[ -s "$hosts.candidate" ]] || { echo 'Unable to pin the Gitee SSH host key.' >&2; exit 1; }
-        mv "$hosts.candidate" "$hosts"
-    fi
+    # Gitee host keys come from the repository's scripts/known_hosts, never a scan.
+    printf '%s' "${3:-}" | base64 -d > "$hosts.candidate"
+    [[ -s "$hosts.candidate" ]] && ! grep -qv '^gitee\.com ' "$hosts.candidate" || { echo 'Pinned Gitee host keys are missing.' >&2; exit 1; }
+    mv "$hosts.candidate" "$hosts"
     if [[ ! -f "$key" ]]; then
         ssh-keygen -q -t ed25519 -N '' -C 'passby-server-gitee-read' -f "$key"
         chmod 0600 "$key"

@@ -72,6 +72,13 @@ then switches ingress with rollback on smoke failure. The website publisher
 preserves the separate API route. Current identity release is recorded in
 `/opt/passby-auth/active.json`; static release in `/opt/passby-site/current`.
 
+Each slot runs on the private Docker network `passby-auth`, listens on 0.0.0.0
+inside it, and is published on host `127.0.0.1:7280` or `7281` only, so other
+containers cannot reach it (standard 15.3.3). Its stdout goes to journald with
+the tag `passby-auth`; errors log only time, request ID, path and status. API
+errors are RFC 9457 problem details with that request ID, also sent as
+`X-Request-Id`, and rate limits return `Retry-After: 60`.
+
 The stable host directory `/opt/passby-auth/data` is mode 0700 and owned by
 UID/GID 10001. It is mounted read/write at `/data`; `SESSION_DB` is explicitly
 `/data/sessions.sqlite`. The database is mode 0600 and initialized by the

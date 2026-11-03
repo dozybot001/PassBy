@@ -8,6 +8,9 @@ cd "$(dirname "$0")/.."
 [[ "$(git symbolic-ref --short HEAD)" == main ]] || { echo 'Publish from main.' >&2; exit 1; }
 [[ -z "$(git status --porcelain)" ]] || { echo 'Commit the complete release before publishing.' >&2; exit 1; }
 release="$(git rev-parse HEAD)"
+# Secret scan over the whole history and a dependency audit block a release.
+gitleaks git --no-banner --redact --log-level warn .
+npm audit --prefix server --omit=dev --audit-level=high
 python3 scripts/test_retention.py
 if [[ "$component" == site ]]; then
     node --test scripts/test-web.mjs
@@ -21,4 +24,7 @@ gitee="$(git ls-remote https://gitee.com/dozybot/PassBy.git refs/heads/main | cu
 [[ "$gitee" == "$release" ]] || { echo "Gitee main is ${gitee:-unreadable}, not $release." >&2; exit 1; }
 git ls-remote https://github.com/dozybot001/PassBy.git refs/heads/main | grep -q "^$release" ||
     echo 'Warning: the GitHub mirror is not at this commit.' >&2
-ssh -o BatchMode=yes wesaid-prod sudo -n bash -s -- "$component" "$release" < scripts/release-from-gitee.sh
+# Both the server and Gitee host keys come from the repository, never a scan.
+gitee_keys="$(grep '^gitee\.com ' scripts/known_hosts | base64 | tr -d '\n')"
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o HostKeyAlias=wesaid-prod -o UserKnownHostsFile=scripts/known_hosts \
+    wesaid-prod sudo -n bash -s -- "$component" "$release" "$gitee_keys" < scripts/release-from-gitee.sh

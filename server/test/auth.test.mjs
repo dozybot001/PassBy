@@ -112,6 +112,21 @@ test('API rejects CSRF logout, unexpected methods and password/vault endpoints',
   assert.equal((await fetch(origin + '/passby/api/vault', { method: 'POST', body: 'test-only' })).status, 404);
 });
 
+test('errors are RFC 9457 problem details with a request ID, and rate limits say when to retry', async t => {
+  const busy = { origin: 'https://passby.tenon.asia', apiPath: '/api', basePath: '/',
+    sessionStore: { health() { throw Object.assign(Error('busy'), { status: 429 }); } } };
+  const f = fixture(), server = createApp(f.auth, busy); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => server.close()); const origin = `http://127.0.0.1:${server.address().port}`;
+  const missing = await fetch(origin + '/passby/api/auth/session');
+  const body = await missing.json();
+  assert.equal(missing.headers.get('content-type'), 'application/problem+json');
+  assert.match(missing.headers.get('x-request-id'), /^[0-9a-f-]{36}$/);
+  assert.deepEqual(body, { type: 'about:blank', title: 'Unauthorized', status: 401, error: 'authentication_unavailable', requestId: missing.headers.get('x-request-id') });
+  const limited = await fetch(origin + '/api/health');
+  assert.equal(limited.status, 429); assert.equal(limited.headers.get('retry-after'), '60');
+  assert.equal((await limited.json()).title, 'Too Many Requests');
+});
+
 test('web, native and rotating refresh lifetimes are all 30 days', () => {
   assert.equal(TTL, 2592000000); assert.equal(NATIVE_TTL, TTL); assert.equal(REFRESH_TTL, TTL);
   assert.equal(SESSION_VERSION, 3);
