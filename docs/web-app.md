@@ -88,6 +88,15 @@ accessibility 100, LCP 1.1 s, CLS 0.075, TBT 0 ms. The unlocked notebook view
 was not rechecked; it needs the isolated fixture harness. VoiceOver on iPhone
 still needs a person with a device.
 
+### Standard v2.8 check (2026-11-04)
+
+Rule 5.13: an i never shows a background, border or shadow, and its 32px
+transparent hit area stays invisible. Hover (only under `@media (hover: hover)`),
+`:focus-visible` and `aria-expanded=true` brighten the glyph from `--muted` to
+`--fg`; closing restores it. A settings row does not highlight while the pointer
+is on its i. Checked on the sign-in i: mouse hover, click, keyboard focus and
+touch emulation leave no tap residue. The iPhone app has no i.
+
 Run `node --test scripts/test-web.mjs` on this Mac (Node 24, Swift/CryptoKit).
 `scripts/web-interop.swift` generates deterministic **synthetic** data and checks
 both Swift → browser and browser → Swift. Other checks cover tampering, recovery
