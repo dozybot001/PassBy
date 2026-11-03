@@ -181,7 +181,8 @@
 
 "Could not clear the saved sign-in. Please try again." = "无法清除保存的登录状态，请重试。";
 
-"Effective October 29, 2026 · Zeng Deyang" = "生效日期：2026 年 10 月 29 日 · Zeng Deyang";
+"Effective November 3, 2026 · Zeng Deyang" = "生效日期：2026 年 11 月 3 日 · Zeng Deyang";
+"To keep our network secure, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months." = "为保障网络安全，服务器会记录访问日志和安全日志，包括访问时间、IP 地址和访问的页面，不含网址中的参数；这些日志保存 6 个月后自动删除。";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "本机 Apple 账号用于识别私有密码本存储。PassBy 不接收你的 Apple 密码。选择 Apple 登录时，它可能向 Tenon 提供身份信息。Face ID 由 iOS 处理，PassBy 只接收验证结果，不接收面部数据。";
 
 "Working…" = "处理中…";

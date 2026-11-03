@@ -72,8 +72,10 @@ try:
   web_content=re.sub(r'reverse_proxy 127\.0\.0\.1:728[01]',f'reverse_proxy 127.0.0.1:{port}',web_before.decode())
   assert web_content!=web_before.decode() or previous.get('port')==port
   (candidate/'passby.caddy').write_text(web_content)
- root='import '+str(candidate)+'/*.caddy\n'
- check=base/'candidate-Caddyfile';check.write_text(root)
+ # Validate through the root config, which defines shared snippets such as access_log.
+ line='import /etc/caddy/sites-enabled/*.caddy';root=pathlib.Path('/etc/caddy/Caddyfile').read_text()
+ assert root.count(line)==1,'Unexpected Caddy root config'
+ check=base/'candidate-Caddyfile';check.write_text(root.replace(line,'import '+str(candidate)+'/*.caddy'))
  run(['caddy','validate','--config',str(check),'--adapter','caddyfile'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  assert site.read_bytes()==before,'Ingress changed during release'
  # The first deletion-aware release must drain the previous writer before it

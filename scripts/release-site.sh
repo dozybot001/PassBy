@@ -65,6 +65,7 @@ pathlib.Path(sys.argv[2]).write_text(source.replace('tenon.asia {\n','tenon.asia
 port=json.loads(pathlib.Path('/opt/passby-auth/active.json').read_text())['port']
 assert port in (7280,7281)
 web="""passby.tenon.asia {
+    import access_log
     encode zstd gzip
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -92,7 +93,14 @@ mkdir "$lock/sites"
 cp /etc/caddy/sites-enabled/*.caddy "$lock/sites/"
 cp "$lock/candidate.caddy" "$lock/sites/tenon-ai.caddy"
 cp "$lock/web-candidate.caddy" "$lock/sites/passby.caddy"
-printf 'import %s/sites/*.caddy\n' "$lock" > "$lock/Caddyfile"
+# The root config defines shared snippets such as access_log; validate through it.
+python3 - "$lock" <<'PY'
+import pathlib, sys
+line = 'import /etc/caddy/sites-enabled/*.caddy'
+root = pathlib.Path('/etc/caddy/Caddyfile').read_text()
+assert root.count(line) == 1, 'Unexpected Caddy root config'
+pathlib.Path(sys.argv[1], 'Caddyfile').write_text(root.replace(line, 'import ' + sys.argv[1] + '/sites/*.caddy'))
+PY
 caddy validate --config "$lock/Caddyfile" --adapter caddyfile >/dev/null
 rollback() {
     cp "$lock/previous.caddy" "$config"

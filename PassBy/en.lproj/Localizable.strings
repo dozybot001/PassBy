@@ -181,7 +181,8 @@
 
 "Could not clear the saved sign-in. Please try again." = "Could not clear the saved sign-in. Please try again.";
 
-"Effective October 29, 2026 · Zeng Deyang" = "Effective October 29, 2026 · Zeng Deyang";
+"Effective November 3, 2026 · Zeng Deyang" = "Effective November 3, 2026 · Zeng Deyang";
+"To keep our network secure, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months." = "To keep our network secure, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months.";
 "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data." = "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.";
 
 "Working…" = "Working…";
