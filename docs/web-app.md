@@ -50,8 +50,9 @@ the only innerHTML is a fixed SF-symbol-style SVG path map. Caddy sends HSTS
 (one year, including subdomains; the publisher checks it), denies frame
 embedding, disables sensitive peripheral permissions, uses no-store and allows
 the Apple authentication popup to communicate with its opener. The site imports
-the server's shared `access_log` snippet (time, IP, method, host, path, status
-and duration; no headers or query strings; deleted after 184 days), so both
+the server's shared `access_log` snippet (fields per product standard A.2.4,
+including client IP and port; no headers or query strings; deleted after 184
+days), so both
 publishers validate candidates through the root Caddyfile that defines it. URL
 paths carry no secrets: sign-in codes and tickets travel only in query strings
 or request bodies. The privacy policy states the six-month log retention.
