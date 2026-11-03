@@ -76,6 +76,18 @@ Web release `074b044dfa319b4eeebf4852ec0e44ecdebf54a2` replaces the fixed-size h
 
 Verified English/Chinese, light/dark, 320px/390px layouts, long-title wrapping, viewport-contained popovers and Escape dismissal with an isolated fictional fixture. The existing 16 web tests and publisher's syntax, manifest and public-file checks passed. The production Settings page shows the new component and the matching Web release version. This static release does not alter the submitted iPhone Build 13.
 
+### Standard v2.7 checks (2026-11-03)
+
+axe-core 4.10 (WCAG 2.2 A/AA tags) reports no violations on the sign-in,
+Settings and About views in light and dark at desktop and 320px widths, or on
+privacy, terms, support, 404 and maintenance pages. It found light-card muted text
+at 4.12:1 and filing links under 24px; `--muted` is now `#6b6b6b` and the links
+have 24px targets. Keyboard focus follows reading order with a 2px outline.
+Lighthouse 12.8 on production with mobile settings: performance 95,
+accessibility 100, LCP 1.1 s, CLS 0.075, TBT 0 ms. The unlocked notebook view
+was not rechecked; it needs the isolated fixture harness. VoiceOver on iPhone
+still needs a person with a device.
+
 Run `node --test scripts/test-web.mjs` on this Mac (Node 24, Swift/CryptoKit).
 `scripts/web-interop.swift` generates deterministic **synthetic** data and checks
 both Swift → browser and browser → Swift. Other checks cover tampering, recovery

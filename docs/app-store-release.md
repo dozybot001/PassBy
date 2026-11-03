@@ -1,5 +1,17 @@
 # PassBy 1.0 发布记录
 
+## 1.2（Build 16）按产品规范 v2.7 补齐（2026-11-03）
+
+- 用户要求把规范核对出的缺口全部推进到底。网页与认证服务已从 `3a1416f` 发布；1.2（16）由 `Set iPhone version 1.2 (16)` 归档，2026-11-03 19:00 上传成功（`Upload succeeded`）。
+- 1.2 包含：完整标志、一句话定义、关于页的隐私政策/用户协议/反馈入口、英文出品方 Tenon AI、登录区标题「登录 PassBy」与 Tenon 账号隐私说明链接、首次使用页的隐私政策与用户协议入口、隐私政策第 2 版、隐私清单声明 `UserDefaults`（CA92.1，用于「上次使用」标注）。46 项原生测试通过；模拟器确认了首次使用页，关于页需要已解锁的密码本，未在模拟器上看。
+- 待在 Connect 完成（需用户登录）：
+  1. 新建 1.2，选择 Build 16；名称两种语言都填 `PassBy`，副标题与描述首句按下文商店文案。
+  2. 更新说明（中）：`新增用户协议；关于页可直接打开隐私政策、用户协议和反馈。登录区域写明登录 PassBy，并链接 Tenon 账号隐私说明。标志改为完整的 PassBy 标志。`（英）：`Adds Terms of Service. About now links the Privacy Policy, Terms of Service and feedback. The sign-in area is titled Sign in to PassBy and links the Tenon Account privacy notice. The full PassBy logo replaces the old mark.`
+  3. 打开分阶段发布（规范 17.7）。
+  4. 核对 App 隐私标签与隐私清单一致：收集姓名、电子邮件、用户 ID、其他数据，均与身份关联、用于 App 功能、不用于追踪（规范 17.8）。
+  5. 审核说明沿用 1.1.1；审核账号按规范 3.7。
+- 1.1.1 是否用过分阶段发布无法从公开接口确认，登录 Connect 后在版本页查看。
+
 ## 一句话定义定稿（2026-11-02）
 
 - 用户定稿：`一个简单的密码本` / `A simple password notebook`。网页、README 和 GitHub About 已换；iPhone 关于页随下一次构建。
