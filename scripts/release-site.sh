@@ -100,7 +100,7 @@ NATIVE    handle {
         file_server
     }
     handle_errors {
-        @api path /api/* /passby/api/*
+        @api path /api/*
         handle @api {
             header Content-Type application/problem+json
             respond `{"type":"about:blank","title":"Service Unavailable","status":503}` 503

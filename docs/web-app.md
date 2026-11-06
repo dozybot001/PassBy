@@ -182,7 +182,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 - **Tenon issuer**：服务端依次尝试 `TENON_ISSUERS`（默认 `https://account.tenonai.cn/api/auth`、`https://account.tenon.asia/api/auth`）的 discovery，用第一个应答、且 issuer 与地址一致的那个。结果缓存 10 分钟；换取令牌失败时提前重查。两个 issuer 签发的令牌都接受，身份统一记在原 issuer 下，因为 Tenon 切换不改 `sub`。所以会话、删除回执、浏览器授权的绑定，以及旧版 iPhone 对 issuer 的检查都不受影响。产品删除接口按当前 issuer 拼地址；`execute` 接受两个账号来源。
 - **主机**：网页会话槽接受 `passby.tenon.asia` 和 `passby.tenonai.cn`，原生会话槽接受 `tenon.asia` 和 `passby.tenonai.cn`。回调按请求主机生成，回调主机必须和发起登录的主机一致，Origin 也要和请求主机一致。需要登记的回调：网页 `https://passby.tenonai.cn/api/auth/callback`，iPhone `https://passby.tenonai.cn/passby/api/auth/ios/callback`。
-- **Caddy**：[release-site.sh](../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。现在只有 `passby.tenon.asia`；两种配置都在服务器上 `caddy validate` 通过。
+- **Caddy**：[release-site.sh](../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone（该路径的网关错误返回维护页，App 只看状态码）。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。现在只有 `passby.tenon.asia`；两种配置都在服务器上 `caddy validate` 通过。
 - **网页**：中央登录和删除链接接受两个账号域名。账号、隐私说明等链接仍指向 account.tenon.asia，切换后由 Tenon 跳转。
 - **iPhone（下一版）**：先用旧地址；`passby.tenonai.cn/passby/api/health` 应答后改用新地址，最多每 10 分钟查一次，同一次启动内不退回。隐私、条款、支持链接跟着换主机。删除链接接受两个账号域名。旧版 App 只认 account.tenon.asia，所以服务端给原生会话槽返回旧主机的删除链接，靠 Tenon 的跳转走到新地址。PassBy 没有 Associated Domains、webcredentials 或 Passkey，不需要 apple-app-site-association。
 
