@@ -42,6 +42,13 @@ It does not store notebooks, keys, provider credentials, or central access token
 - Existing iPhone notebooks remain available with Face ID during migration;
   new setup requires Tenon. Native identity expiry does not delete local data.
 
+- Tenon's move to tenonai.cn: `TENON_ISSUERS` lists accepted issuers, newest
+  first. The current one is the first whose discovery answers with its own
+  address, rechecked every 10 minutes and after a failed exchange. Identities
+  stay recorded under the original issuer because `sub` does not change. Each
+  session slot serves several public hosts; callbacks follow the request host.
+  See "迁到 tenonai.cn" in `docs/web-app.md`.
+
 ## Operation
 
 Product deletion derives its subject from the current local session, then uses

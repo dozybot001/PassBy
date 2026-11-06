@@ -1,4 +1,4 @@
-import { ISSUER } from './auth.mjs';
+import { ACCOUNT_ORIGINS, ISSUER, ISSUERS } from './auth.mjs';
 
 const unavailable = (status = 503) => Object.assign(new Error('Product deletion unavailable'), { status });
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
@@ -11,7 +11,7 @@ export class ProductDeletion {
     Object.assign(this, { auth, transport, timeoutSignal });
   }
   async call(operation, body) {
-    const response = await this.transport(`${ISSUER}/product-deletion/${operation}`, {
+    const response = await this.transport(`${await this.auth.currentIssuer()}/product-deletion/${operation}`, {
       method: 'POST', redirect: 'error', signal: this.timeoutSignal(deadlines[operation]),
       headers: { 'Content-Type': 'application/json', Authorization: `Basic ${Buffer.from(`${encodeURIComponent(this.auth.clientId)}:${encodeURIComponent(this.auth.clientSecret)}`).toString('base64')}` },
       body: JSON.stringify(body),
@@ -30,9 +30,11 @@ export class ProductDeletion {
     const result = await this.call('start', { sub: session.sub });
     if (typeof result.url !== 'string') throw unavailable();
     let url; try { url = new URL(result.url); } catch { throw unavailable(); }
-    if (url.origin !== 'https://account.tenon.asia' || url.pathname !== '/account/delete/' || url.username || url.password || url.hash ||
+    if (!ACCOUNT_ORIGINS.includes(url.origin) || url.pathname !== '/account/delete/' || url.username || url.password || url.hash ||
       [...url.searchParams.keys()].length !== 1 || !/^[A-Za-z0-9_-]{43}$/.test(url.searchParams.get('request') || '') ||
       !Number.isSafeInteger(result.expiresAt) || result.expiresAt <= this.auth.now()) throw unavailable();
+    // iPhone builds up to 1.2 accept only the old account host, which keeps redirecting with the query.
+    if (this.auth.origin === 'https://tenon.asia') url.host = 'account.tenon.asia';
     return { url: url.href, expiresAt: result.expiresAt };
   }
   async execute(body) {
@@ -41,8 +43,8 @@ export class ProductDeletion {
       typeof body.operationId !== 'string' || !uuid.test(body.operationId) ||
       typeof body.grant !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.grant)) throw unavailable(400);
     const proof = await this.call('claim', body);
-    if (proof.operationId !== body.operationId || proof.issuer !== ISSUER || proof.productId !== 'passby' || typeof proof.sub !== 'string' || !proof.sub || proof.sub.length > 256) throw unavailable(403);
-    this.auth.sessionStore.deleteProduct(proof.issuer, proof.sub, body.operationId, this.auth.now(), { previouslyCompleted: proof.completed === true });
+    if (proof.operationId !== body.operationId || !ISSUERS.includes(proof.issuer) || proof.productId !== 'passby' || typeof proof.sub !== 'string' || !proof.sub || proof.sub.length > 256) throw unavailable(403);
+    this.auth.sessionStore.deleteProduct(ISSUER, proof.sub, body.operationId, this.auth.now(), { previouslyCompleted: proof.completed === true });
     // Storage contains product identities and token hashes only. Apple private
     // notebooks, local recovery keys and Keychain vaults are not server-owned.
     try { await this.call('finish', { ...body, status: 'completed' }); } catch { /* Durable receipt remains available for a central retry. */ }

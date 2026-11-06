@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TenonAuth, ISSUER, ROLE, digest, TTL, NATIVE_TTL, REFRESH_TTL, SESSION_VERSION } from '../auth.mjs';
+import { TenonAuth, ISSUER, ISSUERS, ROLE, digest, TTL, NATIVE_TTL, REFRESH_TTL, SESSION_VERSION } from '../auth.mjs';
 import { createApp } from '../server.mjs';
 import { SessionStore } from '../sessions.mjs';
 import { DatabaseSync } from 'node:sqlite';
@@ -113,7 +113,7 @@ test('API rejects CSRF logout, unexpected methods and password/vault endpoints',
 });
 
 test('errors are RFC 9457 problem details with a request ID, and rate limits say when to retry', async t => {
-  const busy = { origin: 'https://passby.tenon.asia', apiPath: '/api', basePath: '/',
+  const busy = { origin: 'https://passby.tenon.asia', apiPath: '/api', basePath: '/', publicOrigin() { return this.origin; },
     sessionStore: { health() { throw Object.assign(Error('busy'), { status: 429 }); } } };
   const f = fixture(), server = createApp(f.auth, busy); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => server.close()); const origin = `http://127.0.0.1:${server.address().port}`;
@@ -282,6 +282,38 @@ test('dedicated web origin uses exact callbacks, host-only cookies and isolated 
   assert.equal((await fetch(base + '/api/auth/logout', { method: 'POST', headers: { ...web.req.headers, origin: 'https://passby.tenon.asia' } })).status, 200);
   assert.equal((await fetch(base + '/api/auth/session', { headers: web.req.headers })).status, 401);
   assert.throws(() => new TenonAuth({ origin: 'https://attacker.invalid', clientId: 'test', clientSecret: 'test-only' }));
+});
+
+test('both Tenon issuers name the same account, and each PassBy host gets its own callback', async () => {
+  const NEXT = ISSUERS.find(issuer => issuer !== ISSUER); let live = false, options;
+  const f = fixture({ hosts: ['https://tenon.asia', 'https://passby.tenonai.cn'] });
+  f.protocol.discovery = async url => { if (url.href === NEXT && !live) throw Error('Not answering'); return { serverMetadata: () => ({ issuer: url.href }) }; };
+  const build = f.protocol.buildAuthorizationUrl;
+  f.protocol.buildAuthorizationUrl = (config, values) => { options = values; return build(config, values); };
+  assert.equal(await f.auth.currentIssuer(), ISSUER);
+  live = true; assert.equal(await f.auth.currentIssuer(), ISSUER);
+  f.advance(10 * 60 * 1000); assert.equal(await f.auth.currentIssuer(), NEXT);
+  f.claims.iss = NEXT;
+  const start = 'https://passby.tenonai.cn/passby/api/auth/start';
+  await f.auth.start(f.req, f.res, new URL(start));
+  assert.equal(options.redirect_uri, 'https://passby.tenonai.cn/passby/api/auth/callback');
+  f.req.headers.cookie = f.res.headers['Set-Cookie'].split(';')[0];
+  await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 });
+  await f.auth.start(f.req, f.res, new URL(start));
+  f.req.headers.cookie = f.res.headers['Set-Cookie'].split(';')[0];
+  await f.auth.complete(f.req, f.res, new URL('https://passby.tenonai.cn/passby/api/auth/callback?code=test&state=state'));
+  f.req.headers.cookie = f.res.headers['Set-Cookie'][1].split(';')[0];
+  assert.equal(f.auth.identity(f.req).session.issuer, ISSUER);
+  await assert.rejects(f.auth.start(f.req, f.res, new URL('https://passby.tenon.asia/passby/api/auth/start')), { status: 403 });
+  assert.equal(f.auth.publicOrigin({ headers: { host: 'passby.tenonai.cn' } }), 'https://passby.tenonai.cn');
+  assert.equal(f.auth.publicOrigin({ headers: { host: 'attacker.invalid' } }), 'https://tenon.asia');
+  live = false; f.advance(10 * 60 * 1000); assert.equal(await f.auth.currentIssuer(), ISSUER);
+  live = true; const grant = f.protocol.authorizationCodeGrant;
+  f.protocol.authorizationCodeGrant = async () => { throw Error('Moved'); }; await begin(f);
+  await assert.rejects(f.auth.complete(f.req, f.res, callback()));
+  assert.equal(await f.auth.currentIssuer(), NEXT); f.protocol.authorizationCodeGrant = grant;
+  f.claims.iss = 'https://attacker.invalid/api/auth'; await begin(f);
+  await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 });
 });
 
 function persistentStores(t) {

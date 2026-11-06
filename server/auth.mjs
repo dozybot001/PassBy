@@ -1,7 +1,14 @@
 import * as oidc from 'openid-client';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
+// PassBy records identities under the original issuer. Tenon's move to
+// tenonai.cn renames the issuer once without changing `sub`, so tokens from
+// either issuer name the same account. The first issuer whose discovery
+// answers with its own address is current.
 export const ISSUER = 'https://account.tenon.asia/api/auth';
+export const ISSUERS = Object.freeze((process.env.TENON_ISSUERS || 'https://account.tenonai.cn/api/auth https://account.tenon.asia/api/auth').split(/\s+/).filter(Boolean));
+export const ACCOUNT_ORIGINS = Object.freeze(ISSUERS.map(issuer => new URL(issuer).origin));
+const DISCOVERY_TTL = 10 * 60 * 1000;
 export const ROLE = 'https://tenon.asia/claims/platform_role';
 export const TTL = 30 * 24 * 60 * 60 * 1000;
 export const NATIVE_TTL = TTL;
@@ -19,9 +26,11 @@ const validRefresh = value => typeof value === 'string' && /^[A-Za-z0-9._~-]{32,
 // or disk. Tickets are discarded within 60 seconds.
 const LOGIN_METHODS = new Set(['apple', 'github', 'email']);
 export class TenonAuth {
-  constructor({ origin = 'https://tenon.asia', clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol = oidc, now = Date.now }) {
-    if (!['https://tenon.asia', 'https://passby.tenon.asia'].includes(origin) || !clientId || !clientSecret || !sessionStore) throw Error('Incomplete authentication configuration');
-    Object.assign(this, { origin, clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol, now });
+  // `origin` names the session slot; `hosts` are the public origins that serve it.
+  constructor({ origin = 'https://tenon.asia', hosts = [origin], clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol = oidc, now = Date.now }) {
+    if (!['https://tenon.asia', 'https://passby.tenon.asia'].includes(origin) || !hosts.includes(origin) || hosts.some(host => new URL(host).origin !== host || !host.startsWith('https://'))
+      || !clientId || !clientSecret || !sessionStore) throw Error('Incomplete authentication configuration');
+    Object.assign(this, { origin, hosts, clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol, now });
     this.basePath = origin === 'https://tenon.asia' ? '/passby/' : '/';
     this.apiPath = this.basePath + 'api';
     this.callback = origin + this.apiPath + '/auth/callback';
@@ -29,6 +38,8 @@ export class TenonAuth {
     this.attempts = new Map(); this.tickets = new Map();
     this.refreshing = new Map(); this.refreshLimits = new Map();
   }
+  // Caddy forwards only its configured sites; anything else keeps the slot's own origin.
+  publicOrigin(req) { return this.hosts.find(host => host === 'https://' + req.headers.host) || this.origin; }
   get sessionCount() { return this.sessionStore.count(this.origin, this.now()); }
   sweep() {
     for (const map of [this.attempts, this.tickets]) for (const [key, value] of map) if (value.expires <= this.now()) map.delete(key);
@@ -37,15 +48,23 @@ export class TenonAuth {
   }
   async config(native = false) {
     if (native && (!this.iosClientId || !this.iosClientSecret)) throw failure(503);
-    const slot = native ? 'iosConfiguration' : 'configuration';
-    if (!this[slot]) {
-      const config = await this.protocol.discovery(new URL(ISSUER), native ? this.iosClientId : this.clientId, undefined,
-        this.protocol.ClientSecretBasic(native ? this.iosClientSecret : this.clientSecret), { timeout: 10, execute: [this.protocol.enableNonRepudiationChecks] });
-      if (config.serverMetadata().issuer !== ISSUER) throw failure(503);
-      this[slot] = config;
+    const slot = native ? 'iosConfiguration' : 'configuration', cached = this[slot];
+    if (cached && cached.checked + DISCOVERY_TTL > this.now()) return cached.config;
+    for (const issuer of ISSUERS) {
+      try {
+        const config = await this.protocol.discovery(new URL(issuer), native ? this.iosClientId : this.clientId, undefined,
+          this.protocol.ClientSecretBasic(native ? this.iosClientSecret : this.clientSecret), { timeout: 10, execute: [this.protocol.enableNonRepudiationChecks] });
+        if (config.serverMetadata().issuer !== issuer) continue;
+        this[slot] = { config, checked: this.now() };
+        return config;
+      } catch { /* Not answering yet, or no longer this issuer. */ }
     }
-    return this[slot];
+    if (cached) { cached.checked = this.now(); return cached.config; }
+    throw failure(503);
   }
+  // A failed exchange may mean Tenon just switched issuer; look again next time.
+  recheck(native) { const cached = this[native ? 'iosConfiguration' : 'configuration']; if (cached) cached.checked = -Infinity; }
+  async currentIssuer() { return (await this.config()).serverMetadata().issuer; }
   cookie(name, value, age, sameSite = 'Strict') {
     return `__Secure-passby_${name}=${value}; Path=${this.apiPath}; HttpOnly; Secure; SameSite=${sameSite}; Max-Age=${age}`;
   }
@@ -61,7 +80,7 @@ export class TenonAuth {
     return { key, session };
   }
   async start(req, res, url) {
-    if (req.headers['sec-fetch-site'] === 'cross-site') throw failure(403);
+    if (req.headers['sec-fetch-site'] === 'cross-site' || !this.hosts.includes(url.origin)) throw failure(403);
     this.sweep();
     if (this.attempts.size >= 1000 || this.sessionCount >= 5000) throw failure(429);
     const native = url.searchParams.get('platform') === 'ios';
@@ -73,11 +92,11 @@ export class TenonAuth {
     const state = this.protocol.randomState(), nonce = this.protocol.randomNonce();
     // The chosen method only selects the central page; identity checks are unchanged.
     const method = url.searchParams.get('method');
-    const location = this.protocol.buildAuthorizationUrl(config, { redirect_uri: native ? this.iosCallback : this.callback,
+    const location = this.protocol.buildAuthorizationUrl(config, { redirect_uri: url.origin + this.apiPath + (native ? '/auth/ios/callback' : '/auth/callback'),
       scope: native ? 'openid profile email offline_access' : 'openid profile email', ...(native ? { prompt: 'consent' } : {}), state, nonce,
       code_challenge: await this.protocol.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256',
       ...(LOGIN_METHODS.has(method) ? { tenon_method: method } : {}) });
-    this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState, authorizationGeneration });
+    this.attempts.set(digest(browser), { verifier, state, nonce, expires: this.now() + 600000, native, challenge, nativeState, authorizationGeneration, host: url.origin });
     res.setHeader('Set-Cookie', this.cookie('attempt', browser, 600, 'Lax'));
     if (url.searchParams.get('format') === 'json') {
       res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ url: location.href }));
@@ -87,10 +106,10 @@ export class TenonAuth {
     const key = digest(this.cookieValue(req, 'attempt') || ''), attempt = this.attempts.get(key);
     this.attempts.delete(key);
     res.setHeader('Set-Cookie', this.cookie('attempt', '', 0, 'Lax'));
-    if (!attempt || attempt.expires <= this.now() || url.pathname !== (attempt.native ? new URL(this.iosCallback).pathname : new URL(this.callback).pathname)) throw failure(401);
+    if (!attempt || attempt.expires <= this.now() || url.origin !== attempt.host || url.pathname !== (attempt.native ? new URL(this.iosCallback).pathname : new URL(this.callback).pathname)) throw failure(401);
     const config = await this.config(attempt.native);
     const tokens = await this.protocol.authorizationCodeGrant(config, url, { pkceCodeVerifier: attempt.verifier,
-      expectedState: attempt.state, expectedNonce: attempt.nonce, idTokenExpected: true });
+      expectedState: attempt.state, expectedNonce: attempt.nonce, idTokenExpected: true }).catch(error => { this.recheck(attempt.native); throw error; });
     const session = await this.verifiedIdentity(config, tokens);
     this.sessionStore.assertGeneration(session.issuer, session.sub, attempt.authorizationGeneration);
     const refresh = attempt.native ? this.refreshCredential(tokens) : {};
@@ -109,7 +128,7 @@ export class TenonAuth {
   }
   async verifiedIdentity(config, tokens) {
     const claims = tokens.claims();
-    if (!claims || claims.iss !== ISSUER || typeof claims.sub !== 'string' || !claims.sub
+    if (!claims || claims.iss !== config.serverMetadata().issuer || typeof claims.sub !== 'string' || !claims.sub
       || !tokens.access_token || !Number.isFinite(tokens.expires_in) || tokens.expires_in <= 0
       || !Number.isFinite(claims.exp) || claims.exp * 1000 <= this.now()) throw failure(401);
     let info;
@@ -164,7 +183,7 @@ export class TenonAuth {
         try { tokens = await this.protocol.refreshTokenGrant(config, body.refreshToken); }
         catch (error) {
           if (['invalid_grant', 'invalid_token'].includes(error.error)) throw failure(401);
-          throw failure(503);
+          this.recheck(true); throw failure(503);
         }
         const identity = await this.verifiedIdentity(config, tokens);
         if (identity.issuer !== body.issuer || identity.sub !== body.sub) throw failure(401);

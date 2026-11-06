@@ -176,6 +176,30 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 - Notes grow and shrink with input, paste, deletion and width changes; neither notes nor generated passwords use an internal scrolling area. Long content scrolls in the shared modal body.
 - Privacy, support, language and publisher information form one horizontal row at the bottom left in every notebook access state. New password sits at the bottom right of the app content, above the separate global footer, with a labeled capsule on larger screens and a 48px accessible plus button on small phones; neither action obscures notebook content.
 
+## 迁到 tenonai.cn（2026-11-06 准备，未切流量）
+
+总清单见 Tenon-AI 仓库 `docs/setup/website-filing.md`（法务组维护）。备案通过前不加解析、不签证书、不对外提供服务；下面这些已经部署，新旧域名都能用：
+
+- **Tenon issuer**：服务端依次尝试 `TENON_ISSUERS`（默认 `https://account.tenonai.cn/api/auth`、`https://account.tenon.asia/api/auth`）的 discovery，用第一个应答、且 issuer 与地址一致的那个。结果缓存 10 分钟；换取令牌失败时提前重查。两个 issuer 签发的令牌都接受，身份统一记在原 issuer 下，因为 Tenon 切换不改 `sub`。所以会话、删除回执、浏览器授权的绑定，以及旧版 iPhone 对 issuer 的检查都不受影响。产品删除接口按当前 issuer 拼地址；`execute` 接受两个账号来源。
+- **主机**：网页会话槽接受 `passby.tenon.asia` 和 `passby.tenonai.cn`，原生会话槽接受 `tenon.asia` 和 `passby.tenonai.cn`。回调按请求主机生成，回调主机必须和发起登录的主机一致，Origin 也要和请求主机一致。需要登记的回调：网页 `https://passby.tenonai.cn/api/auth/callback`，iPhone `https://passby.tenonai.cn/passby/api/auth/ios/callback`。
+- **Caddy**：[release-site.sh](../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。现在只有 `passby.tenon.asia`；两种配置都在服务器上 `caddy validate` 通过。
+- **网页**：中央登录和删除链接接受两个账号域名。账号、隐私说明等链接仍指向 account.tenon.asia，切换后由 Tenon 跳转。
+- **iPhone（下一版）**：先用旧地址；`passby.tenonai.cn/passby/api/health` 应答后改用新地址，最多每 10 分钟查一次，同一次启动内不退回。隐私、条款、支持链接跟着换主机。删除链接接受两个账号域名。旧版 App 只认 account.tenon.asia，所以服务端给原生会话槽返回旧主机的删除链接，靠 Tenon 的跳转走到新地址。PassBy 没有 Associated Domains、webcredentials 或 Passkey，不需要 apple-app-site-association。
+
+**和域名绑定、迁移后要重新做的**：
+
+| 凭据 | 影响 | 处理 |
+| --- | --- | --- |
+| CloudKit 网页 API 令牌的允许来源 | 不加新来源，网页在 passby.tenonai.cn 上打不开密码本 | 用户在 CloudKit Console 给该令牌加 `https://passby.tenonai.cn`，旧来源先保留 |
+| 网页 Tenon 会话 Cookie（host-only） | 新域名上没有会话 | 用户在新域名重新登录 Tenon 一次 |
+| Apple 的 CloudKit 网页登录 Cookie | 新域名上没有 | 用户在新域名重新授权 Apple 账号一次 |
+| 浏览器授权（IndexedDB 中不可导出的密钥，按来源隔离） | 新来源没有，旧来源的授权留在原浏览器里，不再使用 | 用户在新域名用恢复密钥重新授权这台浏览器一次；可在旧域名的设置里先撤销 |
+| iPhone 钥匙串里的产品会话和续期凭据 | 两个主机共用同一会话槽，不受影响 | 无；若 Tenon 不再接受旧 issuer 的续期凭据，App 会提示重新登录一次 |
+
+**切换当天（备案、S1 解析和证书、Tenon 回调登记都就绪后）**：先在 CloudKit Console 加来源；把 `web_hosts` 改成 `passby.tenon.asia passby.tenonai.cn` 后发布并验收；再把新主机放到第一位，让它成为规范主机，同时给旧主机加页面 301（`/api/*` 保留）。App Store Connect 的隐私政策和支持网址改为 `https://passby.tenonai.cn/privacy/`、`https://passby.tenonai.cn/support/`。条款和隐私政策里的域名由法务组（L1）当天改，security.txt 加新的 Canonical。
+
+**收尾（D8，旧版 App 基本更新后）**：删掉 `TENON_ISSUERS` 里的旧 issuer 和原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。
+
 ## Tenon 产品级删除
 
 网页版设置的删除入口先调用同源 `POST /api/auth/tenon/delete/start`，iPhone 使用自己的产品 Bearer 会话调用 `/passby/api/auth/tenon/delete/start`。两者从服务器取得受控来源，进入中央删除页选择「仅删除 PassBy」或「删除整个 Tenon 账号」，不通过 GET 或浏览器传入的 sub 删除。

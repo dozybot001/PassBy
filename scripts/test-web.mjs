@@ -160,7 +160,9 @@ test('product deletion starts from the local server and rejects an unregistered 
     assert.equal(init.method, 'POST'); assert.equal(init.body, '{}');
     return Response.json({ url: target });
   }), target);
-  for (const url of ['https://attacker.invalid/account/delete/', 'https://account.tenon.asia/account/delete/?request=forged', target + '#spoof']) {
+  const moved = target.replace('account.tenon.asia', 'account.tenonai.cn');
+  assert.equal(await requestProductDeletion(async () => Response.json({ url: moved })), moved);
+  for (const url of ['https://attacker.invalid/account/delete/', 'https://account.tenonai.cn.evil.example/account/delete/?request=' + request, 'https://account.tenon.asia/account/delete/?request=forged', target + '#spoof']) {
     await assert.rejects(requestProductDeletion(async () => Response.json({ url })));
   }
   await assert.rejects(requestProductDeletion(async () => new Response('', { status: 503 })));

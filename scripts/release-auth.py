@@ -92,7 +92,9 @@ try:
   temp=web_site.with_suffix('.candidate');temp.write_text(web_content);os.replace(temp,web_site)
  run(['systemctl','reload','caddy'])
  if web_content is not None:
-  request('https://passby.tenon.asia/api/health',200,sqlite=True);request('https://passby.tenon.asia/api/auth/session',401)
+  for host in web_content.split(' {',1)[0].split(', '):
+   request(f'https://{host}/api/health',200,sqlite=True);request(f'https://{host}/api/auth/session',401)
+   if host!='passby.tenon.asia':request(f'https://{host}/passby/api/health',200,sqlite=True)
  request('https://tenon.asia/passby/api/health',200,sqlite=True);request('https://tenon.asia/passby/api/auth/session',401)
  (base/'current-route.caddy').write_text(route)
  state={'commit':sha,'previous':previous.get('commit'),'port':port,'container':name,'image':image,'sessionDatabase':str(database)}

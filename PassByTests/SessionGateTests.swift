@@ -33,7 +33,8 @@ final class SessionGateTests: XCTestCase {
         let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
         defer { try? store.clear() }
         let now = Date(timeIntervalSince1970: 1000)
-        for target in ["https://attacker.invalid/account/delete/", "https://account.tenon.asia/account/delete/?request=forged"] {
+        for target in ["https://attacker.invalid/account/delete/", "https://account.tenon.asia/account/delete/?request=forged",
+                       "https://account.tenonai.cn.attacker.invalid/account/delete/?request=" + String(repeating: "q", count: 43)] {
             try savedTenonSession(store: store, time: now)
             let account = TenonAccount(store: store, now: { now }, transport: { request in
                 (try JSONSerialization.data(withJSONObject: ["url": target]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
@@ -41,6 +42,32 @@ final class SessionGateTests: XCTestCase {
             let url = await account.beginDeletion()
             XCTAssertNil(url); XCTAssertNotNil(account.identity); XCTAssertFalse(account.working)
         }
+    }
+    @MainActor
+    func testServiceMovesToTheNewHostOnlyAfterItAnswersAndDeletionAcceptsTheNewAccountHost() async throws {
+        let store = TenonSessionStore(service: "passby-test-" + UUID().uuidString)
+        defer { try? store.clear(); PassByLinks.host = "passby.tenon.asia" }
+        var now = Date(timeIntervalSince1970: 1000), live = false, paths: [String] = []
+        try savedTenonSession(store: store, time: now)
+        let account = TenonAccount(store: store, now: { now }, transport: { request in
+            paths.append(request.url!.host! + request.url!.path)
+            if request.url?.lastPathComponent == "health" {
+                guard live else { throw URLError(.cannotFindHost) }
+                return (Data(#"{"ok":true,"sessionStorage":"sqlite"}"#.utf8), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+            let payload = ["url": "https://account.tenonai.cn/account/delete/?request=" + String(repeating: "q", count: 43)]
+            return (try JSONSerialization.data(withJSONObject: payload), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        })
+        await account.chooseService()
+        live = true; await account.chooseService()
+        _ = await account.beginDeletion()
+        XCTAssertEqual(paths, ["passby.tenonai.cn/passby/api/health", "tenon.asia/passby/api/auth/tenon/delete/start"])
+        XCTAssertEqual(PassByLinks.page("privacy/").host, "passby.tenon.asia")
+        now = now.addingTimeInterval(600); await account.chooseService()
+        let url = await account.beginDeletion()
+        XCTAssertEqual(paths.suffix(2), ["passby.tenonai.cn/passby/api/health", "passby.tenonai.cn/passby/api/auth/tenon/delete/start"])
+        XCTAssertEqual(url?.host, "account.tenonai.cn")
+        XCTAssertEqual(PassByLinks.page("privacy/").absoluteString, "https://passby.tenonai.cn/privacy/")
     }
     func testEveryDepartureLocksAnUnlockedSession() throws {
         var gate = SessionGate()

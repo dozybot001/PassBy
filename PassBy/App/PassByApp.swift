@@ -25,6 +25,7 @@ struct PassByApp: App {
                     case .active:
                         session.didBecomeActive()
                         Task { await account.didBecomeActive() }
+                        Task { await account.chooseService() }
                     case .inactive: session.willResignActive()
                     case .background: session.didEnterBackground()
                     @unknown default: session.lock()
@@ -38,6 +39,13 @@ struct PassByApp: App {
                 }
         }
     }
+}
+
+// Web pages live on the service host that answered, so links move with the API.
+@MainActor
+enum PassByLinks {
+    static var host = "passby.tenon.asia"
+    static func page(_ path: String) -> URL { URL(string: "https://\(host)/\(path)")! }
 }
 
 @MainActor
@@ -71,15 +79,22 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     private let transport: (URLRequest) async throws -> (Data, URLResponse)
     private var restored = false
     private var deletionReturnPending = false
-    private let api = "https://tenon.asia/passby/api/auth/"
+    // PassBy moves to passby.tenonai.cn after its ICP filing. Until that host
+    // answers, this build keeps the old address; both reach the same sessions.
+    static let services = ["https://passby.tenonai.cn/passby/api/", "https://tenon.asia/passby/api/"]
+    private let services: [String]
+    private var service: String
+    private var serviceChecked = -Double.infinity
+    private var api: String { service + "auth/" }
     private var time: Double { now().timeIntervalSince1970 * 1000 }
     // An expired remembered profile is presentation only. Account-gated work
     // needs a current product session; offline Face ID uses the separate vault.
     var hasCurrentAuthorization: Bool { (grant?.identity.expires ?? 0) > time }
 
-    init(store: TenonSessionStore = TenonSessionStore(), now: @escaping () -> Date = Date.init,
+    init(store: TenonSessionStore = TenonSessionStore(), now: @escaping () -> Date = Date.init, services: [String] = TenonAccount.services,
          transport: @escaping (URLRequest) async throws -> (Data, URLResponse) = { try await URLSession.shared.data(for: $0) }) {
         self.store = store; self.now = now; self.transport = transport
+        self.services = services; service = services[services.count - 1]
         super.init()
         guard let data = try? store.read() else { return }
         guard let saved = try? JSONDecoder().decode(Grant.self, from: data), valid(saved, restoring: true) else {
@@ -103,6 +118,21 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
         restored = false
         await renew(force: true)
     }
+    // Moves to the first newer service whose health check answers, checking at
+    // most every 10 minutes. It never moves back during a launch.
+    func chooseService() async {
+        guard service != services[0], time - serviceChecked >= 600_000 else { return }
+        serviceChecked = time
+        for candidate in services.dropLast() {
+            var request = URLRequest(url: URL(string: candidate + "health")!)
+            request.timeoutInterval = 5; request.cachePolicy = .reloadIgnoringLocalCacheData
+            guard let (data, response) = try? await transport(request), (response as? HTTPURLResponse)?.statusCode == 200,
+                  (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["ok"] as? Bool == true else { continue }
+            service = candidate
+            if let host = URL(string: candidate)?.host { PassByLinks.host = host }
+            return
+        }
+    }
     func didBecomeActive() async {
         checkExpiry()
         if deletionReturnPending { await checkDeletionReturn() }
@@ -125,7 +155,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
             if status == 401 { invalidate(); return nil }
             guard status == 200, let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let raw = payload["url"] as? String, let parts = URLComponents(string: raw),
-                  parts.scheme == "https", parts.host == "account.tenon.asia", parts.port == nil,
+                  parts.scheme == "https", ["account.tenon.asia", "account.tenonai.cn"].contains(parts.host), parts.port == nil,
                   parts.user == nil, parts.password == nil, parts.fragment == nil, parts.path == "/account/delete/",
                   let source = parts.queryItems?.first(where: { $0.name == "request" })?.value,
                   source.range(of: "^[A-Za-z0-9_-]{43}$", options: .regularExpression) != nil,
@@ -265,7 +295,7 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
                 }
             }
             browser.presentationContextProvider = self
-            // Skips the system "wants to use tenon.asia" prompt before a method the person just chose.
+            // Skips the system "wants to use" prompt before a method the person just chose.
             browser.prefersEphemeralWebBrowserSession = true
             self.browser = browser
             if !browser.start() { self.browser = nil; working = false; message = L("Tenon sign-in could not be completed. Please try again.") }

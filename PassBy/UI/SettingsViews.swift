@@ -174,8 +174,8 @@ struct SettingsView: View {
                 }
                 Section {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
-                    Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
-                    Link("Support", destination: URL(string: "https://passby.tenon.asia/support/")!)
+                    Link("Terms of Service", destination: PassByLinks.page("terms/"))
+                    Link("Support", destination: PassByLinks.page("support/"))
                     Link("Email support", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Support")!)
                     NavigationLink("About PassBy") { AboutPassByView() }
                 }
@@ -288,8 +288,8 @@ struct PrivacyPolicyView: View {
                     .foregroundStyle(Palette.secondary)
                 policySection("Service providers and location", "PassBy shares data only with the services it needs: Tenon Account for sign-in, operated by the same publisher; Apple for iCloud storage under your Apple Account and, if you choose it, Sign in with Apple; and our hosting provider. The PassBy server is in mainland China, and PassBy does not send your personal information outside mainland China. Apple stores your notebook according to your Apple Account region, and the Tenon Account privacy notice covers Apple sign-in.")
                 policySection("Support and your choices", "View and change your notebook in the app, and your account details in Tenon Account. Delete your account as described above. You can contact support@tenonai.cn for technical or privacy questions, or to ask what we hold about you. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.")
-                Link("Online privacy policy", destination: URL(string: "https://passby.tenon.asia/privacy/")!)
-                Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
+                Link("Online privacy policy", destination: PassByLinks.page("privacy/"))
+                Link("Terms of Service", destination: PassByLinks.page("terms/"))
                 Link("Apple privacy policy", destination: URL(string: "https://www.apple.com/legal/privacy/")!)
             }
             .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)
@@ -329,7 +329,7 @@ struct AboutPassByView: View {
                 }
                 VStack(alignment: .leading, spacing: 12) {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
-                    Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
+                    Link("Terms of Service", destination: PassByLinks.page("terms/"))
                     Link("Send feedback", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Feedback")!)
                 }
             }

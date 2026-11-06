@@ -1,3 +1,5 @@
+import { TENON_ACCOUNT_ORIGINS } from './auth.mjs';
+
 const params = new URLSearchParams(location.search);
 const zh = params.get('lang') === 'zh' || (!location.search && navigator.language.startsWith('zh'));
 const method = ['apple', 'github', 'email'].includes(params.get('method')) ? params.get('method') : '';
@@ -24,7 +26,7 @@ async function connect() {
     const response = await fetch(new URL(`../api/auth/start?format=json${method ? `&method=${method}` : ''}`, import.meta.url), { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw Error('Unavailable');
     const data = await response.json(), target = new URL(data.url);
-    if (target.origin !== 'https://account.tenon.asia' || target.username || target.password || target.hash) throw Error('Invalid destination');
+    if (!TENON_ACCOUNT_ORIGINS.includes(target.origin) || target.username || target.password || target.hash) throw Error('Invalid destination');
     location.replace(target.href);
   } catch {
     title.textContent = zh ? '暂时无法打开登录' : 'Unable to open sign-in';

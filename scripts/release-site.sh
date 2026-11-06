@@ -33,6 +33,9 @@ PY
 directory="/opt/passby-site/releases/$release"
 config=/etc/caddy/sites-enabled/tenon-ai.caddy
 web_config=/etc/caddy/sites-enabled/passby.caddy
+# Hosts served by passby.caddy; the first is canonical. Add passby.tenonai.cn
+# only after its ICP filing is approved and its DNS and certificate are ready.
+web_hosts='passby.tenon.asia'
 lock=/opt/passby-site/.publish-lock
 mkdir -p /opt/passby-site/releases
 mkdir "$lock" || { echo 'PassBy site publication is already running.' >&2; exit 1; }
@@ -52,19 +55,31 @@ PY
 chmod -R a+rX "$directory"
 cp "$config" "$lock/previous.caddy"
 if [[ -f "$web_config" ]]; then cp "$web_config" "$lock/web-before.caddy"; fi
-python3 - "$config" "$lock/candidate.caddy" "$directory" "$lock/web-candidate.caddy" <<'PYROUTE'
+python3 - "$config" "$lock/candidate.caddy" "$directory" "$lock/web-candidate.caddy" "$web_hosts" <<'PYROUTE'
 import json,pathlib,re,sys
 source=pathlib.Path(sys.argv[1]).read_text()
 source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
 assert source.startswith('tenon.asia {\n')
 auth_route=pathlib.Path('/opt/passby-auth/current-route.caddy').read_text()
+hosts=sys.argv[5].split()
+assert hosts and all(re.fullmatch(r'passby\.tenon(?:\.asia|ai\.cn)',host) for host in hosts)
 legacy=('\t# BEGIN PASSBY\n'+auth_route+'\t@passby_legacy path /passby /passby/*\n'
         '\thandle @passby_legacy {\n\t\troute {\n\t\t\turi strip_prefix /passby\n'
-        '\t\t\tredir https://passby.tenon.asia{uri} permanent\n\t\t}\n\t}\n\t# END PASSBY\n')
+        '\t\t\tredir https://'+hosts[0]+'{uri} permanent\n\t\t}\n\t}\n\t# END PASSBY\n')
 pathlib.Path(sys.argv[2]).write_text(source.replace('tenon.asia {\n','tenon.asia {\n'+legacy,1))
 port=json.loads(pathlib.Path('/opt/passby-auth/active.json').read_text())['port']
 assert port in (7280,7281)
-web="""passby.tenon.asia {
+# New hosts also carry the iPhone API, which the old app reaches on tenon.asia.
+native=' '.join(host for host in hosts if host!='passby.tenon.asia')
+native_route=f"""    @native {{
+        host {native}
+        path /passby/api/*
+    }}
+    handle @native {{
+        reverse_proxy 127.0.0.1:PORT
+    }}
+""" if native else ''
+web="""HOSTS {
     import access_log
     encode zstd gzip
     header {
@@ -80,12 +95,12 @@ web="""passby.tenon.asia {
     handle /api/* {
         reverse_proxy 127.0.0.1:PORT
     }
-    handle {
+NATIVE    handle {
         root * DIRECTORY/public
         file_server
     }
     handle_errors {
-        @api path /api/*
+        @api path /api/* /passby/api/*
         handle @api {
             header Content-Type application/problem+json
             respond `{"type":"about:blank","title":"Service Unavailable","status":503}` 503
@@ -101,7 +116,7 @@ web="""passby.tenon.asia {
         }
     }
 }
-""".replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
+""".replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
 pathlib.Path(sys.argv[4]).write_text(web)
 PYROUTE
 # Validate the candidate with all other current sites before touching ingress.
@@ -126,22 +141,27 @@ rollback() {
 cp "$lock/candidate.caddy" "$config"
 cp "$lock/web-candidate.caddy" "$web_config"
 if ! systemctl reload caddy; then rollback; exit 1; fi
-if ! python3 - "$directory" <<'PY'
+if ! python3 - "$directory" $web_hosts <<'PY'
 import hashlib, json, pathlib, sys, time, urllib.error, urllib.request
 hsts = 'max-age=31536000; includeSubDomains'
-for attempt in range(6):
-    try:
-        health = urllib.request.urlopen('https://passby.tenon.asia/api/health',timeout=10)
-        break
-    except Exception:
-        if attempt==5: raise
-        time.sleep(3)
-assert health.headers.get('Strict-Transport-Security') == hsts
+hosts = sys.argv[2:]
+for host in hosts:
+    for attempt in range(6):
+        try:
+            health = urllib.request.urlopen(f'https://{host}/api/health',timeout=10)
+            break
+        except Exception:
+            if attempt==5: raise
+            time.sleep(3)
+    assert health.headers.get('Strict-Transport-Security') == hsts
+    if host != 'passby.tenon.asia':
+        assert urllib.request.urlopen(f'https://{host}/passby/api/health',timeout=20).status == 200
+    assert urllib.request.urlopen(f'https://{host}/',timeout=20).headers.get('X-Frame-Options') == 'DENY'
 root = pathlib.Path(sys.argv[1])
 for name, digest in json.loads((root / 'manifest.json').read_text())['files'].items():
     path = name.removeprefix('public/')
     if path.endswith('index.html'): path = path.removesuffix('index.html')
-    response = urllib.request.urlopen('https://passby.tenon.asia/' + path, timeout=20)
+    response = urllib.request.urlopen(f'https://{hosts[0]}/' + path, timeout=20)
     assert hashlib.sha256(response.read()).hexdigest() == digest, name
     if path == '':
         assert response.headers.get('Strict-Transport-Security') == hsts
@@ -149,12 +169,12 @@ for name, digest in json.loads((root / 'manifest.json').read_text())['files'].it
         assert 'no-store' in response.headers.get('Cache-Control', '')
         assert "frame-ancestors 'none'" in response.headers.get('Content-Security-Policy', '')
 try:
-    urllib.request.urlopen('https://passby.tenon.asia/release-check-missing',timeout=20)
+    urllib.request.urlopen(f'https://{hosts[0]}/release-check-missing',timeout=20)
     raise AssertionError('A missing page must return 404')
 except urllib.error.HTTPError as missing:
     assert missing.code == 404 and b'Page not found' in missing.read()
 legacy=urllib.request.urlopen('https://tenon.asia/passby/',timeout=20)
-assert legacy.url=='https://passby.tenon.asia/'
+assert legacy.url==f'https://{hosts[0]}/'
 assert urllib.request.urlopen('https://tenon.asia/passby/api/health',timeout=20).status==200
 PY
 then

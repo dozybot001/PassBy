@@ -1,4 +1,6 @@
 export const TENON_SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
+// Tenon moves from account.tenon.asia to account.tenonai.cn in one switch.
+export const TENON_ACCOUNT_ORIGINS = Object.freeze(['https://account.tenonai.cn', 'https://account.tenon.asia']);
 
 export function validIdentity(identity, now = Date.now()) {
   return identity?.issuer === 'https://account.tenon.asia/api/auth'
@@ -26,6 +28,6 @@ export async function requestProductDeletion(transport = fetch) {
     headers: { 'Content-Type': 'application/json' }, body: '{}' });
   if (!response.ok) throw Error('Deletion unavailable');
   const result = await response.json(), url = new URL(result.url);
-  if (url.origin !== 'https://account.tenon.asia' || url.pathname !== '/account/delete/' || url.username || url.password || url.hash || !/^[A-Za-z0-9_-]{43}$/.test(url.searchParams.get('request') || '')) throw Error('Invalid deletion URL');
+  if (!TENON_ACCOUNT_ORIGINS.includes(url.origin) || url.pathname !== '/account/delete/' || url.username || url.password || url.hash || !/^[A-Za-z0-9_-]{43}$/.test(url.searchParams.get('request') || '')) throw Error('Invalid deletion URL');
   return url.href;
 }

@@ -115,8 +115,8 @@ struct LockView: View {
                     .font(.footnote).foregroundStyle(Palette.secondary)
                     .padding(.top, 22).frame(maxWidth: .infinity, alignment: .center)
                 HStack(spacing: 20) {
-                    Link("Privacy policy", destination: URL(string: "https://passby.tenon.asia/privacy/")!)
-                    Link("Terms of Service", destination: URL(string: "https://passby.tenon.asia/terms/")!)
+                    Link("Privacy policy", destination: PassByLinks.page("privacy/"))
+                    Link("Terms of Service", destination: PassByLinks.page("terms/"))
                 }
                 .font(.footnote).tint(Palette.secondary).padding(.top, 10).frame(maxWidth: .infinity, alignment: .center)
             }
