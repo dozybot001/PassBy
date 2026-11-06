@@ -178,7 +178,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 ## 迁到 tenonai.cn（2026-11-06 准备，未切流量）
 
-总清单见 Tenon-AI 仓库 `docs/setup/website-filing.md`（法务组维护）。备案通过前不加解析、不签证书、不对外提供服务；下面这些已经部署，新旧域名都能用：
+总清单见 Tenon-AI 仓库 `docs/setup/website-filing.md`（法务组维护）。11-06 开发组确认：新 issuer 是 `https://account.tenonai.cn/api/auth`，`sub` 和角色声明名不变；account.tenon.asia 的页面 301、`/api/*` 308，保留路径和查询参数；切换后主站继续把 `tenon.asia/passby/api/*` 交给 PassBy，直到第 3 步。备案通过前不加解析、不签证书、不对外提供服务；下面这些已经部署，新旧域名都能用：
 
 - **Tenon issuer**：服务端依次尝试 `TENON_ISSUERS`（默认 `https://account.tenonai.cn/api/auth`、`https://account.tenon.asia/api/auth`）的 discovery，用第一个应答、且 issuer 与地址一致的那个。结果缓存 10 分钟；换取令牌失败时提前重查。两个 issuer 签发的令牌都接受，身份统一记在原 issuer 下，因为 Tenon 切换不改 `sub`。所以会话、删除回执、浏览器授权的绑定，以及旧版 iPhone 对 issuer 的检查都不受影响。产品删除接口按当前 issuer 拼地址；`execute` 接受两个账号来源。
 - **主机**：网页会话槽接受 `passby.tenon.asia` 和 `passby.tenonai.cn`，原生会话槽接受 `tenon.asia` 和 `passby.tenonai.cn`。回调按请求主机生成，回调主机必须和发起登录的主机一致，Origin 也要和请求主机一致。需要登记的回调：网页 `https://passby.tenonai.cn/api/auth/callback`，iPhone `https://passby.tenonai.cn/passby/api/auth/ios/callback`。
@@ -194,7 +194,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 | 网页 Tenon 会话 Cookie（host-only） | 新域名上没有会话 | 用户在新域名重新登录 Tenon 一次 |
 | Apple 的 CloudKit 网页登录 Cookie | 新域名上没有 | 用户在新域名重新授权 Apple 账号一次 |
 | 浏览器授权（IndexedDB 中不可导出的密钥，按来源隔离） | 新来源没有，旧来源的授权留在原浏览器里，不再使用 | 用户在新域名用恢复密钥重新授权这台浏览器一次；可在旧域名的设置里先撤销 |
-| iPhone 钥匙串里的产品会话和续期凭据 | 两个主机共用同一会话槽，不受影响 | 无；若 Tenon 不再接受旧 issuer 的续期凭据，App 会提示重新登录一次 |
+| iPhone 钥匙串里的产品会话和续期凭据 | 两个主机共用同一会话槽，不受影响 | 无；Tenon 确认切换前的续期凭据在新地址能续期 |
 
 **页面内提示**：`public/web/config.mjs` 的 `moveNotice.date` 填上切换日期（YYYY-MM-DD）并发布后，旧域名在各个状态的页头下方提示迁移日期，并说明要重新登录、授权 Apple 账号和用恢复密钥授权浏览器；新域名在未解锁时说明为什么要重新授权。留空则不显示。D7 要求切换前通知用户，所以定下日期就填。
 
