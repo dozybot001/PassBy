@@ -198,7 +198,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 **页面内提示**：`public/web/config.mjs` 的 `moveNotice.date` 填上切换日期（YYYY-MM-DD）并发布后，旧域名在各个状态的页头下方提示迁移日期，并说明要重新登录、授权 Apple 账号和用恢复密钥授权浏览器；新域名在未解锁时说明为什么要重新授权。留空则不显示。D7 要求切换前通知用户，所以定下日期就填。
 
-**切换当天（备案、S1 解析和证书、Tenon 回调登记都就绪后）**：先在 CloudKit Console 加来源；把 `web_hosts` 改成 `passby.tenon.asia passby.tenonai.cn` 后发布并验收；再把新主机放到第一位，让它成为规范主机，同时给旧主机加页面 301（`/api/*` 保留）。App Store Connect 的隐私政策和支持网址改为 `https://passby.tenonai.cn/privacy/`、`https://passby.tenonai.cn/support/`。条款和隐私政策里的域名由法务组（L1）当天改，security.txt 加新的 Canonical。
+**切换当天（备案、S1 解析和证书、Tenon 回调登记都就绪后）**：先在 CloudKit Console 加来源；把 `web_hosts` 改成 `passby.tenon.asia passby.tenonai.cn` 后发布并验收；再把新主机放到第一位，让它成为规范主机，同时给旧主机加页面 301（`/api/*` 保留）。App Store Connect 的隐私政策和支持网址改为 `https://passby.tenonai.cn/privacy/`、`https://passby.tenonai.cn/support/`。用户协议、隐私政策里的域名和 security.txt 的新 Canonical 由 PassBy 当天改，改完请法务组（L1）核对。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
 
 **收尾（D8，旧版 App 基本更新后）**：删掉 `TENON_ISSUERS` 里的旧 issuer 和原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。
 
