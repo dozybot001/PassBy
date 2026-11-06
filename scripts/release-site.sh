@@ -59,14 +59,17 @@ python3 - "$config" "$lock/candidate.caddy" "$directory" "$lock/web-candidate.ca
 import json,pathlib,re,sys
 source=pathlib.Path(sys.argv[1]).read_text()
 source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
-assert source.startswith('tenon.asia {\n')
+# The main site may list tenonai.cn beside tenon.asia; PassBy's block goes into
+# that one site. Its handles outrank a main-site catch-all handle redirect.
+address=re.findall(r'^(?:[\w.-]+, )*tenon\.asia(?:, [\w.-]+)* \{\n',source,flags=re.M)
+assert len(address)==1,'Expected one tenon.asia site block'
 auth_route=pathlib.Path('/opt/passby-auth/current-route.caddy').read_text()
 hosts=sys.argv[5].split()
 assert hosts and all(re.fullmatch(r'passby\.tenon(?:\.asia|ai\.cn)',host) for host in hosts)
 legacy=('\t# BEGIN PASSBY\n'+auth_route+'\t@passby_legacy path /passby /passby/*\n'
         '\thandle @passby_legacy {\n\t\troute {\n\t\t\turi strip_prefix /passby\n'
         '\t\t\tredir https://'+hosts[0]+'{uri} permanent\n\t\t}\n\t}\n\t# END PASSBY\n')
-pathlib.Path(sys.argv[2]).write_text(source.replace('tenon.asia {\n','tenon.asia {\n'+legacy,1))
+pathlib.Path(sys.argv[2]).write_text(source.replace(address[0],address[0]+legacy,1))
 port=json.loads(pathlib.Path('/opt/passby-auth/active.json').read_text())['port']
 assert port in (7280,7281)
 # New hosts also carry the iPhone API, which the old app reaches on tenon.asia.
