@@ -324,7 +324,7 @@ struct AboutPassByView: View {
                     Text("Publisher").font(.footnote).foregroundStyle(Palette.secondary)
                     HStack(spacing: 10) {
                         Image("TenonMark").resizable().scaledToFit().frame(width: 24, height: 24).accessibilityHidden(true)
-                        Text("榫卯 Tenon AI")
+                        Text(verbatim: "Tenon AI")
                     }
                     Link("tenon.asia", destination: URL(string: "https://tenon.asia/")!)
                 }

@@ -147,7 +147,6 @@ function render() {
   document.title=language==='zh'?'PassBy — 一个简单的密码本':'PassBy — A simple password notebook';
   document.querySelector('.header .wordmark').setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品，首页':'PassBy, by Tenon, home');
   $('privacy-link').textContent=t('privacy'); $('terms-link').textContent=t('terms'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
-  $('publisher').textContent=language==='zh'?'PassBy · 榫卯 Tenon AI':'PassBy · Tenon AI';
   tools.replaceChildren(button(t('generator'),()=>openGenerator(),'icon-button','generator'),button(t('settings'),openSettings,'icon-button','settings'));
   if(session.key) tools.prepend(button(t('search'),()=>openSearch(),'icon-button','search'));
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
@@ -287,7 +286,7 @@ function renderWelcome() {
       const more=node('a','more-methods',language==='zh'?'其他登录方式':'More options');more.href='./auth/redirect/?lang='+language;
       actions.append(methodLink('apple',language==='zh'?'使用 Apple 继续':'Continue with Apple','pill primary'),methodLink('email',language==='zh'?'使用邮箱继续':'Continue with email','pill'),more);
       if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
-      const note=node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.');
+      const note=node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.');
       const notice=node('a','',language==='zh'?'Tenon 账号隐私说明':'Tenon Account privacy notice');notice.href='https://account.tenon.asia/account/privacy.html';
       note.append(' ',notice);card.append(actions,note);
     }
@@ -520,7 +519,7 @@ function openAbout(){
     node('p','about-description',language==='zh'?'PassBy 是一个简单的密码本。将标题、账号、密码和备注保存在一起，按文件夹整理，并生成强密码，复制到其他应用中使用。':'PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.'),
     node('p','about-description',language==='zh'?'密码本先在设备上加密，再同步至 Apple 私有云存储。手机端离开应用即锁定，再次打开需要 Face ID。网页版首次用恢复密钥授权浏览器，密码只在页面内存中解密，离开窗口后自动锁定。':'Your notebook is encrypted on your device before syncing to Apple private storage. On iPhone, leaving the app locks it and Face ID unlocks it. Authorize a browser once with your recovery key. The web app decrypts the notebook in page memory and locks when you leave the window.'));
   const publisher=node('div','about-publisher'),publisherMark=node('img');publisherMark.src='./web/tenon-mark.svg';publisherMark.alt='';
-  publisher.append(node('p','helper',language==='zh'?'出品方':'Publisher'),publisherMark,node('span','',language==='zh'?'榫卯 Tenon AI':'Tenon AI'));
+  publisher.append(node('p','helper',language==='zh'?'出品方':'Publisher'),publisherMark,node('span','','Tenon AI'));
   const website=node('a','about-website','tenon.asia');website.href='https://tenon.asia/';
   const links=node('nav','about-links');links.setAttribute('aria-label',language==='zh'?'政策与反馈':'Policies and feedback');
   for(const [label,href] of [[language==='zh'?'隐私政策':'Privacy Policy','./privacy/'],[language==='zh'?'用户协议':'Terms of Service','./terms/'],[language==='zh'?'反馈':'Feedback','mailto:support@tenonai.cn?subject=PassBy%20Feedback']]){const link=node('a','',label);link.href=href;links.append(link);}
