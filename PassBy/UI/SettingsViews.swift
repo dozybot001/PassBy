@@ -270,8 +270,9 @@ struct PrivacyPolicyView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Privacy policy").font(.largeTitle.weight(.semibold))
-                Text("Version 2 · Effective November 3, 2026 · Zeng Deyang")
+                Text("Version 3 · Effective November 7, 2026")
                     .font(.footnote).foregroundStyle(Palette.secondary)
+                Text("PassBy is provided by Changsha Tenon Artificial Intelligence Technology Co., Ltd. (长沙榫卯人工智能科技有限公司), the company behind Tenon AI (\"we\"). We handle the personal information described in this policy. Contact us at support@tenonai.cn.")
                 policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
                 policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy account sessions last up to 30 days after verification. A rotating sign-in credential in this iPhone’s device-only Keychain securely renews the session. Closing the app does not sign you out. Sign out, credential revocation or 30 days without renewal may require a new sign-in. Face ID is still required to open the notebook, including offline. No passwords or recovery keys are sent to the account service.")
                 policySection("Account information", "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish and securely renew its account session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.")
