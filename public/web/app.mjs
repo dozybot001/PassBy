@@ -147,6 +147,7 @@ function render() {
   document.title=language==='zh'?'PassBy — 一个简单的密码本':'PassBy — A simple password notebook';
   document.querySelector('.header .wordmark').setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品，首页':'PassBy, by Tenon, home');
   $('privacy-link').textContent=t('privacy'); $('terms-link').textContent=t('terms'); $('support-link').textContent=t('support'); $('language').textContent=language==='zh'?'English':'简体中文';
+  $('publisher').textContent=language==='zh'?'PassBy · 榫卯 Tenon AI':'PassBy · Tenon AI';
   tools.replaceChildren(button(t('generator'),()=>openGenerator(),'icon-button','generator'),button(t('settings'),openSettings,'icon-button','settings'));
   if(session.key) tools.prepend(button(t('search'),()=>openSearch(),'icon-button','search'));
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
