@@ -316,6 +316,13 @@ test('both Tenon issuers name the same account, and each PassBy host gets its ow
   await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 });
 });
 
+test('the iPhone slot issues no browser sessions, so the old domain has none to renew', async () => {
+  const f = fixture({ webSignIn: false });
+  await assert.rejects(f.auth.start(f.req, f.res, new URL('https://tenon.asia/passby/api/auth/start')), { status: 404 });
+  assert.equal(f.auth.attempts.size, 0);
+  await f.auth.start(f.req, f.res, new URL(`https://tenon.asia/passby/api/auth/start?platform=ios&session_version=3&challenge=${'c'.repeat(43)}&state=${'s'.repeat(43)}`));
+  assert.equal(f.auth.attempts.size, 1);
+});
 test('before S2 the revocation command ends every iPhone session and refresh credential but no web session', async t => {
   const db = persistentStores(t), store = db.open(), now = Date.now(), native = 'https://tenon.asia', web = 'https://passby.tenon.asia';
   const person = { issuer: ISSUER, sub: 'test-user', name: 'Example', role: 'user', expires: now + TTL }, first = 'a'.repeat(32), second = 'b'.repeat(32);

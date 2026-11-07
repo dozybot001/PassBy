@@ -27,10 +27,11 @@ const validRefresh = value => typeof value === 'string' && /^[A-Za-z0-9._~-]{32,
 const LOGIN_METHODS = new Set(['apple', 'github', 'email']);
 export class TenonAuth {
   // `origin` names the session slot; `hosts` are the public origins that serve it.
-  constructor({ origin = 'https://tenon.asia', hosts = [origin], clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol = oidc, now = Date.now }) {
+  // `webSignIn: false` keeps a slot to iPhone sign-in, so an old domain issues no browser sessions.
+  constructor({ origin = 'https://tenon.asia', hosts = [origin], webSignIn = true, clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol = oidc, now = Date.now }) {
     if (!['https://tenon.asia', 'https://passby.tenon.asia'].includes(origin) || !hosts.includes(origin) || hosts.some(host => new URL(host).origin !== host || !host.startsWith('https://'))
       || !clientId || !clientSecret || !sessionStore) throw Error('Incomplete authentication configuration');
-    Object.assign(this, { origin, hosts, clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol, now });
+    Object.assign(this, { origin, hosts, webSignIn, clientId, clientSecret, iosClientId, iosClientSecret, sessionStore, protocol, now });
     this.basePath = origin === 'https://tenon.asia' ? '/passby/' : '/';
     this.apiPath = this.basePath + 'api';
     this.callback = origin + this.apiPath + '/auth/callback';
@@ -84,6 +85,7 @@ export class TenonAuth {
     this.sweep();
     if (this.attempts.size >= 1000 || this.sessionCount >= 5000) throw failure(429);
     const native = url.searchParams.get('platform') === 'ios';
+    if (!native && !this.webSignIn) throw failure(404);
     const challenge = url.searchParams.get('challenge'), nativeState = url.searchParams.get('state');
     if (native && (url.searchParams.get('session_version') !== String(SESSION_VERSION)
       || !/^[A-Za-z0-9_-]{43}$/.test(challenge || '') || !/^[A-Za-z0-9_-]{43}$/.test(nativeState || ''))) throw failure(400);

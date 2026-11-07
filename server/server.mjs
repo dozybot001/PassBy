@@ -79,7 +79,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (sessionPath === ':memory:') throw Error('Persistent session storage is required');
   const sessionStore = new SessionStore(sessionPath);
   // passby.tenonai.cn answers only after its ICP filing; Caddy decides which hosts are live.
-  const auth = new TenonAuth({ hosts: ['https://tenon.asia', 'https://passby.tenonai.cn'], clientId: process.env.TENON_CLIENT_ID, clientSecret: process.env.TENON_CLIENT_SECRET, iosClientId: process.env.TENON_IOS_CLIENT_ID, iosClientSecret: process.env.TENON_IOS_CLIENT_SECRET, sessionStore });
+  const auth = new TenonAuth({ hosts: ['https://tenon.asia', 'https://passby.tenonai.cn'], webSignIn: false, clientId: process.env.TENON_CLIENT_ID, clientSecret: process.env.TENON_CLIENT_SECRET, iosClientId: process.env.TENON_IOS_CLIENT_ID, iosClientSecret: process.env.TENON_IOS_CLIENT_SECRET, sessionStore });
   const webAuth = process.env.TENON_WEB_CLIENT_ID ? new TenonAuth({ origin: 'https://passby.tenon.asia', hosts: ['https://passby.tenon.asia', 'https://passby.tenonai.cn'], clientId: process.env.TENON_WEB_CLIENT_ID, clientSecret: process.env.TENON_WEB_CLIENT_SECRET, sessionStore }) : null;
   // The container listens on its private network; the host publishes the port on 127.0.0.1 only.
   createApp(auth, webAuth).listen(Number(process.env.PORT || 7280), process.env.HOST || '127.0.0.1');

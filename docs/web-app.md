@@ -206,7 +206,8 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 - 网页会话靠到期失效。网页会话从签发起最长 30 天，读取不续期，网页也没有刷新令牌；切换后旧主机在 Caddy 直接跳转，到不了后端。所以 S2 时旧域名签发的网页会话都已过期，不用额外作废。
 - iPhone 令牌在 S2 当天作废。顺序是平台组先删掉旧回调，再在当前认证容器里运行一次 `docker exec <容器> node revoke-sessions.mjs https://tenon.asia`。它清空原生会话槽的全部会话，并把其中所有续期凭据和轮换记录标为撤销，标记保留 30 天，长于凭据的有效期。PassBy 不记录签发主机，所以按默认做法作废 S2 前签发的全部 App 令牌，iPhone 用户重新登录一次。网页会话槽不受影响。
-- 1.3 起，App 记住迁到的新地址，启动时先探测再续期，切换后不会再请求旧域名。
+- `tenon.asia/passby/api/*` 切换后仍会到后端（留给旧版 App），但 iPhone 会话槽已关闭网页登录（`webSignIn: false`），不再签发浏览器会话。网页会话本来就不能续期，所以这里没有可续期的浏览器 Cookie。该槽里遗留的网页会话在 S2 当天随作废命令一起清掉。
+- 1.3 起，App 记住迁到的新地址，启动时先探测再续期。但 1.3 仍保留「新域名不可用就用旧域名」的逻辑，首次探测完成前也可能请求旧域名。所以平台组 11-07 补充的约定（website `docs/tenon-account.md`，提交 dc44cb4）要求：PassBy 切换后、S2 之前，再发布一个只用新域名、去掉退回逻辑的版本。该版本带新的会话协议版本，服务端从 S2 当天起只给它发令牌，旧版本收到「需要升级」。服务端的版本门槛和 App 端一起做。
 - 切换前核对：请用户用测试账号在旧域名登录，保留一份网页 Cookie（`__Secure-passby_session`）。App 令牌的取法：在浏览器里打开 `https://tenon.asia/passby/api/auth/start?platform=ios&session_version=3&challenge=…&state=…` 走一遍原生登录，从跳转的 `passby://auth?ticket=…` 里取 ticket，再用 PKCE verifier 调 `/passby/api/auth/exchange` 换出令牌。作废后，把两者拿到新域名的 `/api/auth/session` 和 `/passby/api/auth/session` 请求，都应返回 401。旧 Cookie 在新域名上本来就不会自动发送，所以要手动带上。把切换日期和核对结果回报法务组。
 
 **收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。
