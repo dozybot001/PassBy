@@ -36,6 +36,9 @@ web_config=/etc/caddy/sites-enabled/passby.caddy
 # Hosts served by passby.caddy; the first is canonical. Add passby.tenonai.cn
 # only after its ICP filing is approved and its DNS and certificate are ready.
 web_hosts='passby.tenon.asia'
+# Hosts that only redirect to the canonical host: pages 301, /api/* 308, so no
+# request reaches the backend. PassBy's switch moves passby.tenon.asia here.
+moved_hosts=''
 lock=/opt/passby-site/.publish-lock
 mkdir -p /opt/passby-site/releases
 mkdir "$lock" || { echo 'PassBy site publication is already running.' >&2; exit 1; }
@@ -55,7 +58,7 @@ PY
 chmod -R a+rX "$directory"
 cp "$config" "$lock/previous.caddy"
 if [[ -f "$web_config" ]]; then cp "$web_config" "$lock/web-before.caddy"; fi
-python3 - "$config" "$lock/candidate.caddy" "$directory" "$lock/web-candidate.caddy" "$web_hosts" <<'PYROUTE'
+python3 - "$config" "$lock/candidate.caddy" "$directory" "$lock/web-candidate.caddy" "$web_hosts" "$moved_hosts" <<'PYROUTE'
 import json,pathlib,re,sys
 source=pathlib.Path(sys.argv[1]).read_text()
 source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
@@ -64,8 +67,8 @@ source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
 address=re.findall(r'^(?:[\w.-]+, )*tenon\.asia(?:, [\w.-]+)* \{\n',source,flags=re.M)
 assert len(address)==1,'Expected one tenon.asia site block'
 auth_route=pathlib.Path('/opt/passby-auth/current-route.caddy').read_text()
-hosts=sys.argv[5].split()
-assert hosts and all(re.fullmatch(r'passby\.tenon(?:\.asia|ai\.cn)',host) for host in hosts)
+hosts,moved=sys.argv[5].split(),sys.argv[6].split()
+assert hosts and all(re.fullmatch(r'passby\.tenon(?:\.asia|ai\.cn)',host) for host in hosts+moved) and not set(hosts)&set(moved)
 legacy=('\t# BEGIN PASSBY\n'+auth_route+'\t@passby_legacy path /passby /passby/*\n'
         '\thandle @passby_legacy {\n\t\troute {\n\t\t\turi strip_prefix /passby\n'
         '\t\t\tredir https://'+hosts[0]+'{uri} permanent\n\t\t}\n\t}\n\t# END PASSBY\n')
@@ -120,6 +123,18 @@ NATIVE    handle {
     }
 }
 """.replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
+for host in moved:
+    web+=f"""{host} {{
+    import access_log
+    header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    handle /api/* {{
+        redir https://{hosts[0]}{{uri}} 308
+    }}
+    handle {{
+        redir https://{hosts[0]}{{uri}} permanent
+    }}
+}}
+"""
 pathlib.Path(sys.argv[4]).write_text(web)
 PYROUTE
 # Validate the candidate with all other current sites before touching ingress.
@@ -144,10 +159,19 @@ rollback() {
 cp "$lock/candidate.caddy" "$config"
 cp "$lock/web-candidate.caddy" "$web_config"
 if ! systemctl reload caddy; then rollback; exit 1; fi
-if ! python3 - "$directory" $web_hosts <<'PY'
+if ! python3 - "$directory" "$web_hosts" "$moved_hosts" <<'PY'
 import hashlib, json, pathlib, sys, time, urllib.error, urllib.request
 hsts = 'max-age=31536000; includeSubDomains'
-hosts = sys.argv[2:]
+hosts, moved = sys.argv[2].split(), sys.argv[3].split()
+class Stay(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args): return None
+for host in moved:
+    for path, code in (('/support/?lang=zh', 301), ('/api/health', 308)):
+        try:
+            urllib.request.build_opener(Stay).open(f'https://{host}{path}', timeout=20)
+            raise AssertionError(f'{host} must redirect')
+        except urllib.error.HTTPError as moving:
+            assert moving.code == code and moving.headers['Location'] == f'https://{hosts[0]}{path}', host
 for host in hosts:
     for attempt in range(6):
         try:

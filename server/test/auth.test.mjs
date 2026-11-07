@@ -316,6 +316,26 @@ test('both Tenon issuers name the same account, and each PassBy host gets its ow
   await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 });
 });
 
+test('before S2 the revocation command ends every iPhone session and refresh credential but no web session', async t => {
+  const db = persistentStores(t), store = db.open(), now = Date.now(), native = 'https://tenon.asia', web = 'https://passby.tenon.asia';
+  const person = { issuer: ISSUER, sub: 'test-user', name: 'Example', role: 'user', expires: now + TTL }, first = 'a'.repeat(32), second = 'b'.repeat(32);
+  store.create(native, digest('old-app-token'), person, now, { nativeRefreshHash: digest(first) });
+  store.create(native, digest('new-app-token'), person, now, { nativeRefreshHash: digest(second), retireRefreshHash: digest(first) });
+  store.create(web, digest('web-token'), person, now);
+  const run = spawnSync(process.execPath, ['revoke-sessions.mjs', native], { cwd: new URL('..', import.meta.url), env: { ...process.env, SESSION_DB: db.path }, encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stderr); assert.deepEqual(JSON.parse(run.stdout), { sessions: 1, credentials: 2 });
+  assert.equal(store.get(native, digest('new-app-token'), now), undefined);
+  for (const refresh of [first, second]) assert.throws(() => store.assertRefresh(native, ISSUER, 'test-user', digest(refresh), now), { status: 401 });
+  assert.equal(store.get(web, digest('web-token'), now).sub, 'test-user');
+  const f = fixture({ sessionStore: store, now: Date.now }), server = createApp(f.auth);
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => server.close());
+  const base = `http://127.0.0.1:${server.address().port}/passby/api/auth/`;
+  assert.equal((await fetch(base + 'session', { headers: { authorization: 'Bearer ' + 'x'.repeat(43) } })).status, 401);
+  const refreshed = await fetch(base + 'refresh', { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ refreshToken: second, issuer: ISSUER, sub: 'test-user', session_version: 3 }) });
+  assert.equal(refreshed.status, 401);
+});
+
 function persistentStores(t) {
   const directory = mkdtempSync(join(tmpdir(), 'passby-sessions-')), path = join(directory, 'sessions.sqlite'), stores = [];
   const open = () => { const store = new SessionStore(path); stores.push(store); return store; };

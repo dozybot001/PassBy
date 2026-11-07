@@ -19,13 +19,12 @@ struct PassByApp: App {
                 .environmentObject(account)
                 .tint(Palette.accent)
                 .task { await session.prepare() }
-                .task { await account.validateRestoredSession() }
+                .task { await account.chooseService(); await account.validateRestoredSession() }
                 .onChange(of: scenePhase) { _, phase in
                     switch phase {
                     case .active:
                         session.didBecomeActive()
-                        Task { await account.didBecomeActive() }
-                        Task { await account.chooseService() }
+                        Task { await account.chooseService(); await account.didBecomeActive() }
                     case .inactive: session.willResignActive()
                     case .background: session.didEnterBackground()
                     @unknown default: session.lock()
@@ -81,8 +80,11 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     private var deletionReturnPending = false
     // PassBy moves to passby.tenonai.cn after its ICP filing. Until that host
     // answers, this build keeps the old address; both reach the same sessions.
+    // The move is remembered, so later launches never start on the old domain.
     static let services = ["https://passby.tenonai.cn/passby/api/", "https://tenon.asia/passby/api/"]
+    private static let serviceKey = "PassBy.service"
     private let services: [String]
+    private let defaults: UserDefaults
     private var service: String
     private var serviceChecked = -Double.infinity
     private var api: String { service + "auth/" }
@@ -92,10 +94,12 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
     var hasCurrentAuthorization: Bool { (grant?.identity.expires ?? 0) > time }
 
     init(store: TenonSessionStore = TenonSessionStore(), now: @escaping () -> Date = Date.init, services: [String] = TenonAccount.services,
+         defaults: UserDefaults = .standard,
          transport: @escaping (URLRequest) async throws -> (Data, URLResponse) = { try await URLSession.shared.data(for: $0) }) {
         self.store = store; self.now = now; self.transport = transport
-        self.services = services; service = services[services.count - 1]
+        self.services = services; self.defaults = defaults; service = services[services.count - 1]
         super.init()
+        if let saved = defaults.string(forKey: Self.serviceKey), services.dropLast().contains(saved) { adopt(saved) }
         guard let data = try? store.read() else { return }
         guard let saved = try? JSONDecoder().decode(Grant.self, from: data), valid(saved, restoring: true) else {
             try? store.clear(); return
@@ -128,10 +132,13 @@ final class TenonAccount: NSObject, ObservableObject, ASWebAuthenticationPresent
             request.timeoutInterval = 5; request.cachePolicy = .reloadIgnoringLocalCacheData
             guard let (data, response) = try? await transport(request), (response as? HTTPURLResponse)?.statusCode == 200,
                   (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["ok"] as? Bool == true else { continue }
-            service = candidate
-            if let host = URL(string: candidate)?.host { PassByLinks.host = host }
+            adopt(candidate); defaults.set(candidate, forKey: Self.serviceKey)
             return
         }
+    }
+    private func adopt(_ candidate: String) {
+        service = candidate
+        if let host = URL(string: candidate)?.host { PassByLinks.host = host }
     }
     func didBecomeActive() async {
         checkExpiry()

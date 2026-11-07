@@ -49,7 +49,8 @@ final class SessionGateTests: XCTestCase {
         defer { try? store.clear(); PassByLinks.host = "passby.tenon.asia" }
         var now = Date(timeIntervalSince1970: 1000), live = false, paths: [String] = []
         try savedTenonSession(store: store, time: now)
-        let account = TenonAccount(store: store, now: { now }, transport: { request in
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "passby-test-" + UUID().uuidString))
+        let account = TenonAccount(store: store, now: { now }, defaults: defaults, transport: { request in
             paths.append(request.url!.host! + request.url!.path)
             if request.url?.lastPathComponent == "health" {
                 guard live else { throw URLError(.cannotFindHost) }
@@ -68,6 +69,14 @@ final class SessionGateTests: XCTestCase {
         XCTAssertEqual(paths.suffix(2), ["passby.tenonai.cn/passby/api/health", "passby.tenonai.cn/passby/api/auth/tenon/delete/start"])
         XCTAssertEqual(url?.host, "account.tenonai.cn")
         XCTAssertEqual(PassByLinks.page("privacy/").absoluteString, "https://passby.tenonai.cn/privacy/")
+        PassByLinks.host = "passby.tenon.asia"
+        let relaunched = TenonAccount(store: store, now: { now }, defaults: defaults, transport: { request in
+            paths.append(request.url!.host! + request.url!.path)
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        })
+        await relaunched.chooseService(); _ = await relaunched.beginDeletion()
+        XCTAssertEqual(Array(paths.dropFirst(4)), ["passby.tenonai.cn/passby/api/auth/tenon/delete/start"])
+        XCTAssertEqual(PassByLinks.host, "passby.tenonai.cn")
     }
     func testEveryDepartureLocksAnUnlockedSession() throws {
         var gate = SessionGate()

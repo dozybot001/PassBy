@@ -191,5 +191,28 @@ export class SessionStore {
       } catch (error) { try { this.#db.exec('ROLLBACK'); } catch {} throw error; }
     });
   }
+  // Before S2 of the tenonai.cn move every session and refresh credential in a
+  // slot stops working, so credentials seen on the old domain cannot be replayed.
+  revokeAll(origin, now) {
+    if (!validOrigin(origin) || !Number.isSafeInteger(now)) throw unavailable();
+    return this.#run(() => {
+      this.#db.exec('BEGIN IMMEDIATE');
+      try {
+        this.prune(origin, now);
+        const hashes = this.#db.prepare(`SELECT native_refresh_hash AS hash FROM product_sessions WHERE origin=? AND native_refresh_hash IS NOT NULL
+          UNION SELECT previous_hash FROM refresh_rotations WHERE origin=? UNION SELECT refresh_hash FROM refresh_rotations WHERE origin=?`).all(origin, origin, origin);
+        const existing = this.#db.prepare('SELECT 1 FROM revoked_refresh WHERE origin=? AND refresh_hash=?');
+        const additional = hashes.filter(({ hash }) => !existing.get(origin, hash)).length;
+        if (this.#db.prepare('SELECT count(*) AS count FROM revoked_refresh WHERE origin=?').get(origin).count + additional > MAX_REFRESH_RECORDS) {
+          throw Object.assign(new Error('Credential capacity unavailable'), { status: 429 });
+        }
+        const mark = this.#db.prepare('INSERT INTO revoked_refresh VALUES(?,?,?) ON CONFLICT(origin,refresh_hash) DO UPDATE SET expires=max(expires,excluded.expires)');
+        for (const { hash } of hashes) mark.run(origin, hash, now + REVOCATION_TTL);
+        const sessions = this.#db.prepare('DELETE FROM product_sessions WHERE origin=?').run(origin).changes;
+        this.#db.exec('COMMIT');
+        return { sessions, credentials: hashes.length };
+      } catch (error) { try { this.#db.exec('ROLLBACK'); } catch {} throw error; }
+    });
+  }
   close() { this.#db.close(); }
 }
