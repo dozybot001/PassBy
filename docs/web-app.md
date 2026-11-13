@@ -198,7 +198,9 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 **页面内提示**：`public/web/config.mjs` 的 `moveNotice.date` 填上切换日期（YYYY-MM-DD）并发布后，旧域名在各个状态的页头下方提示迁移日期，并说明要重新登录、授权 Apple 账号和用恢复密钥授权浏览器；新域名在未解锁时说明为什么要重新授权。留空则不显示。D7 要求切换前通知用户，所以定下日期就填。
 
-**切换当天（备案、S1 解析和证书、Tenon 回调登记都就绪后）**：先在 CloudKit Console 加来源；把 `web_hosts` 改成 `passby.tenon.asia passby.tenonai.cn` 后发布并验收；再把 `web_hosts` 改成 `passby.tenonai.cn`、`moved_hosts` 改成 `passby.tenon.asia` 后发布：旧主机在 Caddy 里页面 301、`/api/*` 308，请求到不了后端，也不再登录或签发会话。这一刻就是 PassBy 的「切换日」，回报法务组。两种配置都已在服务器上 `caddy validate` 通过，发布脚本会核对旧主机的两种跳转。App Store Connect 的隐私政策和支持网址改为 `https://passby.tenonai.cn/privacy/`、`https://passby.tenonai.cn/support/`。用户协议、隐私政策里的域名、security.txt 的新 Canonical，以及首页、隐私政策、用户协议、支持页 head 里分享图 `og:image` 的绝对网址，由 PassBy 当天改，改完请法务组（L1）核对。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
+**新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。新地址上的登录要等 Tenon 登记新回调（平台组），Apple 授权要等 CloudKit 加来源（创始人）。
+
+**切换当天（Tenon 回调登记和 CloudKit 来源都就绪后）**：先确认新地址能完成 Tenon 登录和 Apple 授权；再把 `web_hosts` 改成 `passby.tenonai.cn`、`moved_hosts` 改成 `passby.tenon.asia` 后发布：旧主机在 Caddy 里页面 301、`/api/*` 308，请求到不了后端，也不再登录或签发会话。这一刻就是 PassBy 的「切换日」，回报法务组。两种配置都已在服务器上 `caddy validate` 通过，发布脚本会核对旧主机的两种跳转。App Store Connect 的隐私政策和支持网址改为 `https://passby.tenonai.cn/privacy/`、`https://passby.tenonai.cn/support/`。用户协议、隐私政策里的域名、security.txt 的新 Canonical，以及首页、隐私政策、用户协议、支持页 head 里分享图 `og:image` 的绝对网址，由 PassBy 当天改，改完请法务组（L1）核对。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
 
 **切换后、S2 之前**：切换时正在进行的登录最长 10 分钟。确认之后没有旧 issuer 的登录（例如第二天），就从 `auth.mjs` 的默认 `TENON_ISSUERS` 里删掉旧 issuer，发布服务端。`ISSUER` 只是身份记录的名字空间，保持不变。S2 前平台组会删掉 tenon.asia 上的两个旧回调。S2 时 tenon.asia 的 `/api/*`，包括 `tenon.asia/passby/api/*`，一律返回 410，1.2 及更早的 iPhone 版本从此不能登录和续期。所以 S2 前要先从访问日志确认，旧版 App 打到 `tenon.asia/passby/api` 的请求已经很少。
 
