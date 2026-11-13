@@ -182,9 +182,9 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 - **Tenon issuer**：服务端依次尝试 `TENON_ISSUERS`（默认 `https://account.tenonai.cn/api/auth`、`https://account.tenon.asia/api/auth`）的 discovery，用第一个应答、且 issuer 与地址一致的那个。结果缓存 10 分钟；换取令牌失败时提前重查。两个 issuer 签发的令牌都接受，身份统一记在原 issuer 下，因为 Tenon 切换不改 `sub`。所以会话、删除回执、浏览器授权的绑定，以及旧版 iPhone 对 issuer 的检查都不受影响。产品删除接口按当前 issuer 拼地址；`execute` 接受两个账号来源。发现文档、令牌、UserInfo、JWKS 和撤销请求都由 openid-client 6.8.8 以 `redirect: 'manual'` 发出，只发往发现文档给出的地址；产品删除用 `redirect: 'error'`。所以 account.tenon.asia 的 308 不会带着客户端密钥或 refresh token 跳转（安全组切换条件 1，Tenon-AI 提交 456647d）。
 - **主机**：网页会话槽接受 `passby.tenon.asia` 和 `passby.tenonai.cn`，原生会话槽接受 `tenon.asia` 和 `passby.tenonai.cn`。回调按请求主机生成，回调主机必须和发起登录的主机一致，Origin 也要和请求主机一致。需要登记的回调：网页 `https://passby.tenonai.cn/api/auth/callback`，iPhone `https://passby.tenonai.cn/passby/api/auth/ios/callback`。
-- **Caddy**：[release-site.sh](../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone（该路径的网关错误返回维护页，App 只看状态码）。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。现在只有 `passby.tenon.asia`；两种配置都在服务器上 `caddy validate` 通过。
-- **网页**：中央登录和删除链接接受两个账号域名。账号、隐私说明等链接仍指向 account.tenon.asia，切换后由 Tenon 跳转。
-- **iPhone（下一版）**：先用旧地址；`passby.tenonai.cn/passby/api/health` 应答后改用新地址，最多每 10 分钟查一次，同一次启动内不退回。隐私、条款、支持链接跟着换主机。删除链接接受两个账号域名。旧版 App 只认 account.tenon.asia，所以服务端给原生会话槽返回旧主机的删除链接，靠 Tenon 的跳转走到新地址。PassBy 没有 Associated Domains、webcredentials 或 Passkey，不需要 apple-app-site-association。
+- **Caddy**：[release-site.sh](../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone（该路径的网关错误返回维护页，App 只看状态码）。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。
+- **网页**：中央登录和删除链接接受两个账号域名。Tenon 账号、隐私说明和官网链接 11-13 起指向 account.tenonai.cn、tenonai.cn（b035919）；法律文本里的账号链接 11-17 随域名一起改。
+- **iPhone（1.3 起）**：先用旧地址；`passby.tenonai.cn/passby/api/health` 应答后改用新地址，最多每 10 分钟查一次，同一次启动内不退回。隐私、条款、支持链接跟着换主机。删除链接接受两个账号域名。旧版 App 只认 account.tenon.asia，所以服务端给原生会话槽返回旧主机的删除链接，靠 Tenon 的跳转走到新地址。PassBy 没有 Associated Domains、webcredentials 或 Passkey，不需要 apple-app-site-association。
 
 **和域名绑定、迁移后要重新做的**：
 
@@ -198,7 +198,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 **页面内提示**：`public/web/config.mjs` 的 `moveNotice.date` 填上切换日期（YYYY-MM-DD）并发布后，旧域名在各个状态的页头下方提示迁移日期，并说明要重新登录、授权 Apple 账号和用恢复密钥授权浏览器；新域名在未解锁时说明为什么要重新授权。留空则不显示。D7 要求切换前通知用户，所以定下日期就填。
 
-**新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。新地址上的登录要等 Tenon 登记新回调（平台组），Apple 授权要等 CloudKit 加来源（创始人）。页脚备案号按地址不同（法务组 D6）：发布脚本另生成 `public-tenonai`，把个人的 湘ICP备2026031578号-1 换成公司的 湘ICP备2026054319号-1，并去掉公安号（公司的公安备案下来后再加），Caddy 按主机分别提供；passby.tenon.asia 仍显示个人的两个号。
+**新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。11-13 Tenon 已登记新回调，CloudKit 已加来源（Q82），新地址上的 Tenon 登录入口和 Apple 授权都已核对。页脚备案号按地址不同（法务组 D6）：发布脚本另生成 `public-tenonai`，把个人的 湘ICP备2026031578号-1 换成公司的 湘ICP备2026054319号-1，并去掉公安号（公司的公安备案下来后再加），Caddy 按主机分别提供；passby.tenon.asia 仍显示个人的两个号。
 
 **切换当天（Tenon 回调登记和 CloudKit 来源都就绪后）**：先确认新地址能完成 Tenon 登录和 Apple 授权；再把 `web_hosts` 改成 `passby.tenonai.cn`、`moved_hosts` 改成 `passby.tenon.asia` 后发布：旧主机在 Caddy 里页面 301、`/api/*` 308，请求到不了后端，也不再登录或签发会话。这一刻就是 PassBy 的「切换日」，回报法务组。两种配置都已在服务器上 `caddy validate` 通过，发布脚本会核对旧主机的两种跳转。App Store Connect（中英文）的隐私政策网址改为 `https://passby.tenonai.cn/privacy/`（App 信息，可随时改）；营销网址 `https://passby.tenonai.cn/` 和支持网址 `https://passby.tenonai.cn/support/` 属于版本信息，随 1.3 填（现值均为 passby.tenon.asia，11-13 从公开商店页读取）。由总办在创始人已登录的 Chrome 里代办。用户协议、隐私政策里的域名、security.txt 的新 Canonical，以及首页、隐私政策、用户协议、支持页 head 里分享图 `og:image` 的绝对网址，由 PassBy 当天改，改完请法务组（L1）核对。法务组 11-13 定：只改域名也升小版本，隐私政策 3.1、用户协议 2.1，生效日写 11-17，开头写明「只把网址改为 passby.tenonai.cn，内容不变」，旧版照常存档；内容不变，不用重新取得同意。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
 
@@ -210,7 +210,13 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 - iPhone 令牌在 S2 当天作废。顺序是平台组先删掉旧回调，再在当前认证容器里运行一次 `docker exec <容器> node revoke-sessions.mjs https://tenon.asia`。它清空原生会话槽的全部会话，并把其中所有续期凭据和轮换记录标为撤销，标记保留 30 天，长于凭据的有效期。PassBy 不记录签发主机，所以按默认做法作废 S2 前签发的全部 App 令牌，iPhone 用户重新登录一次。网页会话槽不受影响。
 - `tenon.asia/passby/api/*` 切换后仍会到后端（留给旧版 App），但 iPhone 会话槽已关闭网页登录（`webSignIn: false`），不再签发浏览器会话。网页会话本来就不能续期，所以这里没有可续期的浏览器 Cookie。该槽里遗留的网页会话在 S2 当天随作废命令一起清掉。
 - 1.3 起，App 记住迁到的新地址，启动时先探测再续期。但 1.3 仍保留「新域名不可用就用旧域名」的逻辑，首次探测完成前也可能请求旧域名。所以平台组 11-07 补充的约定（website `docs/tenon-account.md`，提交 dc44cb4）要求：PassBy 切换后、S2 之前，再发布一个只用新域名、去掉退回逻辑的版本。该版本带新的会话协议版本，服务端从 S2 当天起只给它发令牌，旧版本收到「需要升级」。服务端的版本门槛和 App 端一起做。
-- S2 核对（11-13 改，不再要求切换前留网页 Cookie）：网页会话最长 30 天、不续期，S2 又在切换满 30 天之后，所以 S2 当天在认证容器里查网页会话槽：签发早于 PassBy 切换日的会话应为 0。App 令牌在 S2 前任何时候都能取：请用户用测试账号在浏览器里打开 `https://tenon.asia/passby/api/auth/start?platform=ios&session_version=3&challenge=…&state=…` 走一遍原生登录，从跳转的 `passby://auth?ticket=…` 里取 ticket，再用 PKCE verifier 调 `/passby/api/auth/exchange` 换出令牌。作废后把令牌拿到 `https://passby.tenonai.cn/passby/api/auth/session` 请求，应返回 401。把切换日期和核对结果回报法务组。
+- S2 核对（平台组约定，website a48fe3d，`docs/tenon-account.md` 第 6 条；不用测试账号）：作废命令执行后，在当前认证容器里查生产库，两个数都应为 0，再抽查几条旧续期凭据已标为撤销。把结果连同依据（网页会话固定 30 天不续期，见 `server/auth.mjs` 的 `TTL`；旧主机在 Caddy 只跳转；`revoke-sessions.mjs` 的作废范围）报法务组。会话有效期固定 30 天，所以签发时间 = `expires` − 30 天。
+
+  ```sh
+  docker exec <容器> node -e "const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync('/data/sessions.sqlite',{readOnly:true});const ttl=2592e6,now=Date.now(),sw=Date.parse('2026-11-17T00:00:00+08:00'),s2=Number(process.argv[1]);console.log({web:db.prepare('SELECT COUNT(*) n FROM product_sessions WHERE origin=? AND expires>? AND expires-?<?').get('https://passby.tenon.asia',now,ttl,sw).n,app:db.prepare('SELECT COUNT(*) n FROM product_sessions WHERE origin=? AND expires-?<?').get('https://tenon.asia',ttl,s2).n,revoked:db.prepare('SELECT COUNT(*) n FROM revoked_refresh WHERE origin=?').get('https://tenon.asia').n})" <作废命令执行时的毫秒时间戳>
+  ```
+
+  `web` 是切换前签发、仍未过期的网页会话；`app` 是作废前签发、仍在库里的 App 会话；`revoked` 应不少于作废命令输出的 `credentials`。
 
 **收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。仓库里各页页脚直接改成公司备案号，删掉发布脚本里的 `public-tenonai` 和 `@tenonai_site`。
 
