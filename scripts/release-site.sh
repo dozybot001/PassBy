@@ -26,8 +26,21 @@ for asset in (root / 'public').rglob('*'):
             return match.group(0)
         return quote + path + '?v=' + sys.argv[2] + closing
     asset.write_text(asset_pattern.sub(version_asset, asset.read_text()))
+# passby.tenonai.cn shows the company's ICP number and no public-security number
+# yet; tenon.asia hosts keep the personal numbers until the switch.
+import shutil
+shutil.copytree(root / 'public', root / 'public-tenonai')
+security = re.compile(r'(?: · )?<a href="https://beian\.mps\.gov\.cn/[^"]*"[^>]*>湘公网安备43132202001134号</a>')
+for page in (root / 'public-tenonai').rglob('*.html'):
+    text = page.read_text()
+    if '湘ICP备2026031578号-1' not in text:
+        continue
+    text = security.sub('', text.replace('湘ICP备2026031578号-1', '湘ICP备2026054319号-1'))
+    assert '湘公网安备' not in text and '2026031578' not in text, page
+    page.write_text(text)
 files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-         for p in sorted((root / 'public').rglob('*')) if p.is_file()}
+         for tree in ('public', 'public-tenonai')
+         for p in sorted((root / tree).rglob('*')) if p.is_file()}
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
 PY
 directory="/opt/passby-site/releases/$release"
@@ -52,7 +65,8 @@ root = pathlib.Path(sys.argv[1])
 m = json.loads((root / 'manifest.json').read_text())
 assert m['commit'] == sys.argv[2]
 actual = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-          for p in (root / 'public').rglob('*') if p.is_file()}
+          for tree in ('public', 'public-tenonai')
+          for p in (root / tree).rglob('*') if p.is_file()}
 assert actual == m['files']
 PY
 chmod -R a+rX "$directory"
@@ -101,7 +115,15 @@ web="""HOSTS {
     handle /api/* {
         reverse_proxy 127.0.0.1:PORT
     }
-NATIVE    handle {
+NATIVE    @tenonai_site {
+        host passby.tenonai.cn
+        not path /api/* /passby/api/*
+    }
+    handle @tenonai_site {
+        root * DIRECTORY/public-tenonai
+        file_server
+    }
+    handle {
         root * DIRECTORY/public
         file_server
     }
@@ -111,18 +133,18 @@ NATIVE    handle {
             header Content-Type application/problem+json
             respond `{"type":"about:blank","title":"Service Unavailable","status":503}` 503
         }
-        handle {
-            root * DIRECTORY/public
-            @missing expression `{err.status_code} == 404`
+ERRORS    }
+}
+""".replace('ERRORS',''.join(f"""        handle{matcher} {{
+            root * DIRECTORY/{tree}
+            @missing expression `{{err.status_code}} == 404`
             rewrite @missing /404.html
-            @down expression `{err.status_code} in [502, 503, 504]`
+            @down expression `{{err.status_code}} in [502, 503, 504]`
             rewrite @down /maintenance.html
             rewrite * /500.html
             file_server
-        }
-    }
-}
-""".replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
+        }}
+""" for matcher, tree in ((' @tenonai_site', 'public-tenonai'), ('', 'public')))).replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
 for host in moved:
     web+=f"""{host} {{
     import access_log
@@ -185,12 +207,21 @@ for host in hosts:
     assert health.headers.get('Strict-Transport-Security') == hsts
     if host != 'passby.tenon.asia':
         assert urllib.request.urlopen(f'https://{host}/passby/api/health',timeout=20).status == 200
-    assert urllib.request.urlopen(f'https://{host}/',timeout=20).headers.get('X-Frame-Options') == 'DENY'
+    home = urllib.request.urlopen(f'https://{host}/',timeout=20)
+    assert home.headers.get('X-Frame-Options') == 'DENY'
+    footer = home.read().decode()
+    if host == 'passby.tenonai.cn':
+        assert '湘ICP备2026054319号-1' in footer and '湘公网安备' not in footer, host
+    else:
+        assert '湘ICP备2026031578号-1' in footer and '湘公网安备43132202001134号' in footer, host
 root = pathlib.Path(sys.argv[1])
 for name, digest in json.loads((root / 'manifest.json').read_text())['files'].items():
-    path = name.removeprefix('public/')
+    tree, path = name.split('/', 1)
+    host = 'passby.tenonai.cn' if tree == 'public-tenonai' else 'passby.tenon.asia'
+    if host not in hosts:
+        continue
     if path.endswith('index.html'): path = path.removesuffix('index.html')
-    response = urllib.request.urlopen(f'https://{hosts[0]}/' + path, timeout=20)
+    response = urllib.request.urlopen(f'https://{host}/' + path, timeout=20)
     assert hashlib.sha256(response.read()).hexdigest() == digest, name
     if path == '':
         assert response.headers.get('Strict-Transport-Security') == hsts

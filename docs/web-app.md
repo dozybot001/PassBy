@@ -198,7 +198,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 **页面内提示**：`public/web/config.mjs` 的 `moveNotice.date` 填上切换日期（YYYY-MM-DD）并发布后，旧域名在各个状态的页头下方提示迁移日期，并说明要重新登录、授权 Apple 账号和用恢复密钥授权浏览器；新域名在未解锁时说明为什么要重新授权。留空则不显示。D7 要求切换前通知用户，所以定下日期就填。
 
-**新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。新地址上的登录要等 Tenon 登记新回调（平台组），Apple 授权要等 CloudKit 加来源（创始人）。
+**新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。新地址上的登录要等 Tenon 登记新回调（平台组），Apple 授权要等 CloudKit 加来源（创始人）。页脚备案号按地址不同（法务组 D6）：发布脚本另生成 `public-tenonai`，把个人的 湘ICP备2026031578号-1 换成公司的 湘ICP备2026054319号-1，并去掉公安号（公司的公安备案下来后再加），Caddy 按主机分别提供；passby.tenon.asia 仍显示个人的两个号。
 
 **切换当天（Tenon 回调登记和 CloudKit 来源都就绪后）**：先确认新地址能完成 Tenon 登录和 Apple 授权；再把 `web_hosts` 改成 `passby.tenonai.cn`、`moved_hosts` 改成 `passby.tenon.asia` 后发布：旧主机在 Caddy 里页面 301、`/api/*` 308，请求到不了后端，也不再登录或签发会话。这一刻就是 PassBy 的「切换日」，回报法务组。两种配置都已在服务器上 `caddy validate` 通过，发布脚本会核对旧主机的两种跳转。App Store Connect 的隐私政策和支持网址改为 `https://passby.tenonai.cn/privacy/`、`https://passby.tenonai.cn/support/`。用户协议、隐私政策里的域名、security.txt 的新 Canonical，以及首页、隐私政策、用户协议、支持页 head 里分享图 `og:image` 的绝对网址，由 PassBy 当天改，改完请法务组（L1）核对。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
 
@@ -212,7 +212,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 - 1.3 起，App 记住迁到的新地址，启动时先探测再续期。但 1.3 仍保留「新域名不可用就用旧域名」的逻辑，首次探测完成前也可能请求旧域名。所以平台组 11-07 补充的约定（website `docs/tenon-account.md`，提交 dc44cb4）要求：PassBy 切换后、S2 之前，再发布一个只用新域名、去掉退回逻辑的版本。该版本带新的会话协议版本，服务端从 S2 当天起只给它发令牌，旧版本收到「需要升级」。服务端的版本门槛和 App 端一起做。
 - 切换前核对：请用户用测试账号在旧域名登录，保留一份网页 Cookie（`__Secure-passby_session`）。App 令牌的取法：在浏览器里打开 `https://tenon.asia/passby/api/auth/start?platform=ios&session_version=3&challenge=…&state=…` 走一遍原生登录，从跳转的 `passby://auth?ticket=…` 里取 ticket，再用 PKCE verifier 调 `/passby/api/auth/exchange` 换出令牌。作废后，把两者拿到新域名的 `/api/auth/session` 和 `/passby/api/auth/session` 请求，都应返回 401。旧 Cookie 在新域名上本来就不会自动发送，所以要手动带上。把切换日期和核对结果回报法务组。
 
-**收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。
+**收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。仓库里各页页脚直接改成公司备案号，删掉发布脚本里的 `public-tenonai` 和 `@tenonai_site`。
 
 ## Tenon 产品级删除
 
