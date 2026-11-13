@@ -216,7 +216,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
   docker exec <容器> node -e "const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync('/data/sessions.sqlite',{readOnly:true});const ttl=2592e6,now=Date.now(),sw=Date.parse('2026-11-17T00:00:00+08:00'),s2=Number(process.argv[1]);console.log({web:db.prepare('SELECT COUNT(*) n FROM product_sessions WHERE origin=? AND expires>? AND expires-?<?').get('https://passby.tenon.asia',now,ttl,sw).n,app:db.prepare('SELECT COUNT(*) n FROM product_sessions WHERE origin=? AND expires-?<?').get('https://tenon.asia',ttl,s2).n,revoked:db.prepare('SELECT COUNT(*) n FROM revoked_refresh WHERE origin=?').get('https://tenon.asia').n})" <作废命令执行时的毫秒时间戳>
   ```
 
-  `web` 是切换前签发、仍未过期的网页会话；`app` 是作废前签发、仍在库里的 App 会话；`revoked` 应不少于作废命令输出的 `credentials`。
+  `web` 是切换前签发、仍未过期的网页会话；`app` 是作废前签发、仍在库里的 App 会话；`revoked` 应不少于作废命令输出的 `credentials`。库里只存摘要，拿不到旧令牌原文，所以「抽查旧令牌返回 401」用三样代替：`revoked` 里的撤销标记；`server/test/auth.test.mjs` 里作废命令的测试（作废后旧会话和旧续期凭据都返回 401）；在生产上用随意编造的令牌请求 `/passby/api/auth/session` 和续期接口，应返回 401。
 
 **收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。
 
