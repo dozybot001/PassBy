@@ -200,7 +200,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 **新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。11-13 Tenon 已登记新回调，CloudKit 已加来源（Q82），新地址上的 Tenon 登录入口和 Apple 授权都已核对。页脚备案号按地址不同（法务组 D6）：发布脚本另生成 `public-tenonai`，把个人的 湘ICP备2026031578号-1 换成公司的 湘ICP备2026054319号-1，并去掉公安号（公司的公安备案下来后再加），Caddy 按主机分别提供；passby.tenon.asia 仍显示个人的两个号。
 
-**切换当天（Tenon 回调登记和 CloudKit 来源都就绪后）**：先确认新地址能完成 Tenon 登录和 Apple 授权；再把 `web_hosts` 改成 `passby.tenonai.cn`、`moved_hosts` 改成 `passby.tenon.asia` 后发布：旧主机在 Caddy 里页面 301、`/api/*` 308，请求到不了后端，也不再登录或签发会话。这一刻就是 PassBy 的「切换日」，回报法务组。两种配置都已在服务器上 `caddy validate` 通过，发布脚本会核对旧主机的两种跳转。App Store Connect（中英文）的隐私政策网址改为 `https://passby.tenonai.cn/privacy/`（App 信息，可随时改）；营销网址 `https://passby.tenonai.cn/` 和支持网址 `https://passby.tenonai.cn/support/` 属于版本信息，随 1.3 填（现值均为 passby.tenon.asia，11-13 从公开商店页读取）。由总办在创始人已登录的 Chrome 里代办。用户协议、隐私政策里的域名、security.txt 的新 Canonical，以及首页、隐私政策、用户协议、支持页 head 里分享图 `og:image` 的绝对网址，由 PassBy 当天改，改完请法务组（L1）核对。法务组 11-13 定：只改域名也升小版本，隐私政策 3.1、用户协议 2.1，生效日写 11-17，开头写明「只把网址改为 passby.tenonai.cn，内容不变」，旧版照常存档；内容不变，不用重新取得同意。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
+**切换当天（Tenon 回调登记和 CloudKit 来源都就绪后）**：先确认新地址能完成 Tenon 登录和 Apple 授权；再把 `web_hosts` 改成 `passby.tenonai.cn`、`moved_hosts` 改成 `passby.tenon.asia` 后发布：旧主机在 Caddy 里页面 301、`/api/*` 308，请求到不了后端，也不再登录或签发会话。这一刻就是 PassBy 的「切换日」，回报法务组。两种配置都已在服务器上 `caddy validate` 通过，发布脚本会核对旧主机的两种跳转。App Store Connect（中英文）的隐私政策网址改为 `https://passby.tenonai.cn/privacy/`（App 信息，可随时改）；营销网址 `https://passby.tenonai.cn/` 和支持网址 `https://passby.tenonai.cn/support/` 属于版本信息，随 1.3 填（现值均为 passby.tenon.asia，11-13 从公开商店页读取）。由总办在创始人已登录的 Chrome 里代办。用户协议、隐私政策里的域名、security.txt 的新 Canonical，以及首页、隐私政策、用户协议、支持页 head 里分享图 `og:image` 的绝对网址，由 PassBy 当天改，改完请法务组（L1）核对。旧主机只跳转后不再需要按主机选备案号：同一次把仓库里各页页脚直接改成公司备案号，删掉发布脚本里的 `public-tenonai` 和 `@tenonai_site`。法务组 11-13 定：只改域名也升小版本，隐私政策 3.1、用户协议 2.1，生效日写 11-17，开头写明「只把网址改为 passby.tenonai.cn，内容不变」，旧版照常存档；内容不变，不用重新取得同意。切换后通知安全组，按 Tenon-AI 仓库 `docs/setup/tenonai-cn-security.md` 验收，旧地址 `tenon.asia/passby/api/health` 在旧版 App 还在用时继续检查。
 
 **切换后、S2 之前**：切换时正在进行的登录最长 10 分钟。确认之后没有旧 issuer 的登录（例如第二天），就从 `auth.mjs` 的默认 `TENON_ISSUERS` 里删掉旧 issuer，发布服务端。`ISSUER` 只是身份记录的名字空间，保持不变。S2 前平台组会删掉 tenon.asia 上的两个旧回调。S2 时 tenon.asia 的 `/api/*`，包括 `tenon.asia/passby/api/*`，一律返回 410，1.2 及更早的 iPhone 版本从此不能登录和续期。所以 S2 前要先从访问日志确认，旧版 App 打到 `tenon.asia/passby/api` 的请求已经很少。
 
@@ -218,7 +218,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
   `web` 是切换前签发、仍未过期的网页会话；`app` 是作废前签发、仍在库里的 App 会话；`revoked` 应不少于作废命令输出的 `credentials`。
 
-**收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。仓库里各页页脚直接改成公司备案号，删掉发布脚本里的 `public-tenonai` 和 `@tenonai_site`。
+**收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。
 
 ## Tenon 产品级删除
 
