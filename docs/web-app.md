@@ -176,7 +176,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 - Notes grow and shrink with input, paste, deletion and width changes; neither notes nor generated passwords use an internal scrolling area. Long content scrolls in the shared modal body.
 - Privacy, support, language and publisher information form one horizontal row at the bottom left in every notebook access state. New password sits at the bottom right of the app content, above the separate global footer, with a labeled capsule on larger screens and a 48px accessible plus button on small phones; neither action obscures notebook content.
 
-## 迁到 tenonai.cn（2026-11-06 准备，未切流量）
+## 迁到 tenonai.cn（2026-11-06 准备；账号 11-13 切换，PassBy 定于 11-17 切换）
 
 总清单见 Tenon-AI 仓库 `docs/setup/website-filing.md`（法务组维护）。11-06 开发组确认：新 issuer 是 `https://account.tenonai.cn/api/auth`，`sub` 和角色声明名不变；account.tenon.asia 的页面 301、`/api/*` 308，保留路径和查询参数；切换后主站继续把 `tenon.asia/passby/api/*` 交给 PassBy，直到第 3 步。备案通过前不加解析、不签证书、不对外提供服务；下面这些已经部署，新旧域名都能用：
 
@@ -210,7 +210,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 - iPhone 令牌在 S2 当天作废。顺序是平台组先删掉旧回调，再在当前认证容器里运行一次 `docker exec <容器> node revoke-sessions.mjs https://tenon.asia`。它清空原生会话槽的全部会话，并把其中所有续期凭据和轮换记录标为撤销，标记保留 30 天，长于凭据的有效期。PassBy 不记录签发主机，所以按默认做法作废 S2 前签发的全部 App 令牌，iPhone 用户重新登录一次。网页会话槽不受影响。
 - `tenon.asia/passby/api/*` 切换后仍会到后端（留给旧版 App），但 iPhone 会话槽已关闭网页登录（`webSignIn: false`），不再签发浏览器会话。网页会话本来就不能续期，所以这里没有可续期的浏览器 Cookie。该槽里遗留的网页会话在 S2 当天随作废命令一起清掉。
 - 1.3 起，App 记住迁到的新地址，启动时先探测再续期。但 1.3 仍保留「新域名不可用就用旧域名」的逻辑，首次探测完成前也可能请求旧域名。所以平台组 11-07 补充的约定（website `docs/tenon-account.md`，提交 dc44cb4）要求：PassBy 切换后、S2 之前，再发布一个只用新域名、去掉退回逻辑的版本。该版本带新的会话协议版本，服务端从 S2 当天起只给它发令牌，旧版本收到「需要升级」。服务端的版本门槛和 App 端一起做。
-- 切换前核对：请用户用测试账号在旧域名登录，保留一份网页 Cookie（`__Secure-passby_session`）。App 令牌的取法：在浏览器里打开 `https://tenon.asia/passby/api/auth/start?platform=ios&session_version=3&challenge=…&state=…` 走一遍原生登录，从跳转的 `passby://auth?ticket=…` 里取 ticket，再用 PKCE verifier 调 `/passby/api/auth/exchange` 换出令牌。作废后，把两者拿到新域名的 `/api/auth/session` 和 `/passby/api/auth/session` 请求，都应返回 401。旧 Cookie 在新域名上本来就不会自动发送，所以要手动带上。把切换日期和核对结果回报法务组。
+- S2 核对（11-13 改，不再要求切换前留网页 Cookie）：网页会话最长 30 天、不续期，S2 又在切换满 30 天之后，所以 S2 当天在认证容器里查网页会话槽：签发早于 PassBy 切换日的会话应为 0。App 令牌在 S2 前任何时候都能取：请用户用测试账号在浏览器里打开 `https://tenon.asia/passby/api/auth/start?platform=ios&session_version=3&challenge=…&state=…` 走一遍原生登录，从跳转的 `passby://auth?ticket=…` 里取 ticket，再用 PKCE verifier 调 `/passby/api/auth/exchange` 换出令牌。作废后把令牌拿到 `https://passby.tenonai.cn/passby/api/auth/session` 请求，应返回 401。把切换日期和核对结果回报法务组。
 
 **收尾（D8，旧版 App 基本更新后）**：删掉原生槽的 `tenon.asia` 主机；去掉删除链接改回旧主机的兼容代码；从 `web_hosts`、iPhone 的 `services` 和 `PassByLinks` 默认值里去掉旧域名；删掉 tenon-ai.caddy 里的 PASSBY 块。仓库里各页页脚直接改成公司备案号，删掉发布脚本里的 `public-tenonai` 和 `@tenonai_site`。
 
