@@ -154,15 +154,13 @@ test('trusted browser authorization uses Tenon subject and Apple storage owner, 
 });
 test('product deletion starts from the local server and rejects an unregistered central destination', async () => {
   const request = 'x'.repeat(43);
-  const target = `https://account.tenon.asia/account/delete/?request=${request}`;
+  const target = `https://account.tenonai.cn/account/delete/?request=${request}`;
   assert.equal(await requestProductDeletion(async (url, init) => {
     assert.equal(url, './api/auth/tenon/delete/start'); assert.equal(init.credentials, 'same-origin');
     assert.equal(init.method, 'POST'); assert.equal(init.body, '{}');
     return Response.json({ url: target });
   }), target);
-  const moved = target.replace('account.tenon.asia', 'account.tenonai.cn');
-  assert.equal(await requestProductDeletion(async () => Response.json({ url: moved })), moved);
-  for (const url of ['https://attacker.invalid/account/delete/', 'https://account.tenonai.cn.evil.example/account/delete/?request=' + request, 'https://account.tenon.asia/account/delete/?request=forged', target + '#spoof']) {
+  for (const url of ['https://attacker.invalid/account/delete/', 'https://account.tenonai.cn.evil.example/account/delete/?request=' + request, target.replace('account.tenonai.cn', 'account.tenon.asia'), 'https://account.tenonai.cn/account/delete/?request=forged', target + '#spoof']) {
     await assert.rejects(requestProductDeletion(async () => Response.json({ url })));
   }
   await assert.rejects(requestProductDeletion(async () => new Response('', { status: 503 })));

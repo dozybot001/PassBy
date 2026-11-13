@@ -12,19 +12,18 @@ import { createApp } from '../server.mjs';
 const operationId = randomUUID(), grant = 'g'.repeat(43), now = 1000000;
 const identity = sub => ({ issuer: ISSUER, sub, name: 'Example', role: 'user', expires: now + TTL });
 const origins = ['https://tenon.asia', 'https://passby.tenon.asia'];
-const NEXT_ISSUER = ISSUERS.find(issuer => issuer !== ISSUER);
-// Before Tenon's switch only the original issuer answers discovery.
-const discovery = live => async url => { if (!live.includes(url.href)) throw Error('Not answering'); return { serverMetadata: () => ({ issuer: url.href }) }; };
-function fixture(store = new SessionStore(':memory:'), { origin = 'https://tenon.asia', live = [ISSUER] } = {}) {
-  const protocol = { discovery: discovery(live), ClientSecretBasic() {} };
+const LIVE = ISSUERS[0];
+const discovery = async url => ({ serverMetadata: () => ({ issuer: url.href }) });
+function fixture(store = new SessionStore(':memory:'), { origin = 'https://tenon.asia' } = {}) {
+  const protocol = { discovery, ClientSecretBasic() {} };
   const auth = new TenonAuth({ origin, clientId: 'fixture', clientSecret: 'fixture-only', sessionStore: store, protocol, now: () => now });
   const options = { productId: 'passby', sub: 'person', operationId }, called = [];
   const transport = async (url, init) => {
     called.push(url);
     assert.equal(init.redirect, 'error'); assert.match(init.headers.Authorization, /^Basic /);
     if (url.endsWith('/finish') && options.failFinish) throw Error('Fixture network failure');
-    return Response.json(url.endsWith('/claim') ? { issuer: ISSUER, ...options } : url.endsWith('/start') ?
-      { url: options.url || `https://account.tenon.asia/account/delete/?request=${grant}`, expiresAt: 'expiresAt' in options ? options.expiresAt : now + 10000 } : { status: 'completed' });
+    return Response.json(url.endsWith('/claim') ? { issuer: LIVE, ...options } : url.endsWith('/start') ?
+      { url: options.url || `https://account.tenonai.cn/account/delete/?request=${grant}`, expiresAt: 'expiresAt' in options ? options.expiresAt : now + 10000 } : { status: 'completed' });
   };
   return { auth, store, options, transport, called, service: new ProductDeletion({ auth, transport }) };
 }
@@ -60,12 +59,12 @@ test('deletion invalidates late callbacks and tickets across two persistent conn
 });
 test('completed local deletion remains true during central outage; malformed or cross-product proofs have no effect', async () => {
   const f = fixture(); f.store.create(origins[0], digest('local'), identity('person'), now);
-  for (const change of [{ productId: 'agenthub' }, { issuer: 'https://attacker.invalid' }, { operationId: randomUUID() }]) {
-    Object.assign(f.options, { productId: 'passby', issuer: ISSUER, operationId }, change);
+  for (const change of [{ productId: 'agenthub' }, { issuer: 'https://attacker.invalid' }, { issuer: ISSUER }, { operationId: randomUUID() }]) {
+    Object.assign(f.options, { productId: 'passby', issuer: LIVE, operationId }, change);
     await assert.rejects(f.service.execute({ operationId, grant }), { status: 403 });
     assert.equal(f.auth.sessionCount, 1);
   }
-  Object.assign(f.options, { productId: 'passby', issuer: ISSUER, operationId, failFinish: true });
+  Object.assign(f.options, { productId: 'passby', issuer: LIVE, operationId, failFinish: true });
   await assert.rejects(f.service.execute({ operationId, grant, sub: 'forged' }), { status: 400 });
   assert.equal((await f.service.execute({ operationId, grant })).deleted, true);
   assert.equal(f.auth.sessionCount, 0);
@@ -98,11 +97,11 @@ test('the real native ticket and in-flight refresh cannot restore a deleted subj
     const f = fixture(), verifier = 'v'.repeat(43), nativeState = 's'.repeat(43);
     let resolveInfo;
     const info = { sub: 'person', name: 'Example', email_verified: true, [ROLE]: 'user' };
-    const tokens = { claims: () => ({ iss: ISSUER, sub: 'person', exp: now / 1000 + 3600, [ROLE]: 'user' }), access_token: 'fixture-only', refresh_token: 'r'.repeat(32), expires_in: 3600, expiresIn: () => 3600 };
+    const tokens = { claims: () => ({ iss: LIVE, sub: 'person', exp: now / 1000 + 3600, [ROLE]: 'user' }), access_token: 'fixture-only', refresh_token: 'r'.repeat(32), expires_in: 3600, expiresIn: () => 3600 };
     const protocol = {
-      discovery: async () => ({ serverMetadata: () => ({ issuer: ISSUER }) }), ClientSecretBasic() {},
+      discovery, ClientSecretBasic() {},
       randomPKCECodeVerifier: () => verifier, randomState: () => 'state', randomNonce: () => 'nonce', calculatePKCECodeChallenge: async () => digest(verifier),
-      buildAuthorizationUrl: () => new URL('https://account.tenon.asia/authorize'), authorizationCodeGrant: async () => tokens,
+      buildAuthorizationUrl: () => new URL('https://account.tenonai.cn/authorize'), authorizationCodeGrant: async () => tokens,
       refreshTokenGrant: async () => ({ ...tokens, refresh_token: 'new-'.repeat(10) }), fetchUserInfo: async () => phase === 'ticket' ? info : await new Promise(resolve => { resolveInfo = resolve; }),
     };
     Object.assign(f.auth, { protocol, iosClientId: 'native-fixture', iosClientSecret: 'fixture-only' });
@@ -179,9 +178,9 @@ test('start accepts only one controlled request query and a future safe-integer 
   const f = fixture(); t.after(() => f.store.close());
   const token = 't'.repeat(43), request = { headers: { authorization: `Bearer ${token}` } };
   f.store.create(origins[0], digest(token), identity('person'), now);
-  const valid = `https://account.tenon.asia/account/delete/?request=${grant}`;
+  const valid = `https://account.tenonai.cn/account/delete/?request=${grant}`;
   for (const url of [`${valid}&request=${grant}`, `${valid}&other=1`, `${valid}#extra`,
-    valid.replace('account.tenon.asia', 'account.tenon.asia.evil.example'), [valid]]) {
+    valid.replace('account.tenonai.cn', 'account.tenonai.cn.evil.example'), valid.replace('account.tenonai.cn', 'account.tenon.asia'), [valid]]) {
     f.options.url = url;
     await assert.rejects(f.service.start(request), { status: 503 });
   }
@@ -191,22 +190,23 @@ test('start accepts only one controlled request query and a future safe-integer 
     await assert.rejects(f.service.start(request), { status: 503 });
   }
   delete f.options.expiresAt;
-  assert.deepEqual(await f.service.start(request), { url: valid, expiresAt: now + 10000 });
+  // The native slot hands old iPhones the old account host, which redirects.
+  assert.deepEqual(await f.service.start(request), { url: valid.replace('account.tenonai.cn', 'account.tenon.asia'), expiresAt: now + 10000 });
 });
 
-test('after the Tenon switch, deletion uses the new issuer, and old iPhones still get the old account host', async () => {
+test('deletion uses the current issuer, and old iPhones still get the old account host', async () => {
   for (const origin of origins) {
-    const f = fixture(new SessionStore(':memory:'), { origin, live: [NEXT_ISSUER, ISSUER] });
+    const f = fixture(new SessionStore(':memory:'), { origin });
     const token = 't'.repeat(43), request = { headers: { authorization: `Bearer ${token}` } };
     f.store.create(origin, digest(token), identity('person'), now);
     f.options.url = `https://account.tenonai.cn/account/delete/?request=${grant}`;
     const { url } = await f.service.start(request);
     assert.equal(new URL(url).host, origin === 'https://tenon.asia' ? 'account.tenon.asia' : 'account.tenonai.cn');
     assert.equal(new URL(url).search, `?request=${grant}`);
-    Object.assign(f.options, { issuer: NEXT_ISSUER });
+    Object.assign(f.options, { issuer: LIVE });
     assert.equal((await f.service.execute({ operationId, grant })).deleted, true);
     assert.equal(f.auth.sessionCount, 0);
-    assert.ok(f.called.every(target => target.startsWith(NEXT_ISSUER + '/product-deletion/')));
+    assert.ok(f.called.every(target => target.startsWith(LIVE + '/product-deletion/')));
     f.store.close();
   }
 });

@@ -13,14 +13,14 @@ function fixture(options = {}) {
   let now = 1000000, grants = 0;
   const issuedAt = now;
   const info = { sub: 'test-user', name: 'Example', email_verified: true, [ROLE]: 'user' };
-  const claims = { iss: ISSUER, sub: info.sub, exp: now / 1000 + 3600, [ROLE]: info[ROLE] };
+  const claims = { iss: ISSUERS[0], sub: info.sub, exp: now / 1000 + 3600, [ROLE]: info[ROLE] };
   const tokens = { claims: () => claims, access_token: 'test-only', expires_in: 3600, refresh_token: 'r'.repeat(32),
     expiresIn: () => Math.max(0, Math.floor(tokens.expires_in - (now - issuedAt) / 1000)) };
   const protocol = {
-    discovery: async () => ({ serverMetadata: () => ({ issuer: ISSUER }) }), ClientSecretBasic: () => {},
+    discovery: async url => ({ serverMetadata: () => ({ issuer: url.href }) }), ClientSecretBasic: () => {},
     randomPKCECodeVerifier: () => 'verifier', randomState: () => 'state', randomNonce: () => 'nonce',
     calculatePKCECodeChallenge: async () => 'challenge',
-    buildAuthorizationUrl: (_, params) => { assert.equal(params.code_challenge_method, 'S256'); const target = new URL('https://account.tenon.asia/authorize');target.search = new URLSearchParams(params).toString();return target; },
+    buildAuthorizationUrl: (_, params) => { assert.equal(params.code_challenge_method, 'S256'); const target = new URL('https://account.tenonai.cn/authorize');target.search = new URLSearchParams(params).toString();return target; },
     authorizationCodeGrant: async (_, url, checks) => {
       grants++; assert.deepEqual(checks, { pkceCodeVerifier: 'verifier', expectedState: 'state', expectedNonce: 'nonce', idTokenExpected: true });
       if (url.searchParams.get('state') !== checks.expectedState) throw Error('Invalid state');
@@ -272,7 +272,7 @@ test('dedicated web origin uses exact callbacks, host-only cookies and isolated 
   const start = await fetch(base + '/api/auth/start?format=json');
   assert.equal(start.status, 200);
   const destination = new URL((await start.json()).url);
-  assert.equal(destination.origin, 'https://account.tenon.asia');
+  assert.equal(destination.origin, 'https://account.tenonai.cn');
   assert.equal(destination.searchParams.get('redirect_uri'), 'https://passby.tenon.asia/api/auth/callback');
   assert.equal(destination.searchParams.get('code_challenge_method'), 'S256');
   assert.match(start.headers.get('set-cookie'), /Path=\/api; HttpOnly; Secure; SameSite=Lax/);
@@ -284,16 +284,13 @@ test('dedicated web origin uses exact callbacks, host-only cookies and isolated 
   assert.throws(() => new TenonAuth({ origin: 'https://attacker.invalid', clientId: 'test', clientSecret: 'test-only' }));
 });
 
-test('both Tenon issuers name the same account, and each PassBy host gets its own callback', async () => {
-  const NEXT = ISSUERS.find(issuer => issuer !== ISSUER); let live = false, options;
+test('only the current Tenon issuer is accepted, identities keep the original name, and each PassBy host gets its own callback', async () => {
+  assert.deepEqual(ISSUERS, ['https://account.tenonai.cn/api/auth']);
+  let options;
   const f = fixture({ hosts: ['https://tenon.asia', 'https://passby.tenonai.cn'] });
-  f.protocol.discovery = async url => { if (url.href === NEXT && !live) throw Error('Not answering'); return { serverMetadata: () => ({ issuer: url.href }) }; };
   const build = f.protocol.buildAuthorizationUrl;
   f.protocol.buildAuthorizationUrl = (config, values) => { options = values; return build(config, values); };
-  assert.equal(await f.auth.currentIssuer(), ISSUER);
-  live = true; assert.equal(await f.auth.currentIssuer(), ISSUER);
-  f.advance(10 * 60 * 1000); assert.equal(await f.auth.currentIssuer(), NEXT);
-  f.claims.iss = NEXT;
+  assert.equal(await f.auth.currentIssuer(), ISSUERS[0]);
   const start = 'https://passby.tenonai.cn/passby/api/auth/start';
   await f.auth.start(f.req, f.res, new URL(start));
   assert.equal(options.redirect_uri, 'https://passby.tenonai.cn/passby/api/auth/callback');
@@ -307,13 +304,10 @@ test('both Tenon issuers name the same account, and each PassBy host gets its ow
   await assert.rejects(f.auth.start(f.req, f.res, new URL('https://passby.tenon.asia/passby/api/auth/start')), { status: 403 });
   assert.equal(f.auth.publicOrigin({ headers: { host: 'passby.tenonai.cn' } }), 'https://passby.tenonai.cn');
   assert.equal(f.auth.publicOrigin({ headers: { host: 'attacker.invalid' } }), 'https://tenon.asia');
-  live = false; f.advance(10 * 60 * 1000); assert.equal(await f.auth.currentIssuer(), ISSUER);
-  live = true; const grant = f.protocol.authorizationCodeGrant;
-  f.protocol.authorizationCodeGrant = async () => { throw Error('Moved'); }; await begin(f);
-  await assert.rejects(f.auth.complete(f.req, f.res, callback()));
-  assert.equal(await f.auth.currentIssuer(), NEXT); f.protocol.authorizationCodeGrant = grant;
-  f.claims.iss = 'https://attacker.invalid/api/auth'; await begin(f);
-  await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 });
+  for (const iss of [ISSUER, 'https://attacker.invalid/api/auth']) {
+    f.claims.iss = iss; await begin(f);
+    await assert.rejects(f.auth.complete(f.req, f.res, callback()), { status: 401 });
+  }
 });
 
 test('the iPhone slot issues no browser sessions, so the old domain has none to renew', async () => {

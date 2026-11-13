@@ -1,6 +1,7 @@
 export const TENON_SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
-// Tenon moves from account.tenon.asia to account.tenonai.cn in one switch.
-export const TENON_ACCOUNT_ORIGINS = Object.freeze(['https://account.tenonai.cn', 'https://account.tenon.asia']);
+// Tenon Account answers at account.tenonai.cn since 2026-11-13. Identities keep
+// the original issuer name below, which is a record key rather than an address.
+export const TENON_ACCOUNT_ORIGINS = Object.freeze(['https://account.tenonai.cn']);
 
 export function validIdentity(identity, now = Date.now()) {
   return identity?.issuer === 'https://account.tenon.asia/api/auth'

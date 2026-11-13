@@ -1,12 +1,12 @@
 import * as oidc from 'openid-client';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
-// PassBy records identities under the original issuer. Tenon's move to
-// tenonai.cn renames the issuer once without changing `sub`, so tokens from
-// either issuer name the same account. The first issuer whose discovery
-// answers with its own address is current.
+// PassBy records identities under the original issuer name. Tenon moved to
+// tenonai.cn on 2026-11-13 without changing `sub`, so stored sessions, deletion
+// receipts and browser bindings keep this name. Tokens are accepted only from
+// the issuers below; the first whose discovery answers with its own address is current.
 export const ISSUER = 'https://account.tenon.asia/api/auth';
-export const ISSUERS = Object.freeze((process.env.TENON_ISSUERS || 'https://account.tenonai.cn/api/auth https://account.tenon.asia/api/auth').split(/\s+/).filter(Boolean));
+export const ISSUERS = Object.freeze((process.env.TENON_ISSUERS || 'https://account.tenonai.cn/api/auth').split(/\s+/).filter(Boolean));
 export const ACCOUNT_ORIGINS = Object.freeze(ISSUERS.map(issuer => new URL(issuer).origin));
 const DISCOVERY_TTL = 10 * 60 * 1000;
 export const ROLE = 'https://tenon.asia/claims/platform_role';
