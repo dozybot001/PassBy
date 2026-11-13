@@ -33,9 +33,9 @@ PY
 directory="/opt/passby-site/releases/$release"
 config=/etc/caddy/sites-enabled/tenon-ai.caddy
 web_config=/etc/caddy/sites-enabled/passby.caddy
-# Hosts served by passby.caddy; the first is canonical. Add passby.tenonai.cn
-# only after its ICP filing is approved and its DNS and certificate are ready.
-web_hosts='passby.tenon.asia'
+# Hosts served by passby.caddy; the first is canonical. passby.tenonai.cn runs
+# beside it from 2026-11-13; links still point at passby.tenon.asia until the switch.
+web_hosts='passby.tenon.asia passby.tenonai.cn'
 # Hosts that only redirect to the canonical host: pages 301, /api/* 308, so no
 # request reaches the backend. PassBy's switch moves passby.tenon.asia here.
 moved_hosts=''
@@ -173,12 +173,14 @@ for host in moved:
         except urllib.error.HTTPError as moving:
             assert moving.code == code and moving.headers['Location'] == f'https://{hosts[0]}{path}', host
 for host in hosts:
-    for attempt in range(6):
+    # A newly added host waits for Caddy to obtain its first certificate.
+    tries = 6 if host == 'passby.tenon.asia' else 60
+    for attempt in range(tries):
         try:
             health = urllib.request.urlopen(f'https://{host}/api/health',timeout=10)
             break
         except Exception:
-            if attempt==5: raise
+            if attempt==tries-1: raise
             time.sleep(3)
     assert health.headers.get('Strict-Transport-Security') == hsts
     if host != 'passby.tenon.asia':
