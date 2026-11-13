@@ -6,6 +6,13 @@
 
 ### 新增
 - 网页的分享图（512×512）和手机桌面图标（180×180），用 PassBy 应用图标。
+- iPhone 可以使用新地址 passby.tenonai.cn：自动选能用的地址，切换前后都不用重新登录。
+- 网页在旧地址提示 11 月 17 日迁到 passby.tenonai.cn。
+- passby.tenonai.cn 的页脚显示公司 ICP 备案号。
+
+### 变更
+- iPhone 内的隐私政策更新为第 3 版，写明 PassBy 由公司提供。
+- Tenon 账号、隐私说明和官网链接改为 account.tenonai.cn、tenonai.cn。
 
 ## [1.2] - 2026-11-04
 

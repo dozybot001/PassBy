@@ -81,7 +81,7 @@ struct SettingsView: View {
                 Section {
                     if let identity = account.identity {
                         Text(identity.name)
-                        Link("Manage sign-in methods", destination: URL(string: "https://account.tenon.asia/account/")!)
+                        Link("Manage sign-in methods", destination: URL(string: "https://account.tenonai.cn/account/")!)
                         Button("Sign out of PassBy") { account.signOut() }
                     } else {
                         SignInOptions().listRowSeparator(.hidden)
@@ -276,7 +276,7 @@ struct PrivacyPolicyView: View {
                 policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
                 policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy account sessions last up to 30 days after verification. A rotating sign-in credential in this iPhone’s device-only Keychain securely renews the session. Closing the app does not sign you out. Sign out, credential revocation or 30 days without renewal may require a new sign-in. Face ID is still required to open the notebook, including offline. No passwords or recovery keys are sent to the account service.")
                 policySection("Account information", "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish and securely renew its account session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.")
-                Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenon.asia/account/privacy.html")!)
+                Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenonai.cn/account/privacy.html")!)
                 policySection("Apple Account and Face ID", "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.")
                 policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")
                 policySection("Clipboard and drafts", "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.")
@@ -326,7 +326,7 @@ struct AboutPassByView: View {
                         Image("TenonMark").resizable().scaledToFit().frame(width: 24, height: 24).accessibilityHidden(true)
                         Text("榫卯 Tenon AI")
                     }
-                    Link("tenon.asia", destination: URL(string: "https://tenon.asia/")!)
+                    Link("tenonai.cn", destination: URL(string: "https://tenonai.cn/")!)
                 }
                 VStack(alignment: .leading, spacing: 12) {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }

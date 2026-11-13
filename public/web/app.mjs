@@ -288,7 +288,7 @@ function renderWelcome() {
       actions.append(methodLink('apple',language==='zh'?'使用 Apple 继续':'Continue with Apple','pill primary'),methodLink('email',language==='zh'?'使用邮箱继续':'Continue with email','pill'),more);
       if(tenonError)actions.append(button(t('retry'),prepareTenon,'pill'));
       const note=node('p','access-note',language==='zh'?'首次登录会创建 Tenon 账号。PassBy 由榫卯 Tenon AI 出品，同一账号也可以登录我们的其他产品。我们只获取你的基本资料和邮箱。':'Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.');
-      const notice=node('a','',language==='zh'?'Tenon 账号隐私说明':'Tenon Account privacy notice');notice.href='https://account.tenon.asia/account/privacy.html';
+      const notice=node('a','',language==='zh'?'Tenon 账号隐私说明':'Tenon Account privacy notice');notice.href='https://account.tenonai.cn/account/privacy.html';
       note.append(' ',notice);card.append(actions,note);
     }
     addHint(card.querySelector('h1'),language==='zh'?'账号与登录方式统一由 Tenon 管理。密码本先在设备上加密，恢复密钥不会上传。首次网页访问还需连接保存 iPhone 密码本的 Apple 私有存储。':'Tenon manages your account and sign-in methods. Your notebook is encrypted on your device and recovery keys are never uploaded. First web access also requires connecting the Apple private storage used by your iPhone notebook.');
@@ -495,7 +495,7 @@ function openSettings(){
   if(tenonIdentity){
     account.append(node('p','settings-identity',tenonIdentity.name));
   }
-  const manageAccount=node('a','settings-action');manageAccount.href='https://account.tenon.asia/account/';manageAccount.target='_blank';manageAccount.rel='noopener noreferrer';
+  const manageAccount=node('a','settings-action');manageAccount.href='https://account.tenonai.cn/account/';manageAccount.target='_blank';manageAccount.rel='noopener noreferrer';
   const manageMark=node('span','settings-action-icon');manageMark.append(icon('account'));
   const manageContent=node('span','settings-action-content');manageContent.append(node('span','settings-action-title',language==='zh'?'管理账号与登录方式':'Manage account and sign-in methods'));manageAccount.append(manageMark,manageContent);
   const manageArrow=node('span','settings-action-arrow','›');manageArrow.setAttribute('aria-hidden','true');manageAccount.append(manageArrow);account.append(manageAccount);
@@ -521,7 +521,7 @@ function openAbout(){
     node('p','about-description',language==='zh'?'密码本先在设备上加密，再同步至 Apple 私有云存储。手机端离开应用即锁定，再次打开需要 Face ID。网页版首次用恢复密钥授权浏览器，密码只在页面内存中解密，离开窗口后自动锁定。':'Your notebook is encrypted on your device before syncing to Apple private storage. On iPhone, leaving the app locks it and Face ID unlocks it. Authorize a browser once with your recovery key. The web app decrypts the notebook in page memory and locks when you leave the window.'));
   const publisher=node('div','about-publisher'),publisherMark=node('img');publisherMark.src='./web/tenon-mark.svg';publisherMark.alt='';
   publisher.append(node('p','helper',language==='zh'?'出品方':'Publisher'),publisherMark,node('span','',language==='zh'?'榫卯 Tenon AI':'Tenon AI'));
-  const website=node('a','about-website','tenon.asia');website.href='https://tenon.asia/';
+  const website=node('a','about-website','tenonai.cn');website.href='https://tenonai.cn/';
   const links=node('nav','about-links');links.setAttribute('aria-label',language==='zh'?'政策与反馈':'Policies and feedback');
   for(const [label,href] of [[language==='zh'?'隐私政策':'Privacy Policy','./privacy/'],[language==='zh'?'用户协议':'Terms of Service','./terms/'],[language==='zh'?'反馈':'Feedback','mailto:support@tenonai.cn?subject=PassBy%20Feedback']]){const link=node('a','',label);link.href=href;links.append(link);}
   inner.append(publisher,website,links);const actions=node('div','form-actions');actions.append(button(t('back'),openSettings,'pill'));dialogActions(inner,actions);

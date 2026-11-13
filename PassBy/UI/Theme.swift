@@ -233,7 +233,7 @@ struct SignInOptions: View {
             Text("Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.")
                 .font(.footnote).foregroundStyle(Palette.secondary).fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenon.asia/account/privacy.html")!)
+            Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenonai.cn/account/privacy.html")!)
                 .font(.footnote).tint(Palette.secondary).frame(maxWidth: .infinity, alignment: .leading)
         }
         .disabled(account.working)
