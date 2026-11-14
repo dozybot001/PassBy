@@ -32,11 +32,14 @@ enum NotebookImport {
         var next = notebook.vault
         var summary = ImportSummary()
         // Same identifier: this iPhone's name stays. Same name: use this iPhone's folder.
+        // Names are compared with the folders that were here before the import,
+        // so two folders of one name in the file stay two folders.
+        let mine = notebook.vault.folders
         var folderMap: [UUID: UUID] = [:]
         for folder in file.folders {
-            if next.folders.contains(where: { $0.id == folder.id }) {
+            if mine.contains(where: { $0.id == folder.id }) {
                 folderMap[folder.id] = folder.id
-            } else if let same = next.folders.first(where: { sameName($0.name, folder.name) }) {
+            } else if let same = mine.first(where: { sameName($0.name, folder.name) }) {
                 folderMap[folder.id] = same.id
             } else {
                 next.folders.append(folder)
@@ -73,8 +76,11 @@ enum NotebookImport {
             DeletedEntry(entry: incoming.contains(entry.id) ? entry.copied(folderID: nil) : entry.keeping(folderID: nil),
                          deletedAt: now)
         }
-        let moved = Set(previous.map(\.id))
-        notebook.recentlyDeleted.removeAll { moved.contains($0.id) || incoming.contains($0.id) }
+        // Nothing already in Recently Deleted is dropped. A copy whose identifier
+        // the file also uses gets a new one, so it is not taken for the file's entry.
+        notebook.recentlyDeleted = notebook.recentlyDeleted.map { item in
+            incoming.contains(item.id) ? DeletedEntry(entry: item.entry.copied(folderID: item.entry.folderID), deletedAt: item.deletedAt) : item
+        }
         if notebook.vault != file { notebook.changedSinceExport = true }
         notebook.vault = file
         notebook.recentlyDeleted += previous

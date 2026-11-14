@@ -148,6 +148,11 @@ final class ExportAndImportTests: XCTestCase {
         let summary = NotebookImport.merge(file, into: &notebook, marker: " (Imported)")
         XCTAssertEqual(summary, ImportSummary(added: 2, skipped: 1, marked: 1))
         XCTAssertEqual(notebook.vault.folders, [work, home])
+        // Two folders of one name in the file, a name this iPhone does not have, stay two.
+        var empty = Notebook()
+        let twins = [VaultFolder(name: "Twin"), VaultFolder(name: "Twin")]
+        _ = NotebookImport.merge(Vault(folders: twins), into: &empty)
+        XCTAssertEqual(empty.vault.folders, twins)
         XCTAssertEqual(Array(notebook.vault.entries.prefix(2)), before.entries)
         let marked = notebook.vault.entries.first { $0.title == "Bank (Imported)" }
         XCTAssertEqual(marked?.password, "theirs")
@@ -180,17 +185,24 @@ final class ExportAndImportTests: XCTestCase {
         let work = VaultFolder(name: "Work")
         let kept = VaultEntry(title: "Mail", password: "old", folderID: work.id)
         let only = VaultEntry(title: "Bank", password: "b")
+        // Deleted earlier, and the file still has an entry with this identifier.
+        let earlier = DeletedEntry(entry: VaultEntry(title: "Shop", password: "newer than the file"), deletedAt: now.addingTimeInterval(-3600))
         var notebook = Notebook()
         notebook.vault = Vault(folders: [work], entries: [kept, only])
+        notebook.recentlyDeleted = [earlier]
         var incoming = kept
         incoming.password = "new"
         incoming.folderID = nil
-        let file = Vault(folders: [VaultFolder(name: "Home")], entries: [incoming, VaultEntry(title: "Shop", password: "s")])
+        let file = Vault(folders: [VaultFolder(name: "Home")], entries: [incoming, VaultEntry(id: earlier.id, title: "Shop", password: "s")])
         let summary = NotebookImport.replace(file, in: &notebook, now: now)
         XCTAssertEqual(summary, ImportSummary(added: 2))
         XCTAssertEqual(notebook.vault, file)
-        XCTAssertEqual(notebook.recentlyDeleted.map(\.entry.title).sorted(), ["Bank", "Mail"])
-        XCTAssertTrue(notebook.recentlyDeleted.allSatisfy { $0.entry.folderID == nil && $0.deletedAt == now })
+        XCTAssertEqual(notebook.recentlyDeleted.map(\.entry.title).sorted(), ["Bank", "Mail", "Shop"])
+        let survivor = notebook.recentlyDeleted.first { $0.entry.title == "Shop" }
+        XCTAssertEqual(survivor?.entry.password, "newer than the file")
+        XCTAssertEqual(survivor?.deletedAt, earlier.deletedAt)
+        XCTAssertNotEqual(survivor?.id, earlier.id)
+        XCTAssertTrue(notebook.recentlyDeleted.filter { $0.entry.title != "Shop" }.allSatisfy { $0.entry.folderID == nil && $0.deletedAt == now })
         XCTAssertEqual(notebook.recentlyDeleted.first { $0.entry.title == "Mail" }?.entry.password, "old")
         XCTAssertNotEqual(notebook.recentlyDeleted.first { $0.entry.title == "Mail" }?.id, kept.id)
         XCTAssertEqual(notebook.recentlyDeleted.first { $0.entry.title == "Bank" }?.id, only.id)
