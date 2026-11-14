@@ -260,6 +260,204 @@ object Icons {
         }
     }
 
+    val Pencil: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(4.5f, 19.5f)
+                lineTo(5.5f, 15f)
+                lineTo(16f, 4.5f)
+                lineTo(19.5f, 8f)
+                lineTo(9f, 18.5f)
+                close()
+                moveTo(13.5f, 7f)
+                lineTo(17f, 10.5f)
+            }
+        }
+    }
+
+    /** A circling arrow, for making another one. */
+    val Refresh: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(19f, 12f)
+                arcToRelative(7f, 7f, 0f, true, true, -2.05f, -4.95f)
+                moveTo(19.5f, 4f)
+                verticalLineTo(8f)
+                horizontalLineTo(15.5f)
+            }
+        }
+    }
+
+    private fun PathBuilder.tray() {
+        moveTo(5f, 15f)
+        verticalLineTo(19f)
+        horizontalLineTo(19f)
+        verticalLineTo(15f)
+    }
+
+    /** An arrow coming down into a tray, for bringing a file in. */
+    val Download: ImageVector by lazy {
+        icon {
+            line {
+                tray()
+                moveTo(12f, 4f)
+                verticalLineTo(14.5f)
+                moveTo(8f, 10.5f)
+                lineTo(12f, 14.5f)
+                lineTo(16f, 10.5f)
+            }
+        }
+    }
+
+    /** An arrow going up out of a tray, for sending a file out. */
+    val Upload: ImageVector by lazy {
+        icon {
+            line {
+                tray()
+                moveTo(12f, 14.5f)
+                verticalLineTo(4f)
+                moveTo(8f, 8f)
+                lineTo(12f, 4f)
+                lineTo(16f, 8f)
+            }
+        }
+    }
+
+    /** Three joined dots, as on Android's share sheet. */
+    val Share: ImageVector by lazy {
+        icon {
+            line {
+                circle(17.5f, 5.5f, 2.3f)
+                circle(6.5f, 12f, 2.3f)
+                circle(17.5f, 18.5f, 2.3f)
+                moveTo(8.5f, 10.8f)
+                lineTo(15.5f, 6.7f)
+                moveTo(8.5f, 13.2f)
+                lineTo(15.5f, 17.3f)
+            }
+        }
+    }
+
+    val Globe: ImageVector by lazy {
+        icon {
+            line {
+                circle(12f, 12f, 8.5f)
+                moveTo(3.5f, 12f)
+                horizontalLineTo(20.5f)
+                moveTo(12f, 3.5f)
+                curveTo(8.5f, 7f, 8.5f, 17f, 12f, 20.5f)
+                moveTo(12f, 3.5f)
+                curveTo(15.5f, 7f, 15.5f, 17f, 12f, 20.5f)
+            }
+        }
+    }
+
+    /** A box with an arrow leaving it, for a page that opens in the browser. */
+    val External: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(11f, 5.5f)
+                horizontalLineTo(5.5f)
+                verticalLineTo(18.5f)
+                horizontalLineTo(18.5f)
+                verticalLineTo(13f)
+                moveTo(14f, 4.5f)
+                horizontalLineTo(19.5f)
+                verticalLineTo(10f)
+                moveTo(19.5f, 4.5f)
+                lineTo(11.5f, 12.5f)
+            }
+        }
+    }
+
+    val Info: ImageVector by lazy {
+        icon {
+            line {
+                circle(12f, 12f, 8.5f)
+                moveTo(12f, 11f)
+                verticalLineTo(16.5f)
+            }
+            solid { circle(12f, 7.8f, 1.1f) }
+        }
+    }
+
+    /** A sheet with a folded corner and two lines of text. */
+    val File: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(13.5f, 3.5f)
+                horizontalLineTo(6.5f)
+                verticalLineTo(20.5f)
+                horizontalLineTo(17.5f)
+                verticalLineTo(7.5f)
+                close()
+                moveTo(13.5f, 3.5f)
+                verticalLineTo(7.5f)
+                horizontalLineTo(17.5f)
+                moveTo(9.5f, 12f)
+                horizontalLineTo(14.5f)
+                moveTo(9.5f, 16f)
+                horizontalLineTo(14.5f)
+            }
+        }
+    }
+
+    val Mail: ImageVector by lazy {
+        icon {
+            line {
+                roundRect(3.5f, 5.5f, 17f, 13f, 2f)
+                moveTo(4.5f, 7.5f)
+                lineTo(12f, 13f)
+                lineTo(19.5f, 7.5f)
+            }
+        }
+    }
+
+    val Shield: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(12f, 3.5f)
+                lineTo(19f, 6f)
+                verticalLineTo(11.5f)
+                curveTo(19f, 16f, 16f, 19f, 12f, 20.5f)
+                curveTo(8f, 19f, 5f, 16f, 5f, 11.5f)
+                verticalLineTo(6f)
+                close()
+            }
+        }
+    }
+
+    /** Three lines, for a list of items. */
+    val List: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(9f, 6.5f)
+                horizontalLineTo(20f)
+                moveTo(9f, 12f)
+                horizontalLineTo(20f)
+                moveTo(9f, 17.5f)
+                horizontalLineTo(20f)
+            }
+            solid {
+                circle(4.8f, 6.5f, 1.2f)
+                circle(4.8f, 12f, 1.2f)
+                circle(4.8f, 17.5f, 1.2f)
+            }
+        }
+    }
+
+    val Key: ImageVector by lazy {
+        icon {
+            line {
+                circle(8f, 15.5f, 4f)
+                moveTo(11f, 12.5f)
+                lineTo(19.5f, 4f)
+                moveTo(16f, 7.5f)
+                lineTo(18.5f, 10f)
+            }
+        }
+    }
+
     val Lock: ImageVector by lazy {
         icon {
             line {

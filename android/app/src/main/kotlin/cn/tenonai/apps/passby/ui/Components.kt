@@ -187,7 +187,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 }
 
 @Composable
-fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, icon: ImageVector? = null) {
     Button(
         onClick = onClick,
         modifier = modifier.heightIn(min = 48.dp),
@@ -196,7 +196,21 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
         colors = ButtonDefaults.buttonColors(containerColor = palette.wash, contentColor = palette.ink),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
     ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null, Modifier.size(20.dp))
+            Spacer(Modifier.width(8.dp))
+        }
         Text(text, fontWeight = FontWeight.Medium)
+    }
+}
+
+/** A lesser action shown as an icon and words without a filled shape. */
+@Composable
+fun LinkButton(text: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    TextButton(onClick = onClick, modifier = modifier.heightIn(min = 48.dp), enabled = enabled) {
+        Icon(icon, contentDescription = null, Modifier.size(20.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(text)
     }
 }
 
@@ -237,6 +251,7 @@ fun SettingRow(
     title: String,
     modifier: Modifier = Modifier,
     text: String? = null,
+    icon: ImageVector? = null,
     onClick: (() -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null,
 ) {
@@ -248,6 +263,10 @@ fun SettingRow(
             .padding(horizontal = PagePadding, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null, tint = palette.secondary)
+            Spacer(Modifier.width(16.dp))
+        }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             if (text != null) {
@@ -284,9 +303,11 @@ fun ConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     dismiss: String = stringResource(R.string.cancel),
+    icon: ImageVector? = null,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        icon = icon?.let { { Icon(it, contentDescription = null) } },
         title = { Text(title) },
         text = { Text(text) },
         confirmButton = { TextButton(onClick = onConfirm) { Text(confirm) } },

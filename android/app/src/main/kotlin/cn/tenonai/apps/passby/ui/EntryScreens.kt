@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,7 +24,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +44,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import cn.tenonai.apps.passby.R
+import cn.tenonai.apps.passby.core.Entry
 import cn.tenonai.apps.passby.core.Notebook
 
 /** One password in full. The password is hidden until the eye is tapped, and hidden again on leaving. */
@@ -55,13 +54,7 @@ fun EntryDetailScreen(model: AppViewModel, notebook: Notebook, id: String) {
     var revealed by remember(id) { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
 
-    Page(
-        title = "",
-        onBack = { model.back() },
-        actions = {
-            if (entry != null) TextButton(onClick = { model.editEntry(entry) }) { Text(stringResource(R.string.edit)) }
-        },
-    ) {
+    Page(title = "", onBack = { model.back() }) {
         if (entry == null) {
             EmptyState(stringResource(R.string.password_removed), "")
             return@Page
@@ -103,8 +96,12 @@ fun EntryDetailScreen(model: AppViewModel, notebook: Notebook, id: String) {
                 )
             }
         }
-        Row(Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp)) {
-            SecondaryButton(stringResource(R.string.delete_password), onClick = { confirmDelete = true })
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SecondaryButton(stringResource(R.string.delete), onClick = { confirmDelete = true }, icon = Icons.Trash)
+            PrimaryButton(stringResource(R.string.edit), onClick = { model.editEntry(entry) }, modifier = Modifier.weight(1f), icon = Icons.Pencil)
         }
     }
 
@@ -118,6 +115,7 @@ fun EntryDetailScreen(model: AppViewModel, notebook: Notebook, id: String) {
                 model.deleteEntry(entry.id)
             },
             onDismiss = { confirmDelete = false },
+            icon = Icons.Trash,
         )
     }
 }
@@ -163,8 +161,9 @@ private fun Credential(
 }
 
 /**
- * Writing or changing one password. The close button discards what was typed. Leaving any other way,
- * including switching apps, keeps it as a draft that New password opens again.
+ * Writing or changing one password. The close button discards what was typed, after asking when
+ * there is something to lose. Leaving any other way, including switching apps, keeps it as a draft
+ * that New password opens again.
  */
 @Composable
 fun EntryEditorScreen(model: AppViewModel, notebook: Notebook) {
@@ -172,17 +171,15 @@ fun EntryEditorScreen(model: AppViewModel, notebook: Notebook) {
     var revealed by remember { mutableStateOf(false) }
     var folderMenu by remember { mutableStateOf(false) }
     var newFolder by remember { mutableStateOf(false) }
+    var confirmDiscard by remember { mutableStateOf(false) }
+    val saved = notebook.entries.firstOrNull { it.id == entry.id }
+    val changed = if (saved != null) !entry.sameContent(saved) else !entry.sameContent(Entry(entry.id, folderId = entry.folderId))
 
     Page(
         title = stringResource(if (model.editingIsNew) R.string.new_password else R.string.edit_password),
-        onBack = model::cancelEditing,
+        onBack = { if (changed) confirmDiscard = true else model.cancelEditing() },
         backIcon = Icons.Close,
         backLabel = stringResource(R.string.cancel),
-        actions = {
-            TextButton(onClick = model::saveEditing, enabled = entry.title.isNotBlank()) {
-                Text(stringResource(R.string.save), fontWeight = FontWeight.SemiBold)
-            }
-        },
     ) {
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = PagePadding, vertical = 12.dp),
@@ -270,6 +267,7 @@ fun EntryEditorScreen(model: AppViewModel, notebook: Notebook) {
                     DropdownMenu(expanded = folderMenu, onDismissRequest = { folderMenu = false }) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.filter_unfiled)) },
+                            trailingIcon = { if (entry.folderId == null) Icon(Icons.Check, contentDescription = null) },
                             onClick = {
                                 folderMenu = false
                                 model.updateEditing(entry.copy(folderId = null))
@@ -278,6 +276,8 @@ fun EntryEditorScreen(model: AppViewModel, notebook: Notebook) {
                         for (folder in notebook.folders) {
                             DropdownMenuItem(
                                 text = { Text(folder.name) },
+                                leadingIcon = { Icon(Icons.Folder, contentDescription = null) },
+                                trailingIcon = { if (entry.folderId == folder.id) Icon(Icons.Check, contentDescription = null) },
                                 onClick = {
                                     folderMenu = false
                                     model.updateEditing(entry.copy(folderId = folder.id))
@@ -299,8 +299,30 @@ fun EntryEditorScreen(model: AppViewModel, notebook: Notebook) {
             }
 
             Text(stringResource(R.string.draft_note), style = MaterialTheme.typography.bodySmall, color = palette.secondary)
-            Spacer(Modifier.height(24.dp))
         }
+        Row(Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp)) {
+            PrimaryButton(
+                stringResource(R.string.save),
+                onClick = model::saveEditing,
+                modifier = Modifier.weight(1f),
+                enabled = entry.title.isNotBlank(),
+                icon = Icons.Check,
+            )
+        }
+    }
+
+    if (confirmDiscard) {
+        ConfirmDialog(
+            title = stringResource(R.string.discard_title),
+            text = stringResource(if (saved != null) R.string.discard_text_changes else R.string.discard_text_new),
+            confirm = stringResource(R.string.discard),
+            onConfirm = {
+                confirmDiscard = false
+                model.cancelEditing()
+            },
+            onDismiss = { confirmDiscard = false },
+            dismiss = stringResource(R.string.keep_editing),
+        )
     }
 
     if (newFolder) {

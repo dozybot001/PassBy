@@ -150,9 +150,8 @@ private fun LockScreen(onUnlock: () -> Unit) {
     Box(Modifier.fillMaxSize().padding(PagePadding), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp)) {
             BrandMark(size = 64.dp)
-            Icon(Icons.Lock, contentDescription = null, tint = palette.secondary)
             Text(stringResource(R.string.lock_title), style = MaterialTheme.typography.titleMedium)
-            PrimaryButton(stringResource(R.string.lock_unlock), onClick = onUnlock)
+            PrimaryButton(stringResource(R.string.lock_unlock), onClick = onUnlock, icon = Icons.Lock)
         }
     }
 }
@@ -171,9 +170,9 @@ private fun UnreadableScreen(newerVersion: Boolean, model: AppViewModel) {
                 style = MaterialTheme.typography.bodyLarge,
                 color = palette.secondary,
             )
-            SecondaryButton(stringResource(R.string.contact_support), onClick = { writeToSupport(context) })
+            SecondaryButton(stringResource(R.string.contact_support), onClick = { writeToSupport(context) }, icon = Icons.Mail)
             if (!newerVersion) {
-                TextButton(onClick = { confirm = true }) { Text(stringResource(R.string.unreadable_start_over)) }
+                LinkButton(stringResource(R.string.unreadable_start_over), Icons.Refresh, onClick = { confirm = true })
             }
         }
     }

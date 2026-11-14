@@ -186,4 +186,12 @@
     <string name="unreadable_start_over_title">Start with an empty notebook?</string>
     <string name="unreadable_start_over_text">The files that could not be read are renamed and kept on this phone, not deleted. You can import from an export file afterwards.</string>
     <string name="contact_support">Contact support</string>
+    <string name="delete">Delete</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep editing</string>
+    <string name="discard_title">Discard what you have not saved?</string>
+    <string name="discard_text_new">This new password will not be saved.</string>
+    <string name="discard_text_changes">Your changes will not be saved. The password stays as it was.</string>
+    <string name="import_replace_title">Replace the notebook?</string>
+    <string name="import_replace_confirm_text">Passwords on this phone now (%1$d) move to Recently Deleted. They stay there for 30 days and are then deleted.</string>
 </resources>

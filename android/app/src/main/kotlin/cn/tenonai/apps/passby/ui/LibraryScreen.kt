@@ -30,7 +30,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -236,6 +235,7 @@ private fun EntryRow(model: AppViewModel, entry: Entry) {
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }, offset = DpOffset(PagePadding, 0.dp)) {
             DropdownMenuItem(
                 text = { Text(copyAccount) },
+                leadingIcon = { Icon(Icons.Copy, contentDescription = null) },
                 enabled = entry.account.isNotEmpty(),
                 onClick = {
                     menu = false
@@ -244,6 +244,7 @@ private fun EntryRow(model: AppViewModel, entry: Entry) {
             )
             DropdownMenuItem(
                 text = { Text(copyPassword) },
+                leadingIcon = { Icon(Icons.Key, contentDescription = null) },
                 enabled = entry.password.isNotEmpty(),
                 onClick = {
                     menu = false
@@ -252,6 +253,7 @@ private fun EntryRow(model: AppViewModel, entry: Entry) {
             )
             DropdownMenuItem(
                 text = { Text(view) },
+                leadingIcon = { Icon(Icons.Eye, contentDescription = null) },
                 onClick = {
                     menu = false
                     model.open(Screen.Detail(entry.id))
@@ -300,7 +302,7 @@ private fun ExportReminder(model: AppViewModel, neverExported: Boolean) {
             Modifier.weight(1f),
             style = MaterialTheme.typography.bodyMedium,
         )
-        TextButton(onClick = { model.open(Screen.Export) }) { Text(stringResource(R.string.export_reminder_action)) }
+        LinkButton(stringResource(R.string.export_reminder_action), Icons.Upload, onClick = { model.open(Screen.Export) })
         IconButton(onClick = model::dismissExportReminder) { Icon(Icons.Close, contentDescription = stringResource(R.string.dismiss)) }
     }
 }

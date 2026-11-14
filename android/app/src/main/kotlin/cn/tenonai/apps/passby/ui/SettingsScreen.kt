@@ -54,6 +54,7 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
             SettingRow(
                 title = gateTitle,
                 text = stringResource(if (model.deviceHasLock) R.string.gate_text else R.string.gate_no_lock),
+                icon = Icons.Lock,
                 trailing = {
                     Switch(
                         checked = notebook.gateEnabled && model.deviceHasLock,
@@ -70,12 +71,14 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
             SettingRow(
                 title = stringResource(R.string.export),
                 text = if (lastExport == null) stringResource(R.string.never_exported) else stringResource(R.string.last_export, formatDate(lastExport)),
+                icon = Icons.Upload,
                 onClick = { model.open(Screen.Export) },
             )
-            SettingRow(title = stringResource(R.string.import_), onClick = { model.open(Screen.Import) })
+            SettingRow(title = stringResource(R.string.import_), icon = Icons.Download, onClick = { model.open(Screen.Import) })
             SettingRow(
                 title = stringResource(R.string.recently_deleted),
                 text = stringResource(R.string.folder_count, notebook.deleted.size),
+                icon = Icons.Trash,
                 onClick = { model.open(Screen.Deleted) },
             )
             HorizontalDivider(Modifier.padding(horizontal = PagePadding), color = palette.rule)
@@ -85,6 +88,7 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
                 SettingRow(
                     title = stringResource(R.string.language),
                     text = stringResource(R.string.language_system),
+                    icon = Icons.Globe,
                     onClick = {
                         val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", context.packageName, null))
                         try {
@@ -95,9 +99,9 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
                     },
                 )
             } else {
-                SettingRow(title = stringResource(R.string.language), text = stringResource(R.string.language_follow))
+                SettingRow(title = stringResource(R.string.language), text = stringResource(R.string.language_follow), icon = Icons.Globe)
             }
-            SettingRow(title = stringResource(R.string.about), onClick = { model.open(Screen.About) })
+            SettingRow(title = stringResource(R.string.about), icon = Icons.Info, onClick = { model.open(Screen.About) })
         }
     }
 }
@@ -134,11 +138,11 @@ fun AboutScreen(model: AppViewModel) {
                 }
             }
             HorizontalDivider(Modifier.padding(horizontal = PagePadding), color = palette.rule)
-            SettingRow(title = stringResource(R.string.website), text = WEBSITE_URL, onClick = { open { openLink(context, WEBSITE_URL) } })
-            SettingRow(title = stringResource(R.string.privacy_policy), onClick = { open { openLink(context, PRIVACY_URL) } })
-            SettingRow(title = stringResource(R.string.terms), onClick = { open { openLink(context, TERMS_URL) } })
-            SettingRow(title = stringResource(R.string.feedback), text = SUPPORT_EMAIL, onClick = { open { writeToSupport(context) } })
-            SettingRow(title = stringResource(R.string.licenses), onClick = { model.open(Screen.Licenses) })
+            SettingRow(title = stringResource(R.string.website), text = WEBSITE_URL, icon = Icons.External, onClick = { open { openLink(context, WEBSITE_URL) } })
+            SettingRow(title = stringResource(R.string.privacy_policy), icon = Icons.Shield, onClick = { open { openLink(context, PRIVACY_URL) } })
+            SettingRow(title = stringResource(R.string.terms), icon = Icons.File, onClick = { open { openLink(context, TERMS_URL) } })
+            SettingRow(title = stringResource(R.string.feedback), text = SUPPORT_EMAIL, icon = Icons.Mail, onClick = { open { writeToSupport(context) } })
+            SettingRow(title = stringResource(R.string.licenses), icon = Icons.List, onClick = { model.open(Screen.Licenses) })
         }
     }
 }

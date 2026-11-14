@@ -72,6 +72,7 @@ fun FoldersScreen(model: AppViewModel, notebook: Notebook) {
                             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.rename_folder)) },
+                                    leadingIcon = { Icon(Icons.Pencil, contentDescription = null) },
                                     onClick = {
                                         menu = false
                                         renaming = folder
@@ -79,6 +80,7 @@ fun FoldersScreen(model: AppViewModel, notebook: Notebook) {
                                 )
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.delete_folder)) },
+                                    leadingIcon = { Icon(Icons.Trash, contentDescription = null) },
                                     onClick = {
                                         menu = false
                                         deleting = folder
@@ -129,6 +131,7 @@ fun FoldersScreen(model: AppViewModel, notebook: Notebook) {
                 model.removeFolder(folder.id)
             },
             onDismiss = { deleting = null },
+            icon = Icons.Trash,
         )
     }
 }
@@ -189,6 +192,7 @@ fun DeletedScreen(model: AppViewModel, notebook: Notebook) {
                 model.removeDeleted(id)
             },
             onDismiss = { removing = null },
+            icon = Icons.Trash,
         )
     }
 }

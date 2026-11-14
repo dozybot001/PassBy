@@ -208,10 +208,10 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
                 }
                 QrCode(grouped, stringResource(R.string.export_qr), Modifier.align(Alignment.CenterHorizontally).size(208.dp))
                 Text(stringResource(R.string.export_code_note), style = MaterialTheme.typography.bodyMedium)
-                TextButton(onClick = {
+                LinkButton(stringResource(R.string.export_code_new), Icons.Refresh, onClick = {
                     code = ExportSecret.newCode()
                     noted = false
-                }) { Text(stringResource(R.string.export_code_new)) }
+                })
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = noted, role = Role.Checkbox, onValueChange = { noted = it }),
                     verticalAlignment = Alignment.CenterVertically,
@@ -246,8 +246,8 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
                 Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                PrimaryButton(stringResource(R.string.export_save), onClick = { save.launch(fileName) }, modifier = Modifier.weight(1f), enabled = ready)
-                SecondaryButton(stringResource(R.string.export_share), onClick = { share() }, enabled = ready)
+                PrimaryButton(stringResource(R.string.export_save), onClick = { save.launch(fileName) }, modifier = Modifier.weight(1f), enabled = ready, icon = Icons.File)
+                SecondaryButton(stringResource(R.string.export_share), onClick = { share() }, enabled = ready, icon = Icons.Share)
             }
         }
     }
@@ -352,6 +352,7 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
     var opened by remember { mutableStateOf<ExportedNotebook?>(null) }
     var replace by remember { mutableStateOf(false) }
     var done by remember { mutableStateOf<String?>(null) }
+    var confirmReplace by remember { mutableStateOf(false) }
     val localIsEmpty = notebook.entries.isEmpty() && notebook.folders.isEmpty()
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -456,25 +457,41 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             when {
-                finished != null -> PrimaryButton(stringResource(R.string.done), onClick = { model.back() }, modifier = Modifier.fillMaxWidth())
+                finished != null -> PrimaryButton(stringResource(R.string.done), onClick = { model.back() }, modifier = Modifier.fillMaxWidth(), icon = Icons.Check)
                 incoming != null -> PrimaryButton(
                     stringResource(R.string.import_confirm),
-                    onClick = { apply(incoming) },
+                    // Replacing moves everything on this phone to Recently Deleted, so it asks once more.
+                    onClick = { if (replace && !localIsEmpty) confirmReplace = true else apply(incoming) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !working,
+                    icon = Icons.Download,
                 )
                 bytes != null -> {
-                    TextButton(onClick = { pick.launch(arrayOf("*/*")) }, enabled = !working) { Text(stringResource(R.string.import_choose_other)) }
+                    LinkButton(stringResource(R.string.import_choose_other), Icons.File, onClick = { pick.launch(arrayOf("*/*")) }, enabled = !working)
                     PrimaryButton(
                         stringResource(R.string.import_open),
                         onClick = { openFile(bytes) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = typed.isNotBlank() && !working,
+                        icon = Icons.Key,
                     )
                 }
-                else -> PrimaryButton(stringResource(R.string.import_choose), onClick = { pick.launch(arrayOf("*/*")) }, modifier = Modifier.fillMaxWidth())
+                else -> PrimaryButton(stringResource(R.string.import_choose), onClick = { pick.launch(arrayOf("*/*")) }, modifier = Modifier.fillMaxWidth(), icon = Icons.File)
             }
         }
+    }
+
+    if (confirmReplace && incoming != null) {
+        ConfirmDialog(
+            title = stringResource(R.string.import_replace_title),
+            text = stringResource(R.string.import_replace_confirm_text, notebook.entries.size),
+            confirm = stringResource(R.string.import_replace),
+            onConfirm = {
+                confirmReplace = false
+                apply(incoming)
+            },
+            onDismiss = { confirmReplace = false },
+        )
     }
 }
 

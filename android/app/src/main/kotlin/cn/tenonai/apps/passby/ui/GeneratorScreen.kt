@@ -70,7 +70,6 @@ fun GeneratorScreen(model: AppViewModel, forEditor: Boolean) {
                 style = MaterialTheme.typography.titleMedium,
                 fontFamily = FontFamily.Monospace,
             )
-            SecondaryButton(stringResource(R.string.generate_another), onClick = { round++ }, enabled = options.isValid)
 
             SectionLabel(stringResource(R.string.length))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -109,17 +108,21 @@ fun GeneratorScreen(model: AppViewModel, forEditor: Boolean) {
             Text(stringResource(R.string.generator_tip), style = MaterialTheme.typography.bodySmall, color = palette.secondary)
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(
-                stringResource(if (forEditor) R.string.use_password else R.string.copy_password),
-                onClick = {
-                    if (password != null) {
-                        if (forEditor) model.useGenerated(password) else model.copyGenerated(password)
-                        model.back()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = password != null,
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                SecondaryButton(stringResource(R.string.generate_another), onClick = { round++ }, enabled = options.isValid, icon = Icons.Refresh)
+                PrimaryButton(
+                    stringResource(if (forEditor) R.string.use_password else R.string.copy_password),
+                    onClick = {
+                        if (password != null) {
+                            if (forEditor) model.useGenerated(password) else model.copyGenerated(password)
+                            model.back()
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = password != null,
+                    icon = if (forEditor) Icons.Check else Icons.Copy,
+                )
+            }
             Text(
                 stringResource(if (forEditor) R.string.generator_fill_note else R.string.generator_copy_note),
                 style = MaterialTheme.typography.bodySmall,

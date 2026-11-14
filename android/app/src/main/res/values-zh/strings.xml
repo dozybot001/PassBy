@@ -183,4 +183,12 @@
     <string name="unreadable_start_over_title">从空的密码本开始？</string>
     <string name="unreadable_start_over_text">读不出的文件会改名留在手机里，不会删除。之后可以从导出文件导入。</string>
     <string name="contact_support">联系支持</string>
+    <string name="delete">删除</string>
+    <string name="discard">放弃</string>
+    <string name="keep_editing">继续编辑</string>
+    <string name="discard_title">放弃没保存的内容？</string>
+    <string name="discard_text_new">这条新密码不会保存。</string>
+    <string name="discard_text_changes">这次的修改不会保存，原来的内容不变。</string>
+    <string name="import_replace_title">替换密码本？</string>
+    <string name="import_replace_confirm_text">本机现有的 %1$d 条会移到「最近删除」，保留 30 天，之后自动删除。</string>
 </resources>
