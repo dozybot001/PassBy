@@ -8,7 +8,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/signing-common.sh"
 
 PACKAGE="cn.tenonai.apps.passby"
-[ -f "$KEYSTORE" ] || fail "找不到正式签名密钥：$KEYSTORE。没有它不出正式包。"
+[ -f "$KEYSTORE" ] || fail "找不到正式签名密钥：${KEYSTORE}。没有它不出正式包。"
 [ -f "$FINGERPRINT_FILE" ] || fail "找不到登记的证书指纹：$FINGERPRINT_FILE"
 EXPECTED="$(tr -d '[:space:]' < "$FINGERPRINT_FILE")"
 
@@ -43,7 +43,7 @@ unset PASSBY_KS_PASS
 VERIFY="$("$BUILD_TOOLS/apksigner" verify --verbose --print-certs --min-sdk-version 26 "$PENDING")" || fail "签名验证没有通过"
 # Older build tools print "Signer #1 certificate SHA-256 digest", newer ones "V3.0 Signer: certificate SHA-256 digest".
 ACTUAL="$(printf '%s\n' "$VERIFY" | sed -n 's/^.*Signer.*certificate SHA-256 digest: //p' | sort -u | tr 'a-f' 'A-F')"
-[ "$ACTUAL" = "$EXPECTED" ] || fail "签名证书的 SHA-256 是 $ACTUAL，登记的是 $EXPECTED。"
+[ "$ACTUAL" = "$EXPECTED" ] || fail "签名证书的 SHA-256 是 ${ACTUAL}，登记的是 ${EXPECTED}。"
 printf '%s\n' "$VERIFY" | grep -q '^Number of signers: 1$' || fail "签名者不是恰好一个"
 printf '%s\n' "$VERIFY" | grep -q '^Verified using v1 scheme (JAR signing): false' || fail "包里有 v1 签名"
 printf '%s\n' "$VERIFY" | grep -q '^Verified using v2 scheme (APK Signature Scheme v2): true' || fail "包里没有 v2 签名"
@@ -73,7 +73,7 @@ mv "$PENDING" "$APK"
 echo
 echo "正式包：$APK"
 echo "提交：$(git rev-parse HEAD)"
-echo "证书 SHA-256：$ACTUAL（和登记的一致）"
+echo "证书 SHA-256：${ACTUAL}（和登记的一致）"
 echo "权限："
 printf '%s\n' "$PERMISSIONS" | sed 's/^/  /'
 echo "SHA256SUMS："

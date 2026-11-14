@@ -15,7 +15,7 @@ DNAME='CN=PassBy, O=Changsha Tenon Artificial Intelligence Technology Co.\, Ltd.
 
 [ ! -e "$KEYSTORE" ] || fail "密钥库已经存在，不覆盖：$KEYSTORE"
 security find-generic-password -s "$KEYCHAIN_SERVICE" -a "$KEYCHAIN_ACCOUNT" >/dev/null 2>&1 \
-    && fail "钥匙串里已经有同名条目（服务 $KEYCHAIN_SERVICE，账户 $KEYCHAIN_ACCOUNT）。先弄清它是什么，不要覆盖。"
+    && fail "钥匙串里已经有同名条目（服务 ${KEYCHAIN_SERVICE}，账户 ${KEYCHAIN_ACCOUNT}）。先弄清它是什么，不要覆盖。"
 
 mkdir -p "$KEY_DIR"
 chmod 700 "$HOME/.tenon-keys" "$HOME/.tenon-keys/android" "$KEY_DIR"
@@ -44,7 +44,7 @@ chmod 600 "$KEYSTORE"
 SUBJECT="$(certificate_subject)"
 case "$SUBJECT" in
     *'O=Changsha Tenon Artificial Intelligence Technology Co.\, Ltd.'*) ;;
-    *) fail "证书主体里的公司名不完整：$SUBJECT。不要用这把密钥；删掉密钥库和钥匙串条目后重来。" ;;
+    *) fail "证书主体里的公司名不完整：${SUBJECT}。不要用这把密钥；删掉密钥库和钥匙串条目后重来。" ;;
 esac
 
 SHA256="$(certificate_fingerprint sha256)"

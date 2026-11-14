@@ -60,11 +60,11 @@ NOTE_TIME="$(date '+%Y-%m-%d %H:%M')"
 NOTE_SHA256="$(certificate_fingerprint sha256)"
 NOTE_SHA1="$(certificate_fingerprint sha1)"
 NOTE_MD5="$(certificate_fingerprint md5)"
-[ "$NOTE_SHA256" = "$EXPECTED" ] || fail "这台 Mac 上的密钥库和登记的指纹对不上：$NOTE_SHA256。不要备份它，先弄清楚。"
+[ "$NOTE_SHA256" = "$EXPECTED" ] || fail "这台 Mac 上的密钥库和登记的指纹对不上：${NOTE_SHA256}。不要备份它，先弄清楚。"
 cp "$KEYSTORE" "$MOUNT/passby-release.p12"
 printf '%s\n' "$PASSBY_KS_PASS" > "$MOUNT/keystore-password.txt"
 cat > "$MOUNT/README.txt" <<NOTE
-PassBy 安卓版的应用签名密钥。备份于 $NOTE_TIME。
+PassBy 安卓版的应用签名密钥。备份于 ${NOTE_TIME}。
 
 passby-release.p12      PKCS12 密钥库，别名 $KEY_ALIAS
 keystore-password.txt   密钥库的口令
@@ -75,7 +75,7 @@ SHA-1    $NOTE_SHA1
 MD5      $NOTE_MD5
 
 恢复：把 passby-release.p12 放回 ~/.tenon-keys/android/passby/（目录 0700，文件 0600），
-把口令存进登录钥匙串（服务 $KEYCHAIN_SERVICE，账户 $KEYCHAIN_ACCOUNT），
+把口令存进登录钥匙串（服务 ${KEYCHAIN_SERVICE}，账户 ${KEYCHAIN_ACCOUNT}），
 再用 keytool -list -v 核对 SHA-256 指纹和上面一致。
 NOTE
 unset PASSBY_KS_PASS
@@ -95,7 +95,7 @@ unset PASSBY_KS_PASS
 hdiutil detach "$DRILL" >/dev/null
 
 RESTORED="$(printf '%s\n' "$RESTORED_CERT" | openssl x509 -noout -fingerprint -sha256 | sed -e 's/^.*=//' -e 's/://g')"
-[ "$RESTORED" = "$EXPECTED" ] || fail "恢复演练没有通过：备份里的证书指纹是 $RESTORED，登记的是 $EXPECTED。不要用这份备份。"
+[ "$RESTORED" = "$EXPECTED" ] || fail "恢复演练没有通过：备份里的证书指纹是 ${RESTORED}，登记的是 ${EXPECTED}。不要用这份备份。"
 # The request's signature has to verify. The system's openssl (LibreSSL) exits with 0 even when it
 # does not, so the words it prints are what is checked.
 REQUEST_CHECK="$(printf '%s\n' "$REQUEST" | openssl req -noout -verify 2>&1 || true)"
@@ -104,7 +104,7 @@ printf '%s\n' "$REQUEST_CHECK" | grep -q 'verify OK' || fail "恢复演练没有
 REQUEST_KEY="$(printf '%s\n' "$REQUEST" | openssl req -noout -pubkey)"
 CERT_KEY="$(printf '%s\n' "$RESTORED_CERT" | openssl x509 -noout -pubkey)"
 [ -n "$REQUEST_KEY" ] && [ "$REQUEST_KEY" = "$CERT_KEY" ] || fail "恢复演练没有通过：备份里的私钥和证书不是一对。不要用这份备份。"
-echo "恢复演练通过：从备份打开密钥库，用里面的私钥签名并验签成功；证书 SHA-256 指纹是 $RESTORED，和登记的一致。"
+echo "恢复演练通过：从备份打开密钥库，用里面的私钥签名并验签成功；证书 SHA-256 指纹是 ${RESTORED}，和登记的一致。"
 
 # 3. The same image to both places.
 cp "$IMAGE" "$FIRST_DIR/"

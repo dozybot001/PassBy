@@ -23,7 +23,7 @@ fail() { echo "错误：$*" >&2; exit 1; }
 # Puts the keystore password into PASSBY_KS_PASS for the commands that follow in this shell.
 load_keystore_password() {
     PASSBY_KS_PASS="$(security find-generic-password -s "$KEYCHAIN_SERVICE" -a "$KEYCHAIN_ACCOUNT" -w 2>/dev/null)" \
-        || fail "钥匙串里没有签名密钥的口令（服务 $KEYCHAIN_SERVICE，账户 $KEYCHAIN_ACCOUNT）"
+        || fail "钥匙串里没有签名密钥的口令（服务 ${KEYCHAIN_SERVICE}，账户 ${KEYCHAIN_ACCOUNT}）"
     export PASSBY_KS_PASS
 }
 
