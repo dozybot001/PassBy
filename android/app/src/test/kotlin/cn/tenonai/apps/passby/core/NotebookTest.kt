@@ -211,6 +211,14 @@ class NotebookTest {
     }
 
     @Test
+    fun replacingKeepsWhatRecentlyDeletedHeldAndGivesItANewIdentifierWhenTheFileUsesIts() {
+        val local = Notebook(entries = listOf(bank), deleted = listOf(DeletedEntry(mail, 7)))
+        val result = ImportMerge.replace(local, file(emptyList(), mail.copy(password = "old", folderId = null)), 50, freshId)
+        assertEquals(listOf(DeletedEntry(mail.copy(id = "NEW1"), 7), DeletedEntry(bank, 50)), result.notebook.deleted)
+        assertEquals(listOf("E1"), result.notebook.entries.map { it.id })
+    }
+
+    @Test
     fun replacingKeepsTheDraft() {
         val local = Notebook(folders = listOf(work), entries = listOf(mail), draft = bank.copy(id = "D", folderId = "F1"))
         val result = ImportMerge.replace(local, file(emptyList()), 50, freshId)
