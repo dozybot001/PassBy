@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
@@ -73,6 +74,7 @@ fun LibraryScreen(model: AppViewModel, notebook: Notebook) {
         base.strength = Collator.SECONDARY
         base
     }
+    val keyboard = LocalSoftwareKeyboardController.current
     val query = if (model.searching) model.query.trim() else ""
     val entries = remember(notebook.entries, model.filter, query) {
         notebook.entries
@@ -95,7 +97,11 @@ fun LibraryScreen(model: AppViewModel, notebook: Notebook) {
             BrandLockup(wordmarkSize = 26, modifier = Modifier.weight(1f))
             RoundIconButton(Icons.Search, stringResource(if (model.searching) R.string.search_close else R.string.search_open), onClick = {
                 model.searching = !model.searching
-                if (!model.searching) model.query = ""
+                if (!model.searching) {
+                    model.query = ""
+                    // Older Android versions leave the keyboard up when the field it was typing into goes away.
+                    keyboard?.hide()
+                }
             })
             Spacer(Modifier.width(4.dp))
             RoundIconButton(Icons.Dice, stringResource(R.string.generator_open), onClick = { model.open(Screen.Generator(forEditor = false)) })

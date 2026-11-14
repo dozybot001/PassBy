@@ -14,6 +14,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -48,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -56,7 +59,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -84,6 +86,7 @@ import kotlinx.coroutines.withContext
  * Makes the encrypted backup file. The secret is an export code the app generates, or a passphrase
  * the person sets; neither is stored. The file goes where the person saves or shares it and nowhere else.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExportScreen(model: AppViewModel, notebook: Notebook) {
     val context = LocalContext.current
@@ -187,14 +190,22 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
                 val grouped = ExportSecret.grouped(code)
                 val spoken = code.toList().joinToString(" ")
                 SectionLabel(stringResource(R.string.export_code))
-                Text(
-                    grouped,
-                    Modifier.fillMaxWidth().semantics { contentDescription = spoken },
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                )
+                // The four groups wrap as whole groups when the line is too narrow, never in the middle of one.
+                FlowRow(
+                    Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = spoken },
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    val groups = grouped.split("-")
+                    groups.forEachIndexed { index, group ->
+                        Text(
+                            if (index < groups.lastIndex) "$group-" else group,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                        )
+                    }
+                }
                 QrCode(grouped, stringResource(R.string.export_qr), Modifier.align(Alignment.CenterHorizontally).size(208.dp))
                 Text(stringResource(R.string.export_code_note), style = MaterialTheme.typography.bodyMedium)
                 TextButton(onClick = {
