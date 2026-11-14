@@ -6,7 +6,7 @@
 
 - `PassBy/`、`PassByTests/`、`PassBy.xcodeproj`：iPhone 应用（SwiftUI，iOS 17 及以上）。
 - `android/`：安卓应用，说明在 `docs/android.md`。
-- `public/`：网页版和法律页面，静态文件，没有构建步骤。
+- `public/`：介绍页和法律页面，静态文件，没有构建步骤。旧网页版 2026-11-15 已撤。
 - `server/`：认证服务（Node，SQLite），说明在 `server/README.md`，环境变量见 `server/.env.example`。
 - `scripts/`：测试、发布和图标生成脚本。
 - `docs/`：设计和发布文档；`docs/export-format.md` 是各端共用的导出文件格式。
@@ -14,14 +14,13 @@
 ## 常用命令
 
 ```sh
-node scripts/test-web.mjs                 # 网页测试
 node scripts/export-format.mjs --check    # 导出格式的参考实现对照测试向量
 (cd server && npm test)                   # 认证服务测试
 xcodebuild -project PassBy.xcodeproj -scheme PassBy \
   -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
   -derivedDataPath build CODE_SIGN_IDENTITY=- test
 swift scripts/generate-brand.swift        # 重新生成应用图标和网页图标
-scripts/publish.sh site                   # 发布网页和法律页面；auth 发布认证服务
+scripts/publish.sh site                   # 发布介绍页和法律页面；auth 发布认证服务
 ```
 
 ## 规则

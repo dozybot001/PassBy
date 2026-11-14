@@ -119,7 +119,7 @@ existing users need to sign in once after the switch. Rolling back to an older
 Map-based release also loses these persisted logins. Subsequent SQLite releases
 and container restarts preserve valid sessions and product logout revocations.
 
-Tests: `npm test --prefix server` and `node --test scripts/test-web.mjs`.
+Tests: `npm test --prefix server`.
 Stub protocol tests cover callback/session/CSRF/ticket boundaries; they do not
 replace a real Tenon browser and iPhone login acceptance.
 

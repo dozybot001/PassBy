@@ -15,8 +15,7 @@ gitleaks git --no-banner --redact --log-level warn .
 npm audit --prefix server --omit=dev --audit-level=high
 python3 scripts/test_retention.py
 if [[ "$component" == site ]]; then
-    node --test scripts/test-web.mjs
-    for module in public/web/*.mjs; do node --check "$module"; done
+    node scripts/export-format.mjs --check
 else
     npm test --prefix server
 fi

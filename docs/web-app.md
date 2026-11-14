@@ -1,5 +1,7 @@
 # PassBy web
 
+> **2026-11-15：旧网页版已撤。** 创始人当天说「我已经迁移好账密了，可以清理冗余」「现在下架并撤」。`public/index.html` 现在是介绍页，`public/web/` 只剩样式和图标；下面的内容是撤之前的记录，认证服务停用、新网页版上线后归档。
+
 ## Scope
 
 `public/index.html` and `public/web/` are a static ES-module client, deployed at
