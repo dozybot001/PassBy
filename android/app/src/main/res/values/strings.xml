@@ -194,4 +194,6 @@
     <string name="discard_text_changes">Your changes will not be saved. The password stays as it was.</string>
     <string name="import_replace_title">Replace the notebook?</string>
     <string name="import_replace_confirm_text">Passwords on this phone now (%1$d) move to Recently Deleted. They stay there for 30 days and are then deleted.</string>
+    <string name="export_code_copy">Copy export code</string>
+    <string name="copied_export_code">Export code copied for 60 seconds</string>
 </resources>

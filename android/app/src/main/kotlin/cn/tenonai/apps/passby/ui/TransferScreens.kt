@@ -208,10 +208,13 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
                 }
                 QrCode(grouped, stringResource(R.string.export_qr), Modifier.align(Alignment.CenterHorizontally).size(208.dp))
                 Text(stringResource(R.string.export_code_note), style = MaterialTheme.typography.bodyMedium)
-                LinkButton(stringResource(R.string.export_code_new), Icons.Refresh, onClick = {
-                    code = ExportSecret.newCode()
-                    noted = false
-                })
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LinkButton(stringResource(R.string.export_code_copy), Icons.Copy, onClick = { model.copyExportCode(grouped) })
+                    LinkButton(stringResource(R.string.export_code_new), Icons.Refresh, onClick = {
+                        code = ExportSecret.newCode()
+                        noted = false
+                    })
+                }
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = noted, role = Role.Checkbox, onValueChange = { noted = it }),
                     verticalAlignment = Alignment.CenterVertically,

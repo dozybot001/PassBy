@@ -191,4 +191,6 @@
     <string name="discard_text_changes">这次的修改不会保存，原来的内容不变。</string>
     <string name="import_replace_title">替换密码本？</string>
     <string name="import_replace_confirm_text">本机现有的 %1$d 条会移到「最近删除」，保留 30 天，之后自动删除。</string>
+    <string name="export_code_copy">复制导出码</string>
+    <string name="copied_export_code">已复制导出码，60 秒后清除</string>
 </resources>

@@ -199,6 +199,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         notices.tryEmit(Notice(string(R.string.copied_password)))
     }
 
+    fun copyExportCode(code: String) {
+        app.clipboard.copy(code)
+        notices.tryEmit(Notice(string(R.string.copied_export_code)))
+    }
+
     /** Puts a generated password into the entry being edited and copies it, as iPhone does. */
     fun useGenerated(password: String) {
         editing?.let { updateEditing(it.copy(password = password)) }

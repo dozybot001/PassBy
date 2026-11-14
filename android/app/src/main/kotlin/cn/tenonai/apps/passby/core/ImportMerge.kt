@@ -81,11 +81,17 @@ object ImportMerge {
 
     /**
      * Replace: folders and entries become the file's. Every entry that was here goes to Recently
-     * Deleted without its folder.
+     * Deleted without its folder. One whose identifier the file also uses gets a new identifier there,
+     * as on iPhone, so the identifier stays with the file's entry. Nothing already in Recently Deleted
+     * is removed.
      */
     fun replace(local: Notebook, incoming: ExportedNotebook, now: Long, freshId: () -> String = ::newId): Result {
         val deleted = local.deleted.toMutableList()
-        for (entry in local.entries) deleted.add(Notebook.deletedCopy(entry.copy(folderId = null), now, deleted, freshId))
+        val incomingIds = incoming.entries.mapTo(HashSet()) { it.id }
+        for (entry in local.entries) {
+            val moved = if (entry.id in incomingIds) entry.copy(id = freshId(), folderId = null) else entry.copy(folderId = null)
+            deleted.add(Notebook.deletedCopy(moved, now, deleted, freshId))
+        }
         val notebook = local.copy(
             folders = incoming.folders,
             entries = incoming.entries,

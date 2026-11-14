@@ -201,12 +201,13 @@ class NotebookTest {
         assertEquals(2, result.movedToDeleted)
         assertEquals(2, result.added)
         assertEquals(
-            listOf(DeletedEntry(bank.copy(password = "x"), 1), DeletedEntry(mail.copy(folderId = null), 50), DeletedEntry(bank.copy(id = "NEW1"), 50)),
+            // The one the file also holds gets a new identifier; so does the one Recently Deleted already holds.
+            listOf(DeletedEntry(bank.copy(password = "x"), 1), DeletedEntry(mail.copy(id = "NEW1", folderId = null), 50), DeletedEntry(bank.copy(id = "NEW2"), 50)),
             result.notebook.deleted,
         )
-        // Restoring one of them does not collide with the entry the file brought in under the same identifier.
-        val restored = result.notebook.restore("E1", 60, freshId)
-        assertEquals(listOf("E1", "E3", "NEW2"), restored.entries.map { it.id })
+        // Restoring it does not collide with the entry the file brought in.
+        val restored = result.notebook.restore("NEW1", 60, freshId)
+        assertEquals(listOf("E1", "E3", "NEW1"), restored.entries.map { it.id })
     }
 
     @Test
