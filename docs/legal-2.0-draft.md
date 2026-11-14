@@ -1,5 +1,7 @@
 # PassBy 2.0 隐私政策和用户协议初稿（法务组 2026-11-14）
 
+> **2026-11-15 更新**（法务组）：旧网页版和认证服务当天已撤，先发了过渡版隐私政策 3.3、用户协议 2.3（已上线）。「分三步发」改为：① 已发 3.3 / 2.3，原第 1 步作废；② 2.0 上架当天发第 4 版、第 3 版，只写 iPhone，适用范围写「本政策适用于 PassBy 2.0 及以后的 iPhone 应用。旧网页版和通过 iCloud 同步的旧版 iPhone 应用已于 2026 年 11 月 15 日停止提供，见上一版本；新网页版上线后，本政策会更新并加上网页版。」（英文：This policy covers the PassBy iPhone app from version 2.0. The earlier web app and the iPhone version that synced through iCloud stopped being offered on November 15, 2026; see the previous version. When the new web version launches, we will update this policy to cover it. 用户协议把「本政策」换成「本协议」），「旧版本留下的数据」一节当天就放，旧网页版那条写「可以在浏览器设置里清除这两个网址的网站数据」；③ 新网页版上线当天发 4.1、3.1，旧网页版那条换成「会自动清除」。
+
 **第二版**（法务组 11-14，按创始人定的网页版方案改，Tenon-AI ce4e17e）：iPhone 应用加 passby.tenonai.cn 上的新网页版。收费那一节已按改免费写好（Q111）。仓库公开用 MIT（Q113），用户协议照旧保留，「关于本协议」后加一句源代码以 MIT 公开（见 `docs/local-notebook.md` 第 15 节）。
 
 临时文件：做 2.0 时照此改 `public/privacy/`、`public/terms/`（中英文），旧版存档到按日期的目录；页面做好后删掉本文件（规范 3.8）。在 2.0 上架前不上线，因为现在卖的 1.3 还在登录和同步。
