@@ -70,7 +70,7 @@ val PagePadding = 24.dp
 
 /** The PassBy mark: a margin line and three lines of writing, the shapes of the launcher icon. */
 @Composable
-fun BrandMark(size: Dp, modifier: Modifier = Modifier, color: Color = palette.accent) {
+fun BrandMark(size: Dp, modifier: Modifier = Modifier, color: Color = palette.ink) {
     Canvas(modifier.size(size)) {
         // The bars sit in a 56-unit square whose origin is (22, 22) on the icon's 100-unit canvas.
         val unit = this.size.minDimension / 56f
@@ -175,7 +175,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         modifier = modifier.heightIn(min = 48.dp),
         enabled = enabled,
         shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(containerColor = palette.ink, contentColor = palette.paper),
+        colors = ButtonDefaults.buttonColors(containerColor = palette.button, contentColor = palette.onButton),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
     ) {
         if (icon != null) {
@@ -217,13 +217,13 @@ fun LinkButton(text: String, icon: ImageVector, onClick: () -> Unit, modifier: M
 /** A filter chip: a name and how many passwords it holds. The chosen one is filled with ink. */
 @Composable
 fun CountChip(name: String, count: Int, selected: Boolean, onClick: () -> Unit) {
-    val content = if (selected) palette.paper else palette.ink
+    val content = if (selected) palette.onButton else palette.ink
     Row(
         Modifier
             .heightIn(min = 48.dp)
             .padding(vertical = 4.dp)
             .clip(CircleShape)
-            .background(if (selected) palette.ink else palette.wash)
+            .background(if (selected) palette.button else palette.wash)
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,

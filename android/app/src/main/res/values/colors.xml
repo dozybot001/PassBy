@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Scheme A, "kraft paper with a vermilion margin" (docs/local-notebook.md §7). -->
+<!-- Black, white and gray (docs/local-notebook.md §7). There is no accent colour. -->
 <resources>
-    <color name="paper">#F4ECDB</color>
-    <color name="accent">#A63F28</color>
+    <color name="paper">#FAFAFA</color>
+    <color name="ink">#141414</color>
     <!-- The launcher icon keeps the light colours in both appearances, as the iPhone icon does. -->
-    <color name="icon_paper">#F4ECDB</color>
-    <color name="icon_ink">#2A241C</color>
-    <color name="icon_accent">#A63F28</color>
+    <color name="icon_paper">#EBEBEB</color>
+    <color name="icon_ink">#000000</color>
 </resources>

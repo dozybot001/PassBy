@@ -206,7 +206,7 @@ private fun EntryRow(model: AppViewModel, entry: Entry) {
             Box(Modifier.size(44.dp).clip(CircleShape).background(palette.wash), contentAlignment = Alignment.Center) {
                 Text(
                     entry.title.trim().take(1).uppercase(),
-                    color = palette.accent,
+                    color = palette.ink,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                 )

@@ -93,7 +93,7 @@ fun GeneratorScreen(model: AppViewModel, forEditor: Boolean) {
             Text(
                 stringResource(if (options.length in PasswordOptions.LENGTHS) R.string.generator_length_help else R.string.generator_length_error),
                 style = MaterialTheme.typography.bodySmall,
-                color = if (options.length in PasswordOptions.LENGTHS) palette.secondary else palette.accent,
+                color = if (options.length in PasswordOptions.LENGTHS) palette.secondary else palette.ink,
             )
 
             Column {
@@ -103,7 +103,7 @@ fun GeneratorScreen(model: AppViewModel, forEditor: Boolean) {
                 Toggle(stringResource(R.string.symbols), options.symbols) { options = options.copy(symbols = it) }
             }
             if (options.alphabets.isEmpty()) {
-                Text(stringResource(R.string.generator_types_error), style = MaterialTheme.typography.bodySmall, color = palette.accent)
+                Text(stringResource(R.string.generator_types_error), style = MaterialTheme.typography.bodySmall, color = palette.ink)
             }
             Text(stringResource(R.string.generator_tip), style = MaterialTheme.typography.bodySmall, color = palette.secondary)
         }

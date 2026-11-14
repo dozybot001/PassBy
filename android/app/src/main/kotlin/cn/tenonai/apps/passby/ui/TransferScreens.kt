@@ -232,7 +232,7 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
                     else -> null
                 }
                 if (message != null) {
-                    Text(stringResource(message), style = MaterialTheme.typography.bodyMedium, color = palette.accent)
+                    Text(stringResource(message), style = MaterialTheme.typography.bodyMedium, color = palette.ink)
                 } else if (passphrase.isNotEmpty()) {
                     Text(stringResource(strength(passphrase)), style = MaterialTheme.typography.bodyMedium)
                 }
@@ -442,11 +442,11 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
                 }
                 bytes != null -> {
                     SecretField(typed, { typed = it }, stringResource(R.string.import_secret), revealed) { revealed = !revealed }
-                    error?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = palette.accent) }
+                    error?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = palette.ink) }
                 }
                 else -> {
                     Text(stringResource(R.string.import_intro), style = MaterialTheme.typography.bodyMedium, color = palette.secondary)
-                    error?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = palette.accent) }
+                    error?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = palette.ink) }
                 }
             }
         }
