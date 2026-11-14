@@ -26,32 +26,18 @@ for asset in (root / 'public').rglob('*'):
             return match.group(0)
         return quote + path + '?v=' + sys.argv[2] + closing
     asset.write_text(asset_pattern.sub(version_asset, asset.read_text()))
-# passby.tenonai.cn shows the company's ICP number and no public-security number
-# yet; tenon.asia hosts keep the personal numbers until the switch.
-import shutil
-shutil.copytree(root / 'public', root / 'public-tenonai')
-security = re.compile(r'(?: · )?<a href="https://beian\.mps\.gov\.cn/[^"]*"[^>]*>湘公网安备43132202001134号</a>')
-for page in (root / 'public-tenonai').rglob('*.html'):
-    text = page.read_text()
-    if '湘ICP备2026031578号-1' not in text:
-        continue
-    text = security.sub('', text.replace('湘ICP备2026031578号-1', '湘ICP备2026054319号-1'))
-    assert '湘公网安备' not in text and '2026031578' not in text, page
-    page.write_text(text)
 files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-         for tree in ('public', 'public-tenonai')
-         for p in sorted((root / tree).rglob('*')) if p.is_file()}
+         for p in sorted((root / 'public').rglob('*')) if p.is_file()}
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
 PY
 directory="/opt/passby-site/releases/$release"
 config=/etc/caddy/sites-enabled/tenon-ai.caddy
 web_config=/etc/caddy/sites-enabled/passby.caddy
-# Hosts served by passby.caddy; the first is canonical. passby.tenonai.cn runs
-# beside it from 2026-11-13; links still point at passby.tenon.asia until the switch.
-web_hosts='passby.tenon.asia passby.tenonai.cn'
+# Hosts served by passby.caddy; the first is canonical.
+web_hosts='passby.tenonai.cn'
 # Hosts that only redirect to the canonical host: pages 301, /api/* 308, so no
 # request reaches the backend. PassBy's switch moves passby.tenon.asia here.
-moved_hosts=''
+moved_hosts='passby.tenon.asia'
 lock=/opt/passby-site/.publish-lock
 mkdir -p /opt/passby-site/releases
 mkdir "$lock" || { echo 'PassBy site publication is already running.' >&2; exit 1; }
@@ -65,8 +51,7 @@ root = pathlib.Path(sys.argv[1])
 m = json.loads((root / 'manifest.json').read_text())
 assert m['commit'] == sys.argv[2]
 actual = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-          for tree in ('public', 'public-tenonai')
-          for p in (root / tree).rglob('*') if p.is_file()}
+          for p in (root / 'public').rglob('*') if p.is_file()}
 assert actual == m['files']
 PY
 chmod -R a+rX "$directory"
@@ -115,15 +100,7 @@ web="""HOSTS {
     handle /api/* {
         reverse_proxy 127.0.0.1:PORT
     }
-NATIVE    @tenonai_site {
-        host passby.tenonai.cn
-        not path /api/* /passby/api/*
-    }
-    handle @tenonai_site {
-        root * DIRECTORY/public-tenonai
-        file_server
-    }
-    handle {
+NATIVE    handle {
         root * DIRECTORY/public
         file_server
     }
@@ -133,18 +110,18 @@ NATIVE    @tenonai_site {
             header Content-Type application/problem+json
             respond `{"type":"about:blank","title":"Service Unavailable","status":503}` 503
         }
-ERRORS    }
-}
-""".replace('ERRORS',''.join(f"""        handle{matcher} {{
-            root * DIRECTORY/{tree}
-            @missing expression `{{err.status_code}} == 404`
+        handle {
+            root * DIRECTORY/public
+            @missing expression `{err.status_code} == 404`
             rewrite @missing /404.html
-            @down expression `{{err.status_code}} in [502, 503, 504]`
+            @down expression `{err.status_code} in [502, 503, 504]`
             rewrite @down /maintenance.html
             rewrite * /500.html
             file_server
-        }}
-""" for matcher, tree in ((' @tenonai_site', 'public-tenonai'), ('', 'public')))).replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
+        }
+    }
+}
+""".replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
 for host in moved:
     web+=f"""{host} {{
     import access_log
@@ -210,16 +187,11 @@ for host in hosts:
     home = urllib.request.urlopen(f'https://{host}/',timeout=20)
     assert home.headers.get('X-Frame-Options') == 'DENY'
     footer = home.read().decode()
-    if host == 'passby.tenonai.cn':
-        assert '湘ICP备2026054319号-1' in footer and '湘公网安备' not in footer, host
-    else:
-        assert '湘ICP备2026031578号-1' in footer and '湘公网安备43132202001134号' in footer, host
+    assert '湘ICP备2026054319号-1' in footer and '湘公网安备' not in footer, host
 root = pathlib.Path(sys.argv[1])
 for name, digest in json.loads((root / 'manifest.json').read_text())['files'].items():
-    tree, path = name.split('/', 1)
-    host = 'passby.tenonai.cn' if tree == 'public-tenonai' else 'passby.tenon.asia'
-    if host not in hosts:
-        continue
+    path = name.split('/', 1)[1]
+    host = hosts[0]
     if path.endswith('index.html'): path = path.removesuffix('index.html')
     response = urllib.request.urlopen(f'https://{host}/' + path, timeout=20)
     assert hashlib.sha256(response.read()).hexdigest() == digest, name

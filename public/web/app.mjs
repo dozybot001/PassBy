@@ -159,11 +159,8 @@ function render() {
 }
 // Origins keep their own cookies and IndexedDB, so the new host starts unauthorized.
 function moveText() {
-  const moved=location.hostname===moveNotice.host;
-  if(!moveNotice.date || moved&&session.key)return '';
-  if(moved)return language==='zh'?`PassBy 网页已迁到 ${moveNotice.host}。这台浏览器需要重新登录 Tenon、授权 Apple 账号，并用恢复密钥授权一次。`:`PassBy on the web has moved to ${moveNotice.host}. This browser needs to sign in to Tenon, authorize your Apple Account and be authorized with your recovery key once more.`;
-  const date=new Intl.DateTimeFormat(language==='zh'?'zh-CN':'en',{month:'long',day:'numeric',timeZone:'Asia/Shanghai'}).format(new Date(`${moveNotice.date}T12:00:00+08:00`));
-  return language==='zh'?`PassBy 网页将于 ${date}迁到 ${moveNotice.host}。迁移后要重新登录 Tenon、授权 Apple 账号，并用恢复密钥授权这台浏览器一次，请提前确认恢复密钥在手边。`:`On ${date}, PassBy on the web moves to ${moveNotice.host}. You will then sign in to Tenon, authorize your Apple Account and authorize this browser with your recovery key once more. Keep your recovery key at hand.`;
+  if(location.hostname!==moveNotice.host || session.key)return '';
+  return language==='zh'?`PassBy 网页已迁到 ${moveNotice.host}。这台浏览器需要重新登录 Tenon、授权 Apple 账号，并用恢复密钥授权一次。`:`PassBy on the web has moved to ${moveNotice.host}. This browser needs to sign in to Tenon, authorize your Apple Account and be authorized with your recovery key once more.`;
 }
 function changeLanguage(value) {
   if(busyOperations || value===language)return;
