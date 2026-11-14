@@ -205,3 +205,46 @@ These terms are governed by the laws of the People's Republic of China. If a dis
 
 ## Contact
 Email support＠tenonai.cn.
+
+==== 安卓版文本（法务组 11-14，Tenon-AI 40205a7）====
+和安卓版同一天发布，加在当时现行的隐私政策 3.x 和用户协议 2.x 上，iPhone 还是 1.3 时也能单独成立。版本号照规则往上加，版本说明写「增加安卓应用」。iPhone 2.0 时并进第 4 版、第 3 版。支持页加一段「核对安卓安装包」，写签名证书的 SHA-256 指纹和核对办法（例如 `apksigner verify --print-certs`），指纹等安卓会话生成密钥后给。发布前把预览发法务组。
+
+---- 隐私政策（中文）----
+【第一段后加一句】
+本政策适用于 PassBy 的 iPhone 应用、安卓应用和网页版。安卓应用没有账号、不联网，适用「安卓应用」一节和「支持与你的选择」；其余各节讲的是 iPhone 应用和网页版。
+【加一节，放在「支持与你的选择」前】
+## 安卓应用
+- 没有账号，不联网：安卓应用不申请联网权限，不带统计、崩溃上报或更新检查，不连我们的服务器。它只申请生物识别权限，用来请系统验证指纹、人脸或锁屏密码；应用只收到成功或失败，收不到你的生物特征。
+- 你的密码本：条目、分组和「最近删除」存在这台手机上 PassBy 私有目录里的一个文件中，由系统的文件加密保护，PassBy 不另加密钥。「最近删除」里的条目 30 天后自动移除。卸载 PassBy 会删掉这个文件。
+- 系统备份和换机：在 Android 9 及以上，只有系统表示这次云端备份能端到端加密时（一般要求手机设了锁屏），密码本才进入云端备份；不能加密时，系统不备份 PassBy 的数据。端到端加密由提供备份的服务（例如 Google）完成，以它的说明为准。Android 8.0 和 8.1 上，PassBy 不进系统备份。两台手机直接传输时，密码本照常带走。国内手机厂商自己的云备份和换机工具，我们无法验证会不会包含 PassBy、是否加密，请以厂商的说明为准，或者用 PassBy 的加密导出。
+- 剪贴板和截屏：点一行会把密码复制到系统剪贴板，标为敏感内容，60 秒后清除；你粘贴进去的应用能读到它。PassBy 禁止截屏和录屏，多任务界面不显示内容。
+- 加密导出：只有你选择导出时才生成文件。文件用导出码或你设的口令加密，存到你选的位置或交给你选的应用；为分享临时留在应用缓存里的副本 15 分钟后删除。我们收不到导出文件，也不保存导出码和口令。
+- 应用以外：隐私政策、用户协议和官网用系统浏览器打开；反馈用你的邮件应用写，标题自动带上应用版本，不带别的信息。
+
+---- Privacy Policy (English) ----
+[Add after the first paragraph]
+This policy covers the PassBy iPhone app, Android app and web app. The Android app has no account and works offline; the "Android app" section and "Support and your choices" apply to it, and the other sections describe the iPhone app and the web app.
+[Add a section before "Support and your choices"]
+## Android app
+- No account, no network: the Android app does not request network permission, includes no analytics, crash reporting or update checks, and does not connect to our servers. Its only permissions are for biometrics, used to ask the system to verify your fingerprint, face or screen lock; the app receives only success or failure, never your biometric data.
+- Your notebook: entries, folders and Recently Deleted are kept in one file in PassBy's private storage on this phone, protected by the system's file encryption; PassBy adds no key of its own. Entries in Recently Deleted are removed automatically after 30 days. Uninstalling PassBy deletes the file.
+- Backups and new phones: on Android 9 and later, your notebook is included in a cloud backup only when the system indicates that the backup can be end-to-end encrypted, which usually requires a screen lock; otherwise the system does not back up PassBy's data. End-to-end encryption is provided by the backup service, such as Google, as described in its documentation. On Android 8.0 and 8.1, PassBy is not included in system backups. A direct transfer between two phones brings your notebook along. We cannot verify whether phone makers' own cloud backup or transfer tools include PassBy or encrypt it; see the maker's documentation, or use PassBy's encrypted export.
+- Clipboard and screenshots: tapping a row copies the password to the system clipboard, marked as sensitive, and clears it after 60 seconds; the app you paste into can read it. PassBy blocks screenshots and screen recording, and hides its content in the recent apps view.
+- Encrypted export: a file is created only when you choose to export. It is encrypted with your export code or your own passphrase and saved where you choose, or handed to the app you choose; the temporary copy kept in the app's cache for sharing is deleted after 15 minutes. We never receive export files and never store export codes or passphrases.
+- Outside the app: the privacy policy, terms and website open in your system browser; feedback is written in your email app, with the app version added to the subject and nothing else.
+
+---- 用户协议（中文）----
+【「关于本协议」的适用范围改成】本协议适用于 PassBy 的 iPhone 应用、安卓应用和 passby.tenonai.cn 上的网页版。
+【「你的账号」一节开头加】安卓应用没有账号。以下说的 Tenon 账号，只用于 iPhone 应用和网页版。
+【加一节，放在「费用」后】
+## 安卓应用
+安卓应用没有账号，不联网。密码本只存在你的手机、系统备份和你导出的文件里，我们无法读取、找回或重置。请从我们公布的渠道下载安装包，即 PassBy 官网、Gitee 和 GitHub 上的 PassBy 发布页，并核对签名证书指纹；从别处得到的安装包，我们无法保证没有被改动。请定期导出，并在 PassBy 之外保存导出码或口令。手机丢失或损坏，又没有可用的备份或导出文件时，你和我们都无法找回其中的密码。
+【「责任」一节列举的情形里加】「导出码或口令丢失、使用从非官方渠道得到的安装包」
+
+---- Terms (English) ----
+[Scope in "About these terms"] These terms apply to the PassBy iPhone app, Android app and the web app at passby.tenonai.cn.
+[Start of "Your account"] The Android app has no account. The Tenon Account described below is used only by the iPhone app and the web app.
+[Add a section after "Price"]
+## Android app
+The Android app has no account and works offline. Your notebook exists only on your phone, in system backups and in files you export, so we cannot read, recover or reset it. Download the app only from the channels we publish, namely the PassBy website and the PassBy release pages on Gitee and GitHub, and check the signing certificate fingerprint; we cannot guarantee that an installer obtained elsewhere has not been altered. Export regularly, and keep your export code or passphrase outside PassBy. If you lose or damage your phone without a usable backup or export file, neither you nor we can recover the passwords.
+[Add to the causes listed in "Liability"] "a lost export code or passphrase, or an installer obtained from an unofficial channel"
