@@ -1,6 +1,6 @@
 # PassBy 2.0 隐私政策和用户协议初稿（法务组 2026-11-14）
 
-**第二版**（法务组 11-14，按创始人定的网页版方案改，Tenon-AI ce4e17e）：iPhone 应用加 passby.tenonai.cn 上的新网页版。还差两处要等：收费那一节 Q111 定了以后二选一；仓库要是公开并用 MIT（Q113），用户协议改成「许可证加网页版的几句服务条款」，法务组到时另给。
+**第二版**（法务组 11-14，按创始人定的网页版方案改，Tenon-AI ce4e17e）：iPhone 应用加 passby.tenonai.cn 上的新网页版。收费那一节已按改免费写好（Q111）。仓库公开用 MIT（Q113），用户协议照旧保留，「关于本协议」后加一句源代码以 MIT 公开（见 `docs/local-notebook.md` 第 15 节）。
 
 临时文件：做 2.0 时照此改 `public/privacy/`、`public/terms/`（中英文），旧版存档到按日期的目录；页面做好后删掉本文件（规范 3.8）。在 2.0 上架前不上线，因为现在卖的 1.3 还在登录和同步。
 
@@ -13,7 +13,7 @@
 6. 邮箱在初稿里写成全角 ＠，页面上用正常的 support@tenonai.cn 链接。
 7. 「不联网」只说 iPhone 应用；网页版说「导入和解密都在你的浏览器里，不上传」。网页版不影响 iPhone 的隐私标签。
 8. 通行密钥的用户名用固定的「PassBy」，不放个人信息。
-9. 新网页版不自动清旧网页版留在浏览器里的授权密钥和偏好（创始人「不要删」的硬约束），所以「旧版本留下的数据」照现在写「可以在浏览器设置里清除」。哪天改成自动清，先告诉法务组改这一条。
+9. 新网页版第一次打开时，自动删掉旧网页版在 passby.tenonai.cn 上留下的授权密钥和登录偏好（安全组 11-14 要求）。这时创始人已确认迁移无误、旧网页版已撤，不违反硬约束。已请法务组把「旧版本留下的数据」那条改成「会自动清除」，passby.tenon.asia 上的照旧由用户自己清。
 
 ==== 隐私政策 ====
 第 4 版 · 生效日期：【2.0 上架当天】 · 上一版本
@@ -128,9 +128,8 @@ When this policy changes, we update the version and effective date on this page 
 ## 网页版
 网页版是只读副本，内容以你最近一次导入的为准；手机上改了，要重新导出、导入。请只在你自己的、可信的电脑上打开「这是我自己的电脑」；在别人的或公用的电脑上，用完就关掉页面。
 
-【Q111 定了以后二选一】
-- 免费时：## 费用　PassBy 免费下载和使用，网页版也免费。
-- 收费时：## 购买　iPhone 应用在 App Store 一次性购买，付款与退款由 Apple 按其媒体服务条款和《许可应用最终用户许可协议》处理。网页版免费使用。
+## 费用
+PassBy 免费下载和使用，网页版也免费。改为免费之前在 App Store 购买的，退款仍由 Apple 按其媒体服务条款处理。
 
 ## 使用规范
 不得利用 PassBy 违反法律，或未经许可获取、使用他人的账号和数据。安全问题请按安全政策报告。
@@ -165,9 +164,8 @@ To move to a new iPhone, use a system backup, a device transfer or a PassBy encr
 ## Web version
 The web version is a read-only copy that reflects your most recent import; after changes on your phone, export and import again. Turn on "This is my own computer" only on a computer that is yours and that you trust; on someone else's or a shared computer, close the page when you are done.
 
-[Choose one once Q111 is decided]
-- If free: ## Price — PassBy is free to download and use, and so is the web version.
-- If paid: ## Purchase — The iPhone app is a one-time purchase on the App Store. Apple handles payment and refunds under its Media Services Terms and the Licensed Application End User License Agreement. The web version is free.
+## Price
+PassBy is free to download and use, and so is the web version. For purchases made on the App Store before PassBy became free, Apple handles refunds under its Media Services Terms.
 
 ## Acceptable use
 Do not use PassBy to break the law, or to obtain or use other people's accounts or data without permission. Report security issues as described in our security policy.
