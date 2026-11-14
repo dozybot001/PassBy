@@ -25,6 +25,10 @@ OUT_DIR="$ANDROID_DIR/build/release"
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 APK="$OUT_DIR/PassBy-$VERSION.apk"
+# The package carries its real name only after every check has passed. Until then it is this file,
+# which is removed however the script ends.
+PENDING="$OUT_DIR/unverified.apk"
+trap 'rm -f "$PENDING"' EXIT
 
 # Signature schemes v2 and v3 only: the app needs Android 8.0, which does not use v1.
 load_keystore_password
@@ -32,30 +36,38 @@ load_keystore_password
     --ks "$KEYSTORE" --ks-type PKCS12 --ks-key-alias "$KEY_ALIAS" --ks-pass env:PASSBY_KS_PASS \
     --min-sdk-version 26 \
     --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false \
-    --out "$APK" "$UNSIGNED"
+    --out "$PENDING" "$UNSIGNED"
 unset PASSBY_KS_PASS
 
-# 1. The certificate in the package is the registered one, or the package is thrown away.
-VERIFY="$("$BUILD_TOOLS/apksigner" verify --verbose --print-certs --min-sdk-version 26 "$APK")"
+# 1. The signature verifies and the certificate is the registered one.
+VERIFY="$("$BUILD_TOOLS/apksigner" verify --verbose --print-certs --min-sdk-version 26 "$PENDING")" || fail "签名验证没有通过"
 # Older build tools print "Signer #1 certificate SHA-256 digest", newer ones "V3.0 Signer: certificate SHA-256 digest".
 ACTUAL="$(printf '%s\n' "$VERIFY" | sed -n 's/^.*Signer.*certificate SHA-256 digest: //p' | sort -u | tr 'a-f' 'A-F')"
-printf '%s\n' "$VERIFY" | grep -q '^Number of signers: 1$' || { rm -f "$APK"; fail "签名者不是恰好一个"; }
-if [ "$ACTUAL" != "$EXPECTED" ]; then
-    rm -f "$APK"
-    fail "签名证书的 SHA-256 是 $ACTUAL，登记的是 $EXPECTED。已删除这个包。"
-fi
-printf '%s\n' "$VERIFY" | grep -q '^Verified using v1 scheme (JAR signing): false' || { rm -f "$APK"; fail "包里有 v1 签名"; }
-printf '%s\n' "$VERIFY" | grep -q '^Verified using v2 scheme (APK Signature Scheme v2): true' || { rm -f "$APK"; fail "包里没有 v2 签名"; }
-printf '%s\n' "$VERIFY" | grep -q '^Verified using v3 scheme (APK Signature Scheme v3): true' || { rm -f "$APK"; fail "包里没有 v3 签名"; }
+[ "$ACTUAL" = "$EXPECTED" ] || fail "签名证书的 SHA-256 是 $ACTUAL，登记的是 $EXPECTED。"
+printf '%s\n' "$VERIFY" | grep -q '^Number of signers: 1$' || fail "签名者不是恰好一个"
+printf '%s\n' "$VERIFY" | grep -q '^Verified using v1 scheme (JAR signing): false' || fail "包里有 v1 签名"
+printf '%s\n' "$VERIFY" | grep -q '^Verified using v2 scheme (APK Signature Scheme v2): true' || fail "包里没有 v2 签名"
+printf '%s\n' "$VERIFY" | grep -q '^Verified using v3 scheme (APK Signature Scheme v3): true' || fail "包里没有 v3 签名"
 
-# 2. The package is the app, is not debuggable, and asks for no network permission.
-BADGING="$("$BUILD_TOOLS/aapt2" dump badging "$APK")"
-PERMISSIONS="$("$BUILD_TOOLS/aapt2" dump permissions "$APK")"
-printf '%s\n' "$BADGING" | grep -q "^package: name='$PACKAGE' " || { rm -f "$APK"; fail "包名不是 $PACKAGE"; }
-printf '%s\n' "$BADGING" | grep -q "versionName='$VERSION'" || { rm -f "$APK"; fail "版本号不是 $VERSION"; }
-if printf '%s\n' "$BADGING" | grep -q 'application-debuggable'; then rm -f "$APK"; fail "这个包可以调试"; fi
-if printf '%s\n' "$PERMISSIONS" | grep -E -q 'INTERNET|NETWORK|WIFI'; then rm -f "$APK"; fail "这个包申请了网络相关的权限"; fi
+# 2. The package is the app and is not debuggable.
+BADGING="$("$BUILD_TOOLS/aapt2" dump badging "$PENDING")" || fail "读不出包的信息"
+printf '%s\n' "$BADGING" | grep -q "^package: name='$PACKAGE' " || fail "包名不是 $PACKAGE"
+printf '%s\n' "$BADGING" | grep -q "versionName='$VERSION'" || fail "版本号不是 $VERSION"
+if printf '%s\n' "$BADGING" | grep -q 'application-debuggable'; then fail "这个包可以调试"; fi
 
+# 3. Its permissions are exactly the ones on the list, the same list the build checks
+#    (CheckPermissions in app/build.gradle.kts). Anything else, a network permission above all, stops here.
+OWN_PERMISSION="$PACKAGE.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+PERMISSIONS="$("$BUILD_TOOLS/aapt2" dump permissions "$PENDING")" || fail "读不出包的权限"
+USED="$(printf '%s\n' "$PERMISSIONS" | sed -n "s/^uses-permission: name='\([^']*\)'.*$/\1/p" | sort)"
+WANTED="$(printf '%s\n' android.permission.USE_BIOMETRIC android.permission.USE_FINGERPRINT "$OWN_PERMISSION" | sort)"
+[ "$USED" = "$WANTED" ] || fail "这个包申请的权限和名单不一样：$(printf '%s' "$USED" | tr '\n' ' ')"
+DECLARED="$(printf '%s\n' "$PERMISSIONS" | sed -n 's/^permission: //p' | sort)"
+[ "$DECLARED" = "$OWN_PERMISSION" ] || fail "这个包声明的权限和名单不一样：$(printf '%s' "$DECLARED" | tr '\n' ' ')"
+OTHER="$(printf '%s\n' "$PERMISSIONS" | grep -v -E '^(package: |uses-permission: |permission: )' || true)"
+[ -z "$OTHER" ] || fail "权限清单里有没见过的内容：$OTHER"
+
+mv "$PENDING" "$APK"
 ( cd "$OUT_DIR" && shasum -a 256 "$(basename "$APK")" > SHA256SUMS )
 
 echo
