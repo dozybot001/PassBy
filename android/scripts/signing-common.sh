@@ -27,6 +27,12 @@ load_keystore_password() {
     export PASSBY_KS_PASS
 }
 
+# Prints the subject that is actually in the certificate.
+certificate_subject() {
+    "$JAVA_HOME/bin/keytool" -exportcert -rfc -keystore "$KEYSTORE" -storetype PKCS12 -alias "$KEY_ALIAS" -storepass:env PASSBY_KS_PASS \
+        | openssl x509 -noout -subject -nameopt RFC2253
+}
+
 # Prints the certificate's fingerprint for one digest, upper-case hex without colons.
 certificate_fingerprint() { # sha256 | sha1 | md5
     "$JAVA_HOME/bin/keytool" -exportcert -rfc -keystore "$KEYSTORE" -storetype PKCS12 -alias "$KEY_ALIAS" -storepass:env PASSBY_KS_PASS \

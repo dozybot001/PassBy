@@ -40,6 +40,13 @@ printf 'add-generic-password -s %s -a %s -l "PassBy Android signing key" -w %s\n
     -dname "$DNAME" -storepass:env PASSBY_KS_PASS
 chmod 600 "$KEYSTORE"
 
+# The company name has to be in the certificate whole, comma included. It cannot be corrected later.
+SUBJECT="$(certificate_subject)"
+case "$SUBJECT" in
+    *'O=Changsha Tenon Artificial Intelligence Technology Co.\, Ltd.'*) ;;
+    *) fail "证书主体里的公司名不完整：$SUBJECT。不要用这把密钥；删掉密钥库和钥匙串条目后重来。" ;;
+esac
+
 SHA256="$(certificate_fingerprint sha256)"
 SHA1="$(certificate_fingerprint sha1)"
 MD5="$(certificate_fingerprint md5)"
@@ -50,7 +57,7 @@ umask 022
 printf '%s\n' "$SHA256" > "$FINGERPRINT_FILE"
 
 echo "密钥库：$KEYSTORE"
-echo "证书主体：$DNAME"
+echo "证书主体：$SUBJECT"
 echo "证书指纹（不是秘密，登记到 docs/android.md 和支持页）："
 echo "  SHA-256  $SHA256"
 echo "  SHA-1    $SHA1"
