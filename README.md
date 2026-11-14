@@ -4,7 +4,7 @@
 
 ## 访问
 
-- iPhone：[App Store](https://apps.apple.com/app/id6817881529)，iOS 17 及以上，一次性购买。
+- iPhone：[App Store](https://apps.apple.com/app/id6817881529)，iOS 17 及以上，免费（2026-11-14 起）。
 - 网页：<https://passby.tenon.asia/>，用于打开已在 iPhone 上创建的密码本。
 
 ## 快速开始
