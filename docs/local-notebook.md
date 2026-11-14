@@ -241,7 +241,8 @@
   - 总办在商店的推广文本里加一句「网页版已停止服务」，要等 App Store Connect 重新登录（Q109），不卡 11-17。1.3 的描述还讲浏览器授权，要等新版本才能改。
   - CloudKit 的网页 API 令牌只有网页 App 用，下线后由总办删（C6）。
   - 用户协议没有「停止服务要提前通知」的条款，网页版又只有创始人在用，所以不用对外通知。
-  - 已交总办放上待办页，请创始人定。
+  - 总办已放上待办页（Q110，期限 11-16 晚上）。统一说法，支持页和协议照这个写，创始人改了以总办转达为准：中文「网页版已于 2026 年 11 月 17 日停止服务，iPhone 版照常使用。」英文「The PassBy web app was discontinued on November 17, 2026. The iPhone app works as before.」
+  - App Store Connect 和 CloudKit 后台要等创始人重新登录 Apple，推广文本和删令牌可能晚于 11-17；在那之前，商店描述里还写着网页版和 passby.tenon.asia。
 
 ## 14. 原型
 
