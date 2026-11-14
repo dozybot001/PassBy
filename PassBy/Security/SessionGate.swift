@@ -1,38 +1,33 @@
 import Foundation
 
-/// The biometric prompt itself can make the scene inactive. Backgrounding must
-/// invalidate it; a late success must never reopen a notebook in another session.
+/// The one door in front of the notebook. A cold start asks once; coming back
+/// asks again only after five minutes away. The times are seconds on a clock
+/// that keeps running while the phone sleeps and ignores changes to the date.
 struct SessionGate {
     enum Phase { case locked, authenticating, unlocked }
+    static let grace: TimeInterval = 5 * 60
+
     private(set) var phase: Phase = .locked
-    private(set) var isActive = true
     private(set) var generation: UInt64 = 0
-    private var pendingSuccess = false
-    private var biometricPromptActive = false
+    private var leftAt: TimeInterval?
 
     mutating func beginAuthentication() -> UInt64? {
-        guard isActive, phase == .locked else { return nil }
+        guard phase == .locked else { return nil }
         generation &+= 1
         phase = .authenticating
-        pendingSuccess = false
-        biometricPromptActive = true
         return generation
     }
 
+    /// A late answer from an earlier prompt must never open the notebook.
     func accepts(_ token: UInt64) -> Bool {
         token == generation && phase == .authenticating
-    }
-
-    mutating func biometricPromptFinished(_ token: UInt64) {
-        if accepts(token) { biometricPromptActive = false }
     }
 
     @discardableResult
     mutating func authenticationSucceeded(_ token: UInt64) -> Bool {
         guard accepts(token) else { return false }
-        pendingSuccess = true
-        biometricPromptActive = false
-        if isActive { phase = .unlocked }
+        phase = .unlocked
+        leftAt = nil
         return true
     }
 
@@ -41,40 +36,33 @@ struct SessionGate {
         lock()
     }
 
-    /// A second check while unlocked, before showing the recovery key. Its
-    /// prompt may make the scene inactive; leaving the app still locks.
-    mutating func beginReauthentication() -> UInt64? {
-        guard isActive, phase == .unlocked, !biometricPromptActive else { return nil }
-        biometricPromptActive = true
-        return generation
+    /// The door is switched off, or the phone has no screen lock.
+    mutating func open() {
+        guard phase == .locked else { return }
+        generation &+= 1
+        phase = .unlocked
+        leftAt = nil
     }
 
-    @discardableResult
-    mutating func reauthenticationFinished(_ token: UInt64) -> Bool {
-        guard token == generation, phase == .unlocked else { return false }
-        biometricPromptActive = false
-        return true
+    mutating func didEnterBackground(at uptime: TimeInterval) {
+        if phase == .authenticating { lock() }
+        if leftAt == nil { leftAt = uptime }
     }
 
-    mutating func willResignActive() {
-        isActive = false
-        if !biometricPromptActive { lock() }
-    }
-
-    mutating func didEnterBackground() {
-        isActive = false
+    /// Locks when the app was away for five minutes or more.
+    mutating func didBecomeActive(at uptime: TimeInterval) {
+        defer { leftAt = nil }
+        guard phase == .unlocked, let leftAt, uptime - leftAt >= Self.grace else { return }
         lock()
-    }
-
-    mutating func didBecomeActive() {
-        isActive = true
-        if phase == .authenticating && pendingSuccess { phase = .unlocked }
     }
 
     mutating func lock() {
         generation &+= 1
-        pendingSuccess = false
-        biometricPromptActive = false
         phase = .locked
+        leftAt = nil
     }
+}
+
+enum Uptime {
+    static var now: TimeInterval { TimeInterval(clock_gettime_nsec_np(CLOCK_MONOTONIC)) / 1_000_000_000 }
 }

@@ -1,4 +1,3 @@
-import CryptoKit
 import XCTest
 @testable import PassBy
 
@@ -25,13 +24,16 @@ final class PasswordGeneratorTests: XCTestCase {
         XCTAssertThrowsError(try PasswordGenerator.generate(options: options))
     }
 
-    func testDraftIsOnlyInEncryptedLocalSnapshot() throws {
+    func testDraftIsKeptInTheNotebookFileAndLeftOutOfExports() throws {
         let draft = VaultEntry(password: "draft-secret-unique", notes: "unfinished")
-        let state = LocalVaultState(current: Vault(), base: Vault(), draft: draft)
-        let key = SymmetricKey(size: .bits256)
-        let data = try VaultCipher.sealLocal(state, key: key)
-        XCTAssertNil(data.range(of: Data(draft.password.utf8)))
-        XCTAssertEqual(try VaultCipher.openLocal(data, key: key).draft, draft)
-        XCTAssertTrue(state.current.entries.isEmpty)
+        var notebook = Notebook()
+        notebook.draft = draft
+        let store = NotebookStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+        defer { try? FileManager.default.removeItem(at: store.directory) }
+        try store.save(notebook)
+        XCTAssertEqual(try store.load().draft, draft)
+        XCTAssertTrue(notebook.vault.entries.isEmpty)
+        let code = ExportFormat.newCode()
+        XCTAssertTrue(try ExportFormat.open(ExportFormat.export(notebook.vault, typed: code), typed: code).entries.isEmpty)
     }
 }

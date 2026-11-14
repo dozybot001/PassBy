@@ -6,8 +6,8 @@ struct RootView: View {
         ZStack(alignment: .bottom) {
             Palette.paper.ignoresSafeArea()
             if session.phase == .unlocked {
-                if let recovery = session.recoveryToSave {
-                    RecoverySetupView(recovery: recovery)
+                if session.needsMigration || session.migrationSummary != nil {
+                    MigrationView()
                 } else {
                     LibraryView()
                         .alert("Could not save", isPresented: Binding(
@@ -16,190 +16,133 @@ struct RootView: View {
                         )) {
                             Button("OK", role: .cancel) { session.message = nil }
                         } message: { Text(session.message ?? "") }
+                        .alert("This iPhone has no passcode", isPresented: $session.showNoLockNotice) {
+                            Button("OK", role: .cancel) {}
+                        } message: {
+                            Text("Without a passcode, iPhone does not encrypt your notebook file and anyone holding the phone can open PassBy. Set a passcode in iPhone Settings.")
+                        }
                 }
             } else {
                 LockView()
             }
-            if let toast = session.toast { StatusToast(text: toast) }
+            if let toast = session.toast {
+                StatusToast(text: toast, action: session.toastAction.map { action in
+                    (action.title, { action.run(); session.dismissToast() })
+                })
+            }
         }
         .foregroundStyle(Palette.ink)
     }
 }
 
+/// Shown only while the door is closed. Nothing from the notebook is in the
+/// view tree, or in memory, at this point.
 struct LockView: View {
     @EnvironmentObject private var session: VaultSession
-    @EnvironmentObject private var account: TenonAccount
-    @State private var recovery = ""
-    @State private var understood = false
-    @State private var retrying = false
-    @State private var unlocking = false
-    private var needsRecovery: Bool { session.setup == .recovery || session.setup == .localRecovery }
-    private var working: Bool { unlocking || session.phase == .authenticating || session.setup == .checking }
+    private var working: Bool { session.phase == .authenticating }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                NotebookTitle().padding(.bottom, 62)
-                Text(L(session.setup == .newNotebook ? "A place for your passwords." : "Your notebook.\nFor your eyes."))
-                    .font(.largeTitle.weight(.semibold)).tracking(-0.7)
-                    .fixedSize(horizontal: false, vertical: true).padding(.bottom, 18)
-                Text("Four fields. One quiet place to keep them.")
-                    .font(.body).foregroundStyle(Palette.secondary).padding(.bottom, 34)
-                if session.setup == .newNotebook {
-                    VStack(alignment: .leading, spacing: 18) {
-                        securityLine("Face ID, every time", icon: Biometry.current.symbol)
-                        securityLine("Encrypted before syncing", icon: "icloud")
-                        securityLine("One Tenon Account", icon: "person.crop.circle")
-                    }.padding(.bottom, 30)
-                    Text(LB("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key."))
-                        .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 14)
-                    Toggle("I understand how recovery works", isOn: $understood).tint(Palette.control)
-                        .font(.subheadline).padding(.bottom, 24)
-                }
-                if needsRecovery {
-                    Text(L(session.setup == .localRecovery
-                        ? "Restore the encrypted notebook already on this iPhone to your current Apple Account. Your original local copy will be kept. Enter its recovery key to continue."
-                        : "Enter your recovery key to open your notebook on this iPhone."))
-                        .font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 12)
-                    SecureField("Recovery key", text: $recovery)
-                        .textInputAutocapitalization(.characters).autocorrectionDisabled()
-                        .font(.system(.body, design: .monospaced))
-                        .padding(16).background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 14))
-                        .padding(.bottom, 24)
-                }
-                if let message = session.message {
-                    Text(message).font(.subheadline).foregroundStyle(Palette.secondary)
-                        .fixedSize(horizontal: false, vertical: true).padding(.bottom, 22)
-                }
-                if session.setup == .newNotebook {
-                    if account.identity == nil {
-                        SignInOptions().padding(.bottom, 16)
-                    } else if let identity = account.identity {
-                        Text("Tenon: \(identity.name)").font(.subheadline).foregroundStyle(Palette.secondary).padding(.bottom, 16)
-                    }
-                }
-                if session.setup == .unavailable || retrying {
-                    Button {
-                        guard !retrying else { return }
-                        retrying = true
-                        Task { defer { retrying = false }; await session.prepare() }
-                    } label: { OperationLabel(title: "Try again", working: retrying).tint(Palette.paper) }
-                    .buttonStyle(PrimaryButton()).disabled(retrying)
-                } else {
-                    Button {
-                        guard !working else { return }
-                        let text = needsRecovery ? recovery : nil
-                        unlocking = true
-                        Task {
-                            defer { unlocking = false }
-                            if session.setup == .newNotebook, !(await account.ensureCurrentSession()) { return }
-                            await session.unlock(recoveryText: text)
-                        }
-                    } label: {
-                        if working { ProgressView().tint(Palette.paper) }
-                        else { Label(session.setup == .newNotebook ? L("Create my notebook") : session.setup == .localRecovery ? LB("Restore with Face ID") : LB("Unlock with Face ID"), systemImage: Biometry.current.symbol) }
-                    }
-                    .buttonStyle(PrimaryButton())
-                    .disabled(working || account.working || (session.setup == .newNotebook && !understood)
-                        || (session.setup == .newNotebook && account.identity == nil)
-                        || (needsRecovery && recovery.isEmpty))
-                }
-                if session.setup != .newNotebook && session.setup != .checking && account.identity == nil {
-                    SignInOptions().disabled(working).padding(.top, 16)
-                }
-                if let message = account.message {
-                    Text(message).font(.subheadline).foregroundStyle(Palette.secondary)
-                        .fixedSize(horizontal: false, vertical: true).padding(.top, 16)
-                }
-                Text("Your notebook is encrypted before it syncs.")
-                    .font(.footnote).foregroundStyle(Palette.secondary)
-                    .padding(.top, 22).frame(maxWidth: .infinity, alignment: .center)
-                HStack(spacing: 20) {
-                    Link("Privacy policy", destination: PassByLinks.page("privacy/"))
-                    Link("Terms of Service", destination: PassByLinks.page("terms/"))
-                }
-                .font(.footnote).tint(Palette.secondary).padding(.top, 10).frame(maxWidth: .infinity, alignment: .center)
+        VStack(alignment: .leading, spacing: 0) {
+            NotebookTitle().padding(.bottom, 62)
+            Text("Your notebook.\nFor your eyes.")
+                .font(.largeTitle.weight(.semibold)).tracking(-0.7)
+                .fixedSize(horizontal: false, vertical: true).padding(.bottom, 18)
+            Text("No account. Your notebook is kept on this iPhone.")
+                .font(.body).foregroundStyle(Palette.secondary)
+            if let message = session.message {
+                InlineError(text: message).padding(.top, 22)
             }
-            .padding(.horizontal, PageMetrics.horizontalPadding).padding(.top, 32).padding(.bottom, 32)
-            .frame(maxWidth: 540)
-            .frame(maxWidth: .infinity)
+            Spacer(minLength: 24)
+            Button {
+                guard !working else { return }
+                Task { await session.unlock() }
+            } label: {
+                if working { ProgressView().tint(Palette.paper) }
+                else { Label(L("Open notebook"), systemImage: Biometry.current.symbol) }
+            }
+            .buttonStyle(PrimaryButton()).disabled(working)
+            HStack(spacing: 20) {
+                Link("Privacy policy", destination: PassByLinks.page("privacy/"))
+                Link("Terms of Service", destination: PassByLinks.page("terms/"))
+            }
+            .font(.footnote).tint(Palette.secondary).padding(.top, 16).frame(maxWidth: .infinity, alignment: .center)
         }
-        .onDisappear { recovery = "" }
-    }
-
-    private func securityLine(_ text: String, icon: String) -> some View {
-        HStack(spacing: 13) {
-            Image(systemName: icon).font(.title3).foregroundStyle(Palette.accent).frame(width: 26)
-            Text(LB(text)).font(.subheadline)
-        }
+        .padding(.horizontal, PageMetrics.horizontalPadding).padding(.top, 32).padding(.bottom, 24)
+        .frame(maxWidth: 540).frame(maxWidth: .infinity)
     }
 }
 
-struct RecoverySetupView: View {
+/// Carries a PassBy 1.x notebook on this iPhone into 2.0. The earlier file and
+/// its key are only read; they stay where they are.
+struct MigrationView: View {
     @EnvironmentObject private var session: VaultSession
-    let recovery: String
-    @State private var confirming = false
-    @State private var group = 0
-    @State private var typed = ""
-    @State private var mismatch = false
-    private var groups: Int { RecoveryKey.groupCount(recovery) }
+    @State private var recovery = ""
+    @State private var working = false
+    @State private var showExport = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                NotebookMark(size: 54)
-                if confirming { confirmation } else { key }
-                if let message = session.message {
-                    InlineError(text: message)
+        VStack(alignment: .leading, spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    NotebookMark(size: 54)
+                    if let summary = session.migrationSummary { done(summary) } else { start }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(PageMetrics.horizontalPadding).frame(maxWidth: 540).frame(maxWidth: .infinity)
+            if let summary = session.migrationSummary {
+                if summary.entries > 0 {
+                    Button { showExport = true } label: { Label("Export a backup now", systemImage: "square.and.arrow.up") }
+                        .buttonStyle(SecondaryButton()).frame(maxWidth: .infinity).padding(.bottom, 12)
+                }
+                Button { session.finishMigration() } label: { Label("Open my notebook", systemImage: "checkmark") }
+                    .buttonStyle(PrimaryButton())
+            } else {
+                Button {
+                    guard !working else { return }
+                    working = true
+                    Task { defer { working = false }; await session.migrate(recoveryText: recovery) }
+                } label: {
+                    if working { ProgressView().tint(Palette.paper) }
+                    else { Label(L("Move my notebook"), systemImage: "arrow.right.doc.on.clipboard") }
+                }
+                .buttonStyle(PrimaryButton())
+                .disabled(working || (session.migrationNeedsRecovery && recovery.isEmpty))
+                Button("Not now") { session.migrationDeferred = true }
+                    .font(.subheadline).tint(Palette.secondary).frame(maxWidth: .infinity).padding(.top, 16)
+            }
         }
-        .onDisappear { typed = "" }
+        .padding(.horizontal, PageMetrics.horizontalPadding).padding(.top, 32).padding(.bottom, 24)
+        .frame(maxWidth: 540).frame(maxWidth: .infinity)
+        .sheet(isPresented: $showExport) { ExportView() }
+        .onDisappear { recovery = "" }
     }
 
-    @ViewBuilder private var key: some View {
-        Text("Keep your recovery key.").font(.largeTitle.weight(.semibold))
-        Text("Write it down or save it in a secure place outside this app. Anyone with this key and access to your Apple-linked notebook can read your passwords.")
+    @ViewBuilder private var start: some View {
+        Text("Move your notebook to this version.").font(.largeTitle.weight(.semibold))
+            .fixedSize(horizontal: false, vertical: true)
+        Text(LB("PassBy no longer uses an account or iCloud sync. Your notebook from the earlier version is still on this iPhone. PassBy reads it with Face ID and keeps it on this iPhone from now on."))
             .foregroundStyle(Palette.secondary)
-        Text(recovery).font(.system(.body, design: .monospaced)).lineSpacing(8)
-            .padding(20).frame(maxWidth: .infinity, alignment: .leading)
-            .background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
-            .privacySensitive()
-        Button {
-            session.copy(recovery, label: L("Recovery key copied for 60 seconds"))
-        } label: { Label("Copy recovery key", systemImage: "doc.on.doc") }
-            .buttonStyle(SecondaryButton())
-        Text("PassBy never uploads this key. If you lose every device and this key, your passwords cannot be recovered.")
-            .font(.footnote).foregroundStyle(Palette.secondary)
-        Button("I have saved it") {
-            // A random group, so the check reads the saved copy, not memory.
-            group = Int.random(in: 0..<groups)
-            typed = ""
-            mismatch = false
-            confirming = true
-        }.buttonStyle(PrimaryButton())
+        Text("Nothing is deleted. The earlier file stays on this iPhone, and your copy in iCloud stays in iCloud.")
+            .foregroundStyle(Palette.secondary)
+        if session.migrationNeedsRecovery {
+            SecureField("Recovery key", text: $recovery)
+                .textInputAutocapitalization(.characters).autocorrectionDisabled()
+                .font(.system(.body, design: .monospaced))
+                .padding(16).background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 14))
+        }
+        if let message = session.message { InlineError(text: message) }
     }
 
-    @ViewBuilder private var confirmation: some View {
-        Text("Check your saved copy.").font(.largeTitle.weight(.semibold))
-        Text(String(format: L("Enter group %d of %d from the recovery key you saved. Groups are separated by hyphens."), group + 1, groups))
+    @ViewBuilder private func done(_ summary: MigrationSummary) -> some View {
+        Text("Your notebook has moved.").font(.largeTitle.weight(.semibold))
+            .fixedSize(horizontal: false, vertical: true)
+        Text(String(format: L("All %d passwords from the earlier version are in this notebook."), summary.entries))
             .foregroundStyle(Palette.secondary)
-        TextField(String(format: L("Group %d"), group + 1), text: $typed)
-            .textInputAutocapitalization(.characters).autocorrectionDisabled()
-            .font(.system(.title3, design: .monospaced))
-            .padding(16).background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 14))
-            .privacySensitive()
-            .onChange(of: typed) { mismatch = false }
-        if mismatch {
-            InlineError(text: L("This group does not match. Check your saved copy."))
+        if !summary.drafts.isEmpty {
+            Text(L("An unsaved draft was kept as its own entry:") + " " + summary.drafts.joined(separator: ", "))
+                .foregroundStyle(Palette.secondary)
         }
-        Button("Open my notebook") {
-            if RecoveryKey.confirms(typed, group: group, of: recovery) { session.confirmRecoverySaved() }
-            else { mismatch = true }
-        }
-        .buttonStyle(PrimaryButton()).disabled(typed.isEmpty)
-        Button("Show the key again") { confirming = false }
-            .buttonStyle(SecondaryButton())
+        Text("Export a backup and keep it somewhere else, such as your computer. PassBy has no account to restore from.")
+            .foregroundStyle(Palette.secondary)
     }
 }

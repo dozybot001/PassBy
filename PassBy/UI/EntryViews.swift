@@ -7,6 +7,8 @@ struct EntryDetailView: View {
     @State private var revealed = false
     @State private var editing: VaultEntry?
     @State private var confirmDelete = false
+    /// While the screen is recorded or mirrored, passwords show as dots. Copying still works.
+    @State private var captured = UIScreen.main.isCaptured
 
     var body: some View {
         Group {
@@ -24,7 +26,7 @@ struct EntryDetailView: View {
                         credential("Account", value: entry.account, hidden: false) {
                             session.copy(entry.account, label: L("Account copied for 60 seconds"))
                         }
-                        credential("Password", value: entry.password, hidden: !revealed, isPassword: true) {
+                        credential("Password", value: entry.password, hidden: !revealed || captured, isPassword: true) {
                             session.copy(entry.password, label: L("Password copied for 60 seconds"))
                         }
                         VStack(alignment: .leading, spacing: 12) {
@@ -57,8 +59,11 @@ struct EntryDetailView: View {
             Button("Delete password") {
                 if session.deleteEntry(id) { dismiss() }
             }
-        } message: { Text("This removes it from your notebook on all synced devices. This iPhone keeps a copy in Recently Deleted for 30 days.") }
+        } message: { Text("It stays in Recently Deleted for 30 days, then it is removed for good.") }
         .onDisappear { revealed = false }
+        .onReceive(NotificationCenter.default.publisher(for: UIScreen.capturedDidChangeNotification)) { _ in
+            captured = UIScreen.main.isCaptured
+        }
     }
 
     private func credential(_ label: LocalizedStringKey, value: String, hidden: Bool,
@@ -91,6 +96,7 @@ struct EntryEditorView: View {
     @State var entry: VaultEntry
     let isNew: Bool
     @State private var revealed = false
+    @State private var captured = UIScreen.main.isCaptured
     @FocusState private var focused: Bool
     @State private var showGenerator = false
     @State private var editingActive = false
@@ -110,7 +116,7 @@ struct EntryEditorView: View {
                 Section("Password") {
                     HStack {
                         Group {
-                            if revealed { TextField("Password", text: $entry.password) }
+                            if revealed && !captured { TextField("Password", text: $entry.password) }
                             else { SecureField("Password", text: $entry.password) }
                         }
                         .font(.system(.body, design: .monospaced))
@@ -142,7 +148,7 @@ struct EntryEditorView: View {
                     }
                 }
                 Section {
-                    Text("Your draft is saved encrypted on this iPhone. After unlocking, tap New password to resume it.")
+                    Text("Your draft is kept on this iPhone. Tap New password to resume it.")
                         .font(.footnote).foregroundStyle(Palette.secondary)
                 }
             }
@@ -183,6 +189,9 @@ struct EntryEditorView: View {
                 }
             }
             .onAppear { editingActive = true }
+            .onReceive(NotificationCenter.default.publisher(for: UIScreen.capturedDidChangeNotification)) { _ in
+                captured = UIScreen.main.isCaptured
+            }
             .onChange(of: entry) { _, value in
                 if editingActive { _ = session.saveDraft(value) }
             }

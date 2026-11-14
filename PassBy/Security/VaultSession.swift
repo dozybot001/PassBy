@@ -1,4 +1,3 @@
-import CloudKit
 import CryptoKit
 import LocalAuthentication
 import SwiftUI
@@ -7,263 +6,179 @@ import UIKit
 @MainActor
 final class VaultSession: ObservableObject {
     static let shared = VaultSession()
-    enum Setup { case checking, newNotebook, recovery, localRecovery, ready, unavailable }
-    enum SyncStatus { case waiting, syncing, synced, failed }
+    private static let gateKey = "gateEnabled"
+    private static let noLockNoticeKey = "noLockNoticeShown"
 
     @Published private(set) var phase: SessionGate.Phase = .locked
     @Published private(set) var vault = Vault()
-    @Published private(set) var setup: Setup = .checking
-    @Published private(set) var syncStatus: SyncStatus = .waiting
-    @Published private(set) var syncMessage: String?
-    @Published private(set) var needsCloudRestore = false
-    @Published private(set) var recoveryToSave: String?
     @Published private(set) var recentlyDeleted: [DeletedEntry] = []
+    @Published private(set) var lastExportAt: Date?
+    @Published private(set) var showExportReminder = false
+    @Published private(set) var gateEnabled: Bool
+    @Published private(set) var deviceHasLock = true
+    @Published var showNoLockNotice = false
+    /// 1.x notebooks on this iPhone that are not in the 2.0 notebook yet.
+    @Published private(set) var pendingLegacy: [LegacyNotebook] = []
+    @Published private(set) var migrationNeedsRecovery = false
+    @Published private(set) var migrationSummary: MigrationSummary?
+    @Published var migrationDeferred = false
     @Published var message: String?
     @Published private(set) var toast: String?
-
-    var isAppleAccountLinked: Bool { keyStore != nil && setup == .ready }
+    /// A button beside the toast, such as View after copying from the list.
+    private(set) var toastAction: (title: String, run: () -> Void)?
 
     private var gate = SessionGate()
-    private let cloud = CloudNotebook()
-    private var storage: VaultStorage?
-    private var keyStore: KeyStore?
-    private var key: SymmetricKey?
-    private var localState: LocalVaultState? {
-        didSet {
-            let deleted = localState?.recentlyDeleted ?? []
-            if deleted != recentlyDeleted { recentlyDeleted = deleted }
-        }
-    }
-    private var pending: (key: SymmetricKey, state: LocalVaultState)?
+    private let store: NotebookStore
+    private let defaults: UserDefaults
+    /// In memory only while the notebook is open.
+    private var notebook: Notebook?
     private var context: LAContext?
     private var toastTask: Task<Void, Never>?
-    private var syncTask: Task<Void, Never>?
-    private var syncRunning = false
-    private var syncAgain = false
-    private var bindingGeneration: UInt64 = 0
+    private var promptedSinceForeground = false
 
-    func prepare() async {
-        guard setup == .checking || setup == .unavailable else { return }
-        setup = .checking
+    init(store: NotebookStore = NotebookStore(), defaults: UserDefaults = .standard) {
+        self.store = store
+        self.defaults = defaults
+        gateEnabled = defaults.object(forKey: Self.gateKey) as? Bool ?? true
+    }
+
+    var needsMigration: Bool { !pendingLegacy.isEmpty && !migrationDeferred && migrationSummary == nil }
+    var draft: VaultEntry? { notebook?.draft }
+
+    // MARK: The door
+
+    private func refreshDeviceLock() {
+        deviceHasLock = LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+    }
+
+    /// Opens the notebook: directly when the door is off or the phone has no
+    /// screen lock, otherwise after Face ID, Touch ID or the device passcode.
+    func unlock() async {
+        refreshDeviceLock()
+        guard gate.phase == .locked else { return }
         message = nil
-        let token = bindingGeneration
-        do {
-            let owner = try await cloud.ownerID()
-            guard token == bindingGeneration else { return }
-            let disk = VaultStorage(ownerID: owner)
-            let initial: Setup
-            if disk.exists { initial = .ready }
-            else if try await cloud.fetch() != nil { initial = .recovery }
-            else { initial = try disk.otherSnapshots().isEmpty ? .newNotebook : .localRecovery }
-            guard token == bindingGeneration else { return }
-            storage = disk
-            keyStore = KeyStore(ownerID: owner)
-            setup = initial
-        } catch {
-            guard token == bindingGeneration else { return }
-            setup = .unavailable
-            message = cloudErrorMessage(error)
-        }
-    }
-
-    func accountChanged() {
-        bindingGeneration &+= 1
-        lock()
-        storage = nil
-        keyStore = nil
-        setup = .checking
-        Task { await prepare() }
-    }
-
-    func unlock(recoveryText: String? = nil) async {
-        guard !UIScreen.main.isCaptured else {
-            message = VaultError.captureActive.localizedDescription
+        guard gateEnabled, deviceHasLock else {
+            gate.open()
+            publishOpened()
             return
         }
-        guard let storage, let keyStore,
-              setup != .checking, setup != .unavailable,
-              let token = gate.beginAuthentication() else { return }
+        guard let token = gate.beginAuthentication() else { return }
         phase = gate.phase
-        message = nil
         let auth = LAContext()
-        auth.localizedFallbackTitle = ""
         auth.localizedCancelTitle = L("Cancel")
-        auth.touchIDAuthenticationAllowableReuseDuration = 0
         context = auth
         do {
-            var evaluationError: NSError?
-            guard auth.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
-                error: &evaluationError), [.faceID, .touchID].contains(auth.biometryType) else {
-                throw VaultError.faceIDRequired
-            }
-            let success = try await auth.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: L("Unlock your private notebook."))
+            let success = try await auth.evaluatePolicy(.deviceOwnerAuthentication,
+                localizedReason: L("Open your password notebook."))
             guard gate.accepts(token) else { return }
-            gate.biometricPromptFinished(token)
             guard success else { throw VaultError.authenticationFailed }
-            let unlockedKey: SymmetricKey
-            let state: LocalVaultState
-            if let recoveryText {
-                unlockedKey = try RecoveryKey.parse(recoveryText)
-                let record = try await cloud.fetch()
-                guard gate.accepts(token) else { return }
-                if setup == .localRecovery {
-                    // Explicit on-device restore into an empty production book.
-                    // Leave the original encrypted snapshot untouched.
-                    guard record == nil else { setup = .recovery; throw CloudError.notebookChanged }
-                    state = try storage.recoverLocalState(key: unlockedKey)
-                } else {
-                    guard let record else { setup = .localRecovery; throw CloudError.notebookChanged }
-                    let remote: Vault
-                    do { remote = try VaultCipher.open(cloud.ciphertext(in: record), key: unlockedKey) }
-                    catch { throw RecoveryError.wrongNotebook }
-                    if storage.exists {
-                        let previous = try storage.load(key: unlockedKey)
-                        state = LocalVaultState(current: VaultMerge.merge(base: previous.base,
-                            local: previous.current, remote: remote).vault, base: remote,
-                            recoveryConfirmed: true, draft: previous.draft,
-                            recentlyDeleted: previous.recentlyDeleted)
-                    } else {
-                        state = LocalVaultState(current: remote, base: remote, recoveryConfirmed: true)
-                    }
-                }
-                try storage.save(state, key: unlockedKey)
-                try keyStore.store(unlockedKey)
-            } else if storage.exists {
-                unlockedKey = try keyStore.read(context: auth)
-                state = try storage.load(key: unlockedKey)
-            } else {
-                unlockedKey = SymmetricKey(size: .bits256)
-                state = LocalVaultState(current: Vault(), base: Vault(), recoveryConfirmed: false)
-                try keyStore.store(unlockedKey)
-                try storage.save(state, key: unlockedKey)
-            }
-            guard gate.authenticationSucceeded(token) else { return }
-            pending = (unlockedKey, state)
-            setup = .ready
-            publishIfReady()
+            gate.authenticationSucceeded(token)
+            publishOpened()
         } catch {
             guard gate.accepts(token) else { return }
             gate.authenticationFailed(token)
-            clearSensitiveState()
+            clearMemory()
             phase = gate.phase
-            if let laError = error as? LAError {
-                message = biometryMessage(laError)
-            } else {
-                if let vaultError = error as? VaultError,
-                   vaultError == .missingKey || vaultError == .invalidKey { setup = .recovery }
-                message = error.localizedDescription
-            }
+            if let laError = error as? LAError, [.userCancel, .systemCancel, .appCancel].contains(laError.code) { return }
+            message = VaultError.authenticationFailed.localizedDescription
         }
     }
 
-    private func biometryMessage(_ error: LAError) -> String? {
-        switch error.code {
-        case .userCancel, .systemCancel, .appCancel: return nil
-        case .biometryLockout:
-            return LB("Face ID is temporarily locked. Unlock your iPhone with its passcode, then try again.")
-        case .biometryNotAvailable, .biometryNotEnrolled, .passcodeNotSet:
-            return VaultError.faceIDRequired.localizedDescription
-        default: return VaultError.authenticationFailed.localizedDescription
-        }
-    }
-
-    /// Shows the recovery key again after a fresh biometric check. The key
-    /// already unlocks this session; the check keeps a bystander from copying it.
-    /// Returns nil when cancelled or when the notebook locked meanwhile.
-    func revealRecoveryKey() async throws -> String? {
-        guard !UIScreen.main.isCaptured else { throw VaultError.captureActive }
-        guard let token = gate.beginReauthentication() else { return nil }
-        let auth = LAContext()
-        auth.localizedFallbackTitle = ""
-        auth.localizedCancelTitle = L("Cancel")
-        auth.touchIDAuthenticationAllowableReuseDuration = 0
-        defer { auth.invalidate() }
+    private func publishOpened() {
+        context?.invalidate()
+        context = nil
         do {
-            let success = try await auth.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: L("Show your recovery key."))
-            guard gate.reauthenticationFinished(token), success, let key else { return nil }
-            return RecoveryKey.format(key)
-        } catch {
-            guard gate.reauthenticationFinished(token) else { return nil }
-            if let laError = error as? LAError {
-                guard let text = biometryMessage(laError) else { return nil }
-                throw RevealError(message: text)
+            var loaded = try store.load()
+            let before = loaded
+            loaded.pruneDeleted()
+            if loaded != before { try? store.save(loaded) }
+            adopt(loaded)
+            pendingLegacy = LegacyNotebook.all(root: store.directory).filter { !loaded.migratedLegacy.contains($0.name) }
+            phase = gate.phase
+            if !deviceHasLock, !defaults.bool(forKey: Self.noLockNoticeKey) {
+                defaults.set(true, forKey: Self.noLockNoticeKey)
+                showNoLockNotice = true
             }
-            throw error
+        } catch {
+            // The file on disk is left exactly as it is.
+            gate.lock()
+            clearMemory()
+            phase = gate.phase
+            message = error.localizedDescription
         }
     }
 
-    func willResignActive() {
-        gate.willResignActive()
-        if gate.phase == .locked { clearSensitiveState() }
-        phase = gate.phase
+    private func adopt(_ value: Notebook) {
+        notebook = value
+        if vault != value.vault { vault = value.vault }
+        if recentlyDeleted != value.recentlyDeleted { recentlyDeleted = value.recentlyDeleted }
+        lastExportAt = value.lastExportAt
+        showExportReminder = value.needsExportReminder()
+    }
+
+    /// Switching the door off asks once more, so a bystander cannot do it.
+    func setGate(_ enabled: Bool) async {
+        refreshDeviceLock()
+        guard enabled != gateEnabled, gate.phase == .unlocked else { return }
+        if !enabled, deviceHasLock {
+            let auth = LAContext()
+            auth.localizedCancelTitle = L("Cancel")
+            guard (try? await auth.evaluatePolicy(.deviceOwnerAuthentication,
+                localizedReason: L("Turn off the lock for PassBy."))) == true, gate.phase == .unlocked else { return }
+        }
+        defaults.set(enabled, forKey: Self.gateKey)
+        gateEnabled = enabled
     }
 
     func didEnterBackground() {
-        gate.didEnterBackground()
-        clearSensitiveState()
+        gate.didEnterBackground(at: Uptime.now)
+        promptedSinceForeground = false
+        if gate.phase == .locked { clearMemory() }
         phase = gate.phase
     }
 
     func didBecomeActive() {
-        gate.didBecomeActive()
-        publishIfReady()
+        gate.didBecomeActive(at: Uptime.now)
+        if gate.phase == .locked { clearMemory() }
+        phase = gate.phase
+        // Ask once per return to the app; after a cancel the lock page has a button.
+        if gate.phase == .locked, !promptedSinceForeground {
+            promptedSinceForeground = true
+            Task { await unlock() }
+        }
     }
 
     func lock() {
         gate.lock()
-        clearSensitiveState()
+        clearMemory()
         phase = gate.phase
     }
 
-    private func publishIfReady() {
-        if gate.phase == .unlocked, let pending {
-            var state = pending.state
-            state.pruneDeleted()
-            if state != pending.state { try? storage?.save(state, key: pending.key) }
-            key = pending.key
-            localState = state
-            vault = state.current
-            recoveryToSave = pending.state.recoveryConfirmed ? nil : RecoveryKey.format(pending.key)
-            self.pending = nil
-            context?.invalidate()
-            context = nil
-            if recoveryToSave == nil { requestSync() }
-        }
-        phase = gate.phase
-    }
-
-    private func clearSensitiveState() {
+    private func clearMemory() {
         context?.invalidate()
         context = nil
-        pending = nil
-        key = nil
-        localState = nil
+        notebook = nil
         vault = Vault()
-        recoveryToSave = nil
-        toastTask?.cancel()
-        toast = nil
-        syncTask?.cancel()
-        syncTask = nil
-        syncStatus = .waiting
-        syncMessage = nil
-        needsCloudRestore = false
+        recentlyDeleted = []
+        lastExportAt = nil
+        showExportReminder = false
+        pendingLegacy = []
+        migrationSummary = nil
+        migrationNeedsRecovery = false
+        dismissToast()
     }
 
+    // MARK: Changes
+
+    /// Applies a change to the notebook and writes it at once.
     @discardableResult
-    private func commit(_ next: Vault, clearingDraft: Bool = false) -> Bool {
-        guard gate.phase == .unlocked, gate.isActive, let key, let storage,
-              var state = localState else { return false }
-        let previous = state.current
-        state.current = next
-        state.keepDeleted(from: previous)
-        if clearingDraft { state.draft = nil }
+    private func write(_ change: (inout Notebook) -> Void) -> Bool {
+        guard gate.phase == .unlocked, var next = notebook else { return false }
+        change(&next)
+        guard next != notebook else { return true }
         do {
-            try storage.save(state, key: key)
-            localState = state
-            vault = next
-            requestSync()
+            try store.save(next)
+            adopt(next)
             return true
         } catch {
             message = VaultError.storageFailed.localizedDescription
@@ -271,16 +186,12 @@ final class VaultSession: ObservableObject {
         }
     }
 
-    func confirmRecoverySaved() {
-        guard var state = localState, let key, let storage,
-              gate.phase == .unlocked, gate.isActive else { return }
-        state.recoveryConfirmed = true
-        do {
-            try storage.save(state, key: key)
-            localState = state
-            recoveryToSave = nil
-            requestSync()
-        } catch { message = VaultError.storageFailed.localizedDescription }
+    @discardableResult
+    private func commit(_ next: Vault, clearingDraft: Bool = false) -> Bool {
+        write { notebook in
+            notebook.update(next)
+            if clearingDraft { notebook.draft = nil }
+        }
     }
 
     @discardableResult
@@ -293,22 +204,9 @@ final class VaultSession: ObservableObject {
         return commit(next, clearingDraft: true)
     }
 
-    var draft: VaultEntry? { localState?.draft }
-
     @discardableResult
     func saveDraft(_ entry: VaultEntry?) -> Bool {
-        guard gate.phase == .unlocked, gate.isActive, let key, let storage,
-              var state = localState else { return false }
-        guard state.draft != entry else { return true }
-        state.draft = entry
-        do {
-            try storage.save(state, key: key)
-            localState = state
-            return true
-        } catch {
-            message = VaultError.storageFailed.localizedDescription
-            return false
-        }
+        write { $0.draft = entry }
     }
 
     @discardableResult
@@ -330,17 +228,7 @@ final class VaultSession: ObservableObject {
 
     @discardableResult
     func purgeDeleted(_ id: UUID) -> Bool {
-        guard gate.phase == .unlocked, gate.isActive, let key, let storage,
-              var state = localState else { return false }
-        state.recentlyDeleted.removeAll { $0.id == id }
-        do {
-            try storage.save(state, key: key)
-            localState = state
-            return true
-        } catch {
-            message = VaultError.storageFailed.localizedDescription
-            return false
-        }
+        write { $0.recentlyDeleted.removeAll { $0.id == id } }
     }
 
     @discardableResult
@@ -372,117 +260,105 @@ final class VaultSession: ObservableObject {
         return commit(next)
     }
 
-    func copy(_ value: String, label: String) {
-        guard gate.phase == .unlocked, gate.isActive, !value.isEmpty else { return }
+    func copy(_ value: String, label: String, action: (title: String, run: () -> Void)? = nil) {
+        guard gate.phase == .unlocked, !value.isEmpty else { return }
         SecureClipboard.copy(value)
         toastTask?.cancel()
+        toastAction = action
         toast = label
         UIAccessibility.post(notification: .announcement, argument: label)
         toastTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(2))
+            try? await Task.sleep(for: .seconds(action == nil ? 2 : 4))
             guard !Task.isCancelled else { return }
-            self?.toast = nil
+            self?.dismissToast()
         }
     }
 
-    func requestSync() {
-        guard recoveryToSave == nil, gate.phase == .unlocked else { return }
-        if syncRunning { syncAgain = true; return }
-        syncTask?.cancel()
-        syncTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(350))
-            guard !Task.isCancelled else { return }
-            await self?.syncNow()
+    func dismissToast() {
+        toastTask?.cancel()
+        toast = nil
+        toastAction = nil
+    }
+
+    // MARK: Export and import
+
+    /// Call once the file has been handed to the person.
+    func exportCompleted() {
+        write { notebook in
+            notebook.lastExportAt = Date()
+            notebook.changedSinceExport = false
+            notebook.exportReminderDismissedAt = nil
         }
     }
 
-    func enableWebAccess() async {
-        guard needsCloudRestore else { return }
-        await syncNow(restoringMissingNotebook: true)
+    func dismissExportReminder() {
+        write { $0.exportReminderDismissedAt = Date() }
     }
 
-    func syncNow(restoringMissingNotebook: Bool = false) async {
-        guard !syncRunning, recoveryToSave == nil, gate.phase == .unlocked,
-              gate.isActive, let key, let storage else { return }
-        syncRunning = true
-        syncStatus = .syncing
-        syncMessage = nil
-        let token = gate.generation
-        defer {
-            syncRunning = false
-            if syncAgain { syncAgain = false; requestSync() }
+    func applyImport(_ payload: ExportPayload, replacing: Bool) -> ImportSummary? {
+        var summary: ImportSummary?
+        let saved = write { notebook in
+            summary = replacing ? NotebookImport.replace(payload.vault, in: &notebook)
+                : NotebookImport.merge(payload.vault, into: &notebook)
         }
-        do {
-            let owner = try await cloud.ownerID()
-            guard gate.generation == token, gate.phase == .unlocked else { return }
-            guard owner == keyStore?.ownerID else { accountChanged(); return }
-            for attempt in 0..<3 {
-                let record = try await cloud.fetch()
-                guard gate.generation == token, gate.phase == .unlocked,
-                      gate.isActive, var state = localState else { return }
-                let remote = try record.map { try VaultCipher.open(cloud.ciphertext(in: $0), key: key) }
-                guard record != nil || state.base == Vault() || restoringMissingNotebook else {
-                    needsCloudRestore = true
-                    throw CloudError.notebookChanged
-                }
-                needsCloudRestore = false
-                let merge = try state.integratingCloud(remote, restoringMissingNotebook: restoringMissingNotebook)
-                let previous = state.current
-                state.current = merge.vault
-                // Entries deleted on the web or another device stay in this
-                // iPhone's Recently Deleted.
-                state.keepDeleted(from: previous)
-                // The remote changes are now integrated locally. Advance the
-                // base even if upload fails, so retries do not merge them twice.
-                state.base = remote ?? Vault()
-                try storage.save(state, key: key)
-                localState = state
-                vault = state.current
-                let uploaded = state.current
-                if let remote, uploaded == remote {
-                    state.base = remote
-                    try storage.save(state, key: key)
-                    localState = state
-                    syncStatus = .synced
-                    return
-                }
-                do {
-                    _ = try await cloud.save(VaultCipher.seal(uploaded, key: key), replacing: record)
-                } catch let error as CKError where error.code == .serverRecordChanged && attempt < 2 {
-                    continue
-                }
-                guard gate.generation == token, gate.phase == .unlocked,
-                      var latest = localState else { return }
-                latest.base = uploaded
-                try storage.save(latest, key: key)
-                localState = latest
-                syncStatus = latest.current == uploaded ? .synced : .waiting
-                if latest.current != uploaded { syncAgain = true }
-                if merge.conflictCount > 0 {
-                    syncMessage = L("Changes from another device were kept. Conflicting passwords are saved as separate copies.")
-                }
+        return saved ? summary : nil
+    }
+
+    // MARK: Notebooks from PassBy 1.x
+
+    /// Carries the 1.x notebooks on this iPhone into the 2.0 notebook. Old keys
+    /// need Face ID or Touch ID; when a key is gone, the recovery key opens the
+    /// file instead. The old files and keys are left untouched either way.
+    func migrate(recoveryText: String? = nil) async {
+        guard gate.phase == .unlocked, var next = notebook, !pendingLegacy.isEmpty else { return }
+        message = nil
+        var recovery: SymmetricKey?
+        if let recoveryText, !recoveryText.isEmpty {
+            do { recovery = try RecoveryKey.parse(recoveryText) }
+            catch { message = error.localizedDescription; return }
+        }
+        let auth = LAContext()
+        auth.localizedFallbackTitle = ""
+        auth.localizedCancelTitle = L("Cancel")
+        defer { auth.invalidate() }
+        var biometric = false
+        if auth.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+            do {
+                biometric = try await auth.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                    localizedReason: LB("Use Face ID to read your earlier notebook."))
+            } catch let error as LAError where [.userCancel, .systemCancel, .appCancel].contains(error.code) {
+                return
+            } catch { biometric = false }
+        }
+        guard gate.phase == .unlocked else { return }
+        var books: [(name: String, state: LegacyState)] = []
+        for book in pendingLegacy {
+            var keys: [SymmetricKey] = []
+            if biometric, let key = try? LegacyKeyStore(ownerID: book.name).read(context: auth) { keys.append(key) }
+            if let recovery { keys.append(recovery) }
+            guard let state = keys.lazy.compactMap({ try? book.open(key: $0) }).first else {
+                migrationNeedsRecovery = true
+                message = recovery == nil
+                    ? LB("The key for your earlier notebook is no longer on this iPhone. This happens after Face ID is set up again. Enter the recovery key you saved.")
+                    : RecoveryError.wrongNotebook.localizedDescription
                 return
             }
+            books.append((book.name, state))
+        }
+        do {
+            let summary = try Migration.carry(books, into: &next)
+            try store.save(next)
+            adopt(next)
+            pendingLegacy = []
+            migrationNeedsRecovery = false
+            migrationSummary = summary
         } catch {
-            guard gate.generation == token, gate.phase == .unlocked else { return }
-            syncStatus = .failed
-            syncMessage = L("Saved on this iPhone. iCloud sync will retry.") + " " + cloudErrorMessage(error)
+            // Nothing was written; the earlier notebook is still where it was.
+            message = L("Your earlier notebook could not be moved completely, so nothing was changed. It is still on this iPhone. Please try again.")
         }
     }
 
-    private func cloudErrorMessage(_ error: Error) -> String {
-        if let cloudError = error as? CloudError { return cloudError.localizedDescription }
-        if let error = error as? CKError {
-            switch error.code {
-            case .notAuthenticated: return CloudError.accountRequired.localizedDescription
-            case .quotaExceeded: return L("Your iCloud storage is full. Free up space to resume syncing.")
-            case .badContainer, .missingEntitlement:
-                return L("iCloud is not configured for this build yet.")
-            default: return CloudError.unavailable.localizedDescription
-            }
-        }
-        return error.localizedDescription
-    }
+    func finishMigration() { migrationSummary = nil }
 }
 
 enum SecureClipboard {
@@ -496,22 +372,27 @@ enum SecureClipboard {
     }
 }
 
-struct RevealError: Error, LocalizedError {
-    let message: String
-    var errorDescription: String? { message }
-}
-
-/// The iPhone's unlock biometry. iPhone SE models use Touch ID; the Keychain's
-/// `biometryCurrentSet` protection is the same for both.
+/// How this iPhone unlocks. iPhone SE models use Touch ID; without either,
+/// the device passcode opens the notebook.
 enum Biometry {
-    case faceID, touchID
-    static let current: Biometry = {
+    case faceID, touchID, none
+    static var current: Biometry {
         let context = LAContext()
         // biometryType is set by this call whatever it returns.
         _ = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-        return context.biometryType == .touchID ? .touchID : .faceID
-    }()
-    var symbol: String { self == .touchID ? "touchid" : "faceid" }
+        switch context.biometryType {
+        case .touchID: return .touchID
+        case .faceID: return .faceID
+        default: return .none
+        }
+    }
+    var symbol: String {
+        switch self {
+        case .faceID: return "faceid"
+        case .touchID: return "touchid"
+        case .none: return "lock.open"
+        }
+    }
 }
 
 /// Localized copy is written with "Face ID". Both languages use the product

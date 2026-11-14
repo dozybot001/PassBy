@@ -27,6 +27,11 @@ struct VaultEntry: Codable, Identifiable, Equatable {
         self.notes = notes
         self.folderID = folderID
     }
+
+    /// The same entry under a new identifier, optionally with a title suffix.
+    func copied(suffix: String = "", folderID: UUID?) -> VaultEntry {
+        VaultEntry(title: title + suffix, account: account, password: password, notes: notes, folderID: folderID)
+    }
 }
 
 struct Vault: Codable, Equatable {
@@ -64,19 +69,83 @@ struct Vault: Codable, Equatable {
     }
 }
 
+struct DeletedEntry: Codable, Equatable, Identifiable {
+    var entry: VaultEntry
+    var deletedAt: Date
+    var id: UUID { entry.id }
+}
+
+/// Everything PassBy keeps, in one file on this iPhone. iOS encrypts the file
+/// while the phone is locked; it travels with the phone's own backups.
+struct Notebook: Codable, Equatable {
+    static let fileVersion = 2
+    static let deletedLifetime: TimeInterval = 30 * 24 * 60 * 60
+    static let exportReminderInterval: TimeInterval = 30 * 24 * 60 * 60
+
+    var fileVersion = Notebook.fileVersion
+    var vault = Vault()
+    var draft: VaultEntry?
+    var recentlyDeleted: [DeletedEntry] = []
+    var lastExportAt: Date?
+    var changedSinceExport = false
+    var exportReminderDismissedAt: Date?
+    /// Folder names of 1.x notebooks already carried into this file. The old
+    /// encrypted files and keys stay where they are and are never deleted.
+    var migratedLegacy: [String] = []
+
+    /// Replaces the entries and folders, keeping what left in Recently Deleted.
+    mutating func update(_ next: Vault, now: Date = Date()) {
+        let remaining = Set(next.entries.map(\.id))
+        let removed = vault.entries.filter { !remaining.contains($0.id) }
+        let removedIDs = Set(removed.map(\.id))
+        recentlyDeleted.removeAll { removedIDs.contains($0.id) }
+        recentlyDeleted += removed.map { DeletedEntry(entry: $0, deletedAt: now) }
+        if next != vault { changedSinceExport = true }
+        vault = next
+        pruneDeleted(now: now)
+    }
+
+    /// Drops expired copies and any entry that is back in the notebook.
+    mutating func pruneDeleted(now: Date = Date()) {
+        let present = Set(vault.entries.map(\.id))
+        recentlyDeleted.removeAll {
+            present.contains($0.id) || now.timeIntervalSince($0.deletedAt) >= Self.deletedLifetime
+        }
+    }
+
+    /// Never exported, or not for 30 days with changes since; shown once per 30 days.
+    func needsExportReminder(now: Date = Date()) -> Bool {
+        guard !vault.entries.isEmpty else { return false }
+        if let dismissed = exportReminderDismissedAt,
+           now.timeIntervalSince(dismissed) < Self.exportReminderInterval { return false }
+        guard let last = lastExportAt else { return true }
+        return changedSinceExport && now.timeIntervalSince(last) >= Self.exportReminderInterval
+    }
+
+    func validated() throws -> Notebook {
+        guard fileVersion == Self.fileVersion else { throw VaultError.unsupportedVersion }
+        _ = try vault.validated()
+        return self
+    }
+}
+
+extension VaultEntry {
+    func keeping(folderID: UUID?) -> VaultEntry {
+        var value = self
+        value.folderID = folderID
+        return value
+    }
+}
+
 enum VaultError: Error, LocalizedError, Equatable {
-    case unsupportedVersion, invalidData, missingKey, invalidKey
-    case faceIDRequired, authenticationFailed, storageFailed, captureActive
+    case unsupportedVersion, invalidData, authenticationFailed, storageFailed
 
     var errorDescription: String? {
         switch self {
         case .unsupportedVersion: return L("This notebook was saved by a newer version of PassBy. Update the app to open it.")
         case .invalidData: return L("The notebook could not be verified. Your saved file has been kept unchanged.")
-        case .missingKey, .invalidKey: return LB("The key for this notebook is unavailable. A change to Face ID or the device passcode may make local data unrecoverable.")
-        case .faceIDRequired: return LB("Set up Face ID and a device passcode in iPhone Settings to use PassBy.")
-        case .authenticationFailed: return LB("Face ID did not unlock the notebook. Please try again.")
+        case .authenticationFailed: return L("The notebook was not unlocked. Please try again.")
         case .storageFailed: return L("Your changes could not be saved. Check available storage and try again.")
-        case .captureActive: return L("Stop screen recording or mirroring before unlocking your notebook.")
         }
     }
 }

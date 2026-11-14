@@ -3,27 +3,8 @@ import XCTest
 @testable import PassBy
 
 final class VaultTests: XCTestCase {
-    func testEncryptedRoundTripAndNoPlaintextOnDisk() throws {
-        let key = SymmetricKey(size: .bits256)
-        let folder = VaultFolder(name: "Private folder")
-        let entry = VaultEntry(title: "Private title", account: "me@example.test",
-            password: "never-plaintext-37", notes: "Private notes", folderID: folder.id)
-        let vault = Vault(folders: [folder], entries: [entry])
-        let ciphertext = try VaultCipher.seal(vault, key: key)
-        XCTAssertEqual(try VaultCipher.open(ciphertext, key: key), vault)
-        for value in [entry.title, entry.account, entry.password, entry.notes, folder.name] {
-            XCTAssertNil(ciphertext.range(of: Data(value.utf8)))
-        }
-        XCTAssertNotEqual(ciphertext, try VaultCipher.seal(vault, key: key))
-    }
-
-    func testTamperedDataAndWrongKeyAreRejected() throws {
-        let key = SymmetricKey(size: .bits256)
-        var ciphertext = try VaultCipher.seal(Vault(entries: [VaultEntry(title: "Mail")]), key: key)
-        ciphertext[ciphertext.count / 2] ^= 1
-        XCTAssertThrowsError(try VaultCipher.open(ciphertext, key: key))
-        let valid = try VaultCipher.seal(Vault(), key: key)
-        XCTAssertThrowsError(try VaultCipher.open(valid, key: SymmetricKey(size: .bits256)))
+    private func temporaryFolder() -> URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
     }
 
     func testDeletingFolderPreservesEveryCredential() {
@@ -37,74 +18,201 @@ final class VaultTests: XCTestCase {
         XCTAssertEqual(vault.entries[0].password, "p")
     }
 
-    func testInvalidSchemaDoesNotOpen() throws {
+    func testInvalidNotebookIsRejected() throws {
         var vault = Vault()
         vault.schemaVersion = 999
-        XCTAssertThrowsError(try VaultCipher.seal(vault, key: SymmetricKey(size: .bits256)))
+        XCTAssertThrowsError(try vault.validated())
         let folder = VaultFolder(name: "Work")
         XCTAssertThrowsError(try Vault(folders: [folder, folder]).validated())
+        XCTAssertThrowsError(try Vault(entries: [VaultEntry(title: "Mail", folderID: UUID())]).validated())
     }
 
-    func testLocalSnapshotUsesSeparateAuthenticationDomain() throws {
-        let key = SymmetricKey(size: .bits256)
-        let state = LocalVaultState(current: Vault(entries: [VaultEntry(title: "Mail")]), base: Vault())
-        let local = try VaultCipher.sealLocal(state, key: key)
-        XCTAssertEqual(try VaultCipher.openLocal(local, key: key), state)
-        XCTAssertThrowsError(try VaultCipher.open(local, key: key))
-        XCTAssertThrowsError(try VaultCipher.openLocal(VaultCipher.seal(Vault(), key: key), key: key))
-    }
+    // MARK: The file on this iPhone
 
-    func testProtectedStorageRoundTripAndBackupExclusion() throws {
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        defer { try? FileManager.default.removeItem(at: folder) }
-        let storage = VaultStorage(directory: folder)
-        let key = SymmetricKey(size: .bits256)
-        let state = LocalVaultState(current: Vault(entries: [VaultEntry(title: "Mail", password: "secret")]), base: Vault())
-        try storage.save(state, key: key)
-        XCTAssertEqual(try storage.load(key: key), state)
-        XCTAssertEqual(try storage.fileURL.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
+    func testStoreRoundTripKeepsThePreviousFileAndStaysInBackups() throws {
+        let store = NotebookStore(directory: temporaryFolder())
+        defer { try? FileManager.default.removeItem(at: store.directory) }
+        XCTAssertFalse(store.exists)
+        XCTAssertEqual(try store.load(), Notebook())
+        var first = Notebook()
+        first.vault.entries = [VaultEntry(title: "Mail", password: "one")]
+        try store.save(first)
+        XCTAssertEqual(try store.load(), first)
+        XCTAssertNotEqual(try store.fileURL.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
+        var second = first
+        second.vault.entries.append(VaultEntry(title: "Bank", password: "two"))
+        try store.save(second)
+        XCTAssertEqual(try store.load(), second)
+        XCTAssertEqual(try JSONDecoder().decode(Notebook.self, from: Data(contentsOf: store.previousURL)), first)
         #if !targetEnvironment(simulator)
-        // The simulator has no device data-protection keybag and omits this
-        // attribute. Verify complete protection on physical iOS hardware.
-        let attributes = try FileManager.default.attributesOfItem(atPath: storage.fileURL.path)
+        // The simulator has no data-protection keybag and omits this attribute.
+        let attributes = try FileManager.default.attributesOfItem(atPath: store.fileURL.path)
         XCTAssertEqual(attributes[.protectionKey] as? String, FileProtectionType.complete.rawValue)
         #endif
-        try storage.erase()
-        XCTAssertFalse(storage.exists)
     }
-    func testLocalRecoveryKeepsOriginalCiphertextAndDraft() throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+
+    func testDamagedFileFallsBackToThePreviousOneAndIsNeverOverwrittenWhenBothFail() throws {
+        let store = NotebookStore(directory: temporaryFolder())
+        defer { try? FileManager.default.removeItem(at: store.directory) }
+        var first = Notebook()
+        first.vault.entries = [VaultEntry(title: "Mail")]
+        var second = first
+        second.vault.entries.append(VaultEntry(title: "Bank"))
+        try store.save(first)
+        try store.save(second)
+        try Data("not json".utf8).write(to: store.fileURL)
+        XCTAssertEqual(try store.load(), first)
+        try Data("also not json".utf8).write(to: store.previousURL)
+        XCTAssertThrowsError(try store.load()) { XCTAssertEqual($0 as? VaultError, .invalidData) }
+        XCTAssertEqual(try Data(contentsOf: store.fileURL), Data("not json".utf8))
+        XCTAssertEqual(try Data(contentsOf: store.previousURL), Data("also not json".utf8))
+    }
+
+    func testFileFromANewerVersionIsNotOpened() throws {
+        let store = NotebookStore(directory: temporaryFolder())
+        defer { try? FileManager.default.removeItem(at: store.directory) }
+        try FileManager.default.createDirectory(at: store.directory, withIntermediateDirectories: true)
+        var newer = Notebook()
+        newer.fileVersion = Notebook.fileVersion + 1
+        try JSONEncoder().encode(newer).write(to: store.fileURL)
+        XCTAssertThrowsError(try store.load()) { XCTAssertEqual($0 as? VaultError, .unsupportedVersion) }
+        XCTAssertThrowsError(try store.save(newer))
+    }
+
+    // MARK: Recently Deleted and the export reminder
+
+    func testDeletedEntriesStayThirtyDaysAndRestoringRemovesTheCopy() {
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        let folder = VaultFolder(name: "Work")
+        let entry = VaultEntry(title: "Mail", password: "p", folderID: folder.id)
+        var notebook = Notebook()
+        notebook.update(Vault(folders: [folder], entries: [entry]), now: now)
+        notebook.update(Vault(folders: [folder]), now: now)
+        XCTAssertEqual(notebook.recentlyDeleted.map(\.entry), [entry])
+        notebook.pruneDeleted(now: now.addingTimeInterval(Notebook.deletedLifetime - 1))
+        XCTAssertEqual(notebook.recentlyDeleted.count, 1)
+        var restored = notebook.vault
+        restored.save(entry)
+        notebook.update(restored, now: now)
+        XCTAssertTrue(notebook.recentlyDeleted.isEmpty)
+        notebook.update(Vault(), now: now)
+        notebook.pruneDeleted(now: now.addingTimeInterval(Notebook.deletedLifetime))
+        XCTAssertTrue(notebook.recentlyDeleted.isEmpty)
+    }
+
+    func testExportReminderShowsWhenNeverExportedOrChangedAfterThirtyDays() {
+        let now = Date(timeIntervalSince1970: 2_000_000)
+        let month = Notebook.exportReminderInterval
+        var notebook = Notebook()
+        XCTAssertFalse(notebook.needsExportReminder(now: now))
+        notebook.update(Vault(entries: [VaultEntry(title: "Mail")]), now: now)
+        XCTAssertTrue(notebook.needsExportReminder(now: now))
+        notebook.exportReminderDismissedAt = now
+        XCTAssertFalse(notebook.needsExportReminder(now: now.addingTimeInterval(month - 1)))
+        XCTAssertTrue(notebook.needsExportReminder(now: now.addingTimeInterval(month)))
+        notebook.lastExportAt = now
+        notebook.changedSinceExport = false
+        notebook.exportReminderDismissedAt = nil
+        XCTAssertFalse(notebook.needsExportReminder(now: now.addingTimeInterval(2 * month)))
+        notebook.update(Vault(entries: [VaultEntry(title: "Mail"), VaultEntry(title: "Bank")]), now: now)
+        XCTAssertFalse(notebook.needsExportReminder(now: now.addingTimeInterval(month - 1)))
+        XCTAssertTrue(notebook.needsExportReminder(now: now.addingTimeInterval(month)))
+    }
+
+    // MARK: Notebooks left by 1.x
+
+    /// What 1.x wrote: AES-GCM over the JSON of its local state.
+    private struct OldState: Encodable {
+        var current: Vault
+        var base = Vault()
+        var recoveryConfirmed = true
+        var draft: VaultEntry?
+        var recentlyDeleted: [DeletedEntry]?
+    }
+
+    private func writeOld(_ state: OldState, named name: String, in root: URL, key: SymmetricKey) throws -> URL {
+        let folder = root.appendingPathComponent(name, isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let box = try AES.GCM.seal(JSONEncoder().encode(state), using: key, authenticating: Data("PassBy.local-state.v1".utf8))
+        let file = folder.appendingPathComponent("notebook.passby")
+        try XCTUnwrap(box.combined).write(to: file)
+        return file
+    }
+
+    func testOldNotebooksAreFoundByFolderAndReadWithoutBeingChanged() throws {
+        let root = temporaryFolder()
         defer { try? FileManager.default.removeItem(at: root) }
-        let original = VaultStorage(directory: root.appendingPathComponent(String(repeating: "a", count: 64)))
-        let destination = VaultStorage(directory: root.appendingPathComponent(String(repeating: "b", count: 64)))
         let key = SymmetricKey(size: .bits256)
-        let vault = Vault(entries: [VaultEntry(title: "Local test", password: "test-only")])
         let draft = VaultEntry(title: "Draft", password: "draft-only")
-        let state = LocalVaultState(current: vault, base: vault, recoveryConfirmed: true, draft: draft)
-        try original.save(state, key: key)
-        let originalBytes = try Data(contentsOf: original.fileURL)
-        XCTAssertEqual(try destination.otherSnapshots().count, 1)
-        XCTAssertThrowsError(try destination.recoverLocalState(key: SymmetricKey(size: .bits256)))
-        let restored = try destination.recoverLocalState(key: key)
-        XCTAssertEqual(restored.current, vault)
-        XCTAssertEqual(restored.base, Vault())
-        XCTAssertEqual(restored.draft, draft)
-        try destination.save(restored, key: key)
-        XCTAssertEqual(try Data(contentsOf: original.fileURL), originalBytes)
-        XCTAssertEqual(try original.load(key: key), state)
+        let vault = Vault(entries: [VaultEntry(title: "Mail", password: "p")])
+        let hashed = String(repeating: "a", count: 64)
+        let file = try writeOld(OldState(current: vault, draft: draft), named: hashed, in: root, key: key)
+        _ = try writeOld(OldState(current: Vault()), named: "local", in: root, key: key)
+        _ = try writeOld(OldState(current: Vault()), named: "not-a-notebook", in: root, key: key)
+        try FileManager.default.createDirectory(at: root.appendingPathComponent(String(repeating: "b", count: 64)), withIntermediateDirectories: true)
+        let before = try Data(contentsOf: file)
+        let found = LegacyNotebook.all(root: root)
+        XCTAssertEqual(found.map(\.name), [hashed, "local"])
+        let state = try found[0].open(key: key)
+        XCTAssertEqual(state.current, vault)
+        XCTAssertEqual(state.draft, draft)
+        XCTAssertEqual(state.recentlyDeleted, [])
+        XCTAssertThrowsError(try found[0].open(key: SymmetricKey(size: .bits256)))
+        XCTAssertEqual(try Data(contentsOf: file), before)
     }
 
-    func testLocalRecoveryRejectsAmbiguousSnapshots() throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        defer { try? FileManager.default.removeItem(at: root) }
+    func testMigrationCarriesEveryBookItsDraftAndRecentlyDeleted() throws {
+        let now = Date(timeIntervalSince1970: 3_000_000)
+        let work = VaultFolder(name: "Work")
+        let shared = VaultEntry(title: "Mail", account: "a", password: "p", folderID: work.id)
+        let deleted = DeletedEntry(entry: VaultEntry(title: "Old", password: "gone"), deletedAt: now.addingTimeInterval(-60))
+        let first = LegacyState(current: Vault(folders: [work], entries: [shared, VaultEntry(title: "Bank", password: "b")]),
+            draft: VaultEntry(title: "Half", password: "h", folderID: work.id), recentlyDeleted: [deleted])
+        var changed = shared
+        changed.password = "different"
+        // The second book has the same entry once unchanged in a same-named folder, and once changed.
+        let otherWork = VaultFolder(name: "Work")
+        let second = LegacyState(current: Vault(folders: [otherWork],
+            entries: [changed, VaultEntry(title: "Shop", password: "s", folderID: otherWork.id)]))
+        var notebook = Notebook()
+        let summary = try Migration.carry([("a", first), ("local", second)], into: &notebook, draftMarker: " (Unsaved draft)", now: now)
+        XCTAssertEqual(summary.entries, 4)
+        XCTAssertEqual(summary.drafts, ["Half (Unsaved draft)"])
+        XCTAssertEqual(notebook.vault.folders, [work])
+        XCTAssertEqual(notebook.vault.entries.map(\.title).sorted(), ["Bank", "Half (Unsaved draft)", "Mail", "Mail", "Shop"])
+        XCTAssertEqual(Set(notebook.vault.entries.filter { $0.title == "Mail" }.map(\.password)), ["p", "different"])
+        XCTAssertEqual(notebook.vault.entries.first { $0.title == "Shop" }?.folderID, work.id)
+        XCTAssertEqual(notebook.vault.entries.first { $0.title == "Half (Unsaved draft)" }?.folderID, work.id)
+        XCTAssertEqual(notebook.recentlyDeleted.map(\.entry.title), ["Old"])
+        XCTAssertEqual(notebook.migratedLegacy, ["a", "local"])
+        XCTAssertNoThrow(try notebook.validated())
+        // Running it again adds nothing.
+        let again = notebook
+        _ = try Migration.carry([("a", first)], into: &notebook, draftMarker: " (Unsaved draft)", now: now)
+        XCTAssertEqual(notebook.vault.entries.count, again.vault.entries.count + 1) // the draft is copied again, nothing else
+        XCTAssertEqual(notebook.recentlyDeleted, again.recentlyDeleted)
+    }
+
+    func testMigrationKeepsWhatIsAlreadyInTheNotebook() throws {
+        var notebook = Notebook()
+        notebook.vault.entries = [VaultEntry(title: "New", password: "n")]
+        let old = LegacyState(current: Vault(entries: [VaultEntry(title: "Mail", password: "p")]))
+        _ = try Migration.carry([("local", old)], into: &notebook)
+        XCTAssertEqual(notebook.vault.entries.map(\.title).sorted(), ["Mail", "New"])
+    }
+
+    func testRecoveryKeyOfAnOldNotebookIsParsedAndChecked() throws {
         let key = SymmetricKey(size: .bits256)
-        for (name, title) in [("a", "First"), ("b", "Second")] {
-            let store = VaultStorage(directory: root.appendingPathComponent(String(repeating: name, count: 64)))
-            try store.save(LocalVaultState(current: Vault(entries: [VaultEntry(title: title)]), base: Vault()), key: key)
-        }
-        let destination = VaultStorage(directory: root.appendingPathComponent(String(repeating: "c", count: 64)))
-        XCTAssertThrowsError(try destination.recoverLocalState(key: key))
-        XCTAssertFalse(destination.exists)
+        let data = key.withUnsafeBytes { Data($0) }
+        let hex = (data + Data(SHA256.hash(data: data)).prefix(2)).map { String(format: "%02X", $0) }.joined()
+        let grouped = stride(from: 0, to: hex.count, by: 4).map { offset -> String in
+            let start = hex.index(hex.startIndex, offsetBy: offset)
+            return String(hex[start..<hex.index(start, offsetBy: 4)])
+        }.joined(separator: "-")
+        XCTAssertEqual(try RecoveryKey.parse(grouped.lowercased()).withUnsafeBytes { Data($0) }, data)
+        XCTAssertThrowsError(try RecoveryKey.parse(String(grouped.dropLast())))
+        var wrong = Array(hex)
+        wrong[0] = wrong[0] == "0" ? "1" : "0"
+        XCTAssertThrowsError(try RecoveryKey.parse(String(wrong)))
     }
-
 }

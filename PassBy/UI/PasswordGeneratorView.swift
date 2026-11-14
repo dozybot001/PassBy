@@ -53,7 +53,7 @@ struct PasswordGeneratorView: View {
                         Text("For important accounts, use 20 or more characters and multiple character types.")
                             .font(.footnote).foregroundStyle(Palette.secondary)
                     }
-                    Text(L(copyOnly ? "Copies the password for 60 seconds. Paste it into another app." : "Use fills the password field and copies it for 60 seconds. Your draft stays encrypted on this iPhone when you switch apps."))
+                    Text(L(copyOnly ? "Copies the password for 60 seconds. Paste it into another app." : "Use fills the password field and copies it for 60 seconds. Your draft stays on this iPhone when you switch apps."))
                         .font(.footnote).foregroundStyle(Palette.secondary)
                     Button {
                         if choose(password) { dismiss() }

@@ -3,64 +3,30 @@ import Foundation
 import LocalAuthentication
 import Security
 
-struct KeyStore {
+/// Reads the key of a PassBy 1.x notebook during migration. 2.0 stores no key
+/// of its own, and it never changes or deletes the old one.
+struct LegacyKeyStore {
     private let service = "cn.tenonai.apps.passby.local-vault"
     let ownerID: String
-    private var account: String { "aes-gcm-key-v1-" + ownerID }
 
+    /// `context` must already have passed a biometric check: the old key is
+    /// bound to the Face ID or Touch ID enrollment that existed when it was saved.
     func read(context: LAContext) throws -> SymmetricKey {
         context.interactionNotAllowed = true
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: "aes-gcm-key-v1-" + ownerID,
             kSecAttrSynchronizable as String: false,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
             kSecUseAuthenticationContext as String: context
         ]
         var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess else {
-            if status == errSecItemNotFound { throw VaultError.missingKey }
-            throw VaultError.authenticationFailed
-        }
-        guard let data = result as? Data, data.count == 32 else { throw VaultError.invalidKey }
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data, data.count == 32 else { throw LegacyKeyError.unavailable }
         return SymmetricKey(data: data)
     }
-
-    func store(_ key: SymmetricKey) throws {
-        var error: Unmanaged<CFError>?
-        guard let access = SecAccessControlCreateWithFlags(nil,
-            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .biometryCurrentSet, &error
-        ) else {
-            throw error?.takeRetainedValue() as Error? ?? VaultError.faceIDRequired
-        }
-        // No notebook exists at first setup. Keychain items can survive uninstall;
-        // discard an orphaned key instead of reusing a previous installation's key.
-        try delete()
-        let data = key.withUnsafeBytes { Data($0) }
-        let item: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecAttrAccessControl as String: access,
-            kSecAttrSynchronizable as String: false,
-            kSecValueData as String: data
-        ]
-        guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else {
-            throw VaultError.storageFailed
-        }
-    }
-
-    func delete() throws {
-        let status = SecItemDelete([
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
-        ] as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else {
-            throw VaultError.storageFailed
-        }
-    }
 }
+
+enum LegacyKeyError: Error { case unavailable }

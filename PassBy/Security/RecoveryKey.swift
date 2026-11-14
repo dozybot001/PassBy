@@ -1,37 +1,11 @@
 import CryptoKit
 import Foundation
 
-/// A random 256-bit key, not a human password. The checksum detects transcription
-/// errors; the key is never sent to CloudKit or stored in app preferences.
+/// The recovery key of a PassBy 1.x notebook: its 256-bit key with a checksum.
+/// 2.0 has no recovery key; this only opens an old notebook during migration.
 enum RecoveryKey {
-    static func format(_ key: SymmetricKey) -> String {
-        let data = key.withUnsafeBytes { Data($0) }
-        let checksum = Data(SHA256.hash(data: data)).prefix(2)
-        let text = (data + checksum).map { String(format: "%02X", $0) }.joined()
-        return stride(from: 0, to: text.count, by: 4).map { offset in
-            let start = text.index(text.startIndex, offsetBy: offset)
-            let end = text.index(start, offsetBy: min(4, text.count - offset))
-            return String(text[start..<end])
-        }.joined(separator: "-")
-    }
-
-    /// Checks one requested group of the user's saved copy (zero-based), so a
-    /// new notebook opens only after the key was written down somewhere.
-    static func confirms(_ input: String, group: Int, of formatted: String) -> Bool {
-        let groups = formatted.split(separator: "-").map(String.init)
-        return groups.indices.contains(group) && normalize(input) == groups[group]
-    }
-
-    static func groupCount(_ formatted: String) -> Int {
-        formatted.split(separator: "-").count
-    }
-
-    private static func normalize(_ text: String) -> String {
-        text.filter { !$0.isWhitespace && $0 != "-" }.uppercased()
-    }
-
     static func parse(_ text: String) throws -> SymmetricKey {
-        let normalized = normalize(text)
+        let normalized = text.filter { !$0.isWhitespace && $0 != "-" }.uppercased()
         guard normalized.count == 68 else { throw RecoveryError.invalid }
         var data = Data()
         var index = normalized.startIndex
@@ -42,9 +16,7 @@ enum RecoveryKey {
             index = end
         }
         let raw = Data(data.prefix(32))
-        guard Data(data.suffix(2)) == Data(SHA256.hash(data: raw).prefix(2)) else {
-            throw RecoveryError.invalid
-        }
+        guard Data(data.suffix(2)) == Data(SHA256.hash(data: raw).prefix(2)) else { throw RecoveryError.invalid }
         return SymmetricKey(data: raw)
     }
 }
@@ -54,7 +26,7 @@ enum RecoveryError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalid: return L("Check the recovery key. Its length or checksum is incorrect.")
-        case .wrongNotebook: return L("This recovery key does not unlock your notebook.")
+        case .wrongNotebook: return L("This recovery key does not open the earlier notebook on this iPhone.")
         }
     }
 }

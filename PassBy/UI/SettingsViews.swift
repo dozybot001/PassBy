@@ -1,5 +1,7 @@
+import CoreImage.CIFilterBuiltins
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 struct FoldersView: View {
     @EnvironmentObject private var session: VaultSession
@@ -57,70 +59,38 @@ struct FoldersView: View {
 }
 
 struct SettingsView: View {
-    @State private var confirmWebAccess = false
-    @State private var syncing = false
-    @State private var shownRecovery: String?
-    @State private var revealing = false
-    @State private var revealMessage: String?
     @EnvironmentObject private var session: VaultSession
-    @EnvironmentObject private var account: TenonAccount
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) private var openURL
-    private var status: String {
-        switch session.syncStatus {
-        case .waiting: return L("Waiting to sync")
-        case .syncing: return L("Syncing")
-        case .synced: return L("Up to date")
-        case .failed: return L("Saved on this iPhone")
-        }
+    @State private var showExport = false
+    @State private var showImport = false
+
+    private var lastExport: String {
+        session.lastExportAt.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? L("Never")
     }
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    if let identity = account.identity {
-                        Text(identity.name)
-                        Link("Manage sign-in methods", destination: URL(string: "https://account.tenonai.cn/account/")!)
-                        Button("Sign out of PassBy") { account.signOut() }
-                    } else {
-                        SignInOptions().listRowSeparator(.hidden)
-                    }
-                    if account.identity != nil {
-                        Button { Task { if let url = await account.beginDeletion() { openURL(url) } } }
-                        label: { OperationLabel(title: "Delete account", working: account.working) }.disabled(account.working)
-                    }
-                    DisclosureGroup("Account deletion details") {
-                        Text("Choose to delete only your PassBy sign-in or your entire Tenon account. Your Apple-stored notebook, device recovery keys and browser authorization are not deleted by this process.")
-                            .font(.footnote).foregroundStyle(Palette.secondary)
-                    }
-                    if let message = account.message { Text(message).font(.footnote).foregroundStyle(Palette.secondary) }
-                } header: { Text("Tenon Account") } footer: {
-                    Text(LB("Stay signed in to Tenon. Use Face ID each time you open your notebook. Manage your sign-in methods in Tenon Account."))
-                }
-                Section("Sync") {
-                    LabeledContent("Status", value: status)
-                    Button { sync() } label: { OperationLabel(title: "Sync now", working: syncing || session.syncStatus == .syncing) }
-                        .disabled(syncing || session.syncStatus == .syncing)
-                    if session.needsCloudRestore {
-                        Button { confirmWebAccess = true } label: { OperationLabel(title: "Enable web access", working: syncing) }
-                            .disabled(syncing || session.syncStatus == .syncing)
-                    }
-                    if let message = session.syncMessage {
-                        Text(message).font(.footnote).foregroundStyle(Palette.secondary)
-                    }
-                    if !session.isAppleAccountLinked {
-                        Label("Apple Account unavailable", systemImage: "exclamationmark.icloud")
+                    Toggle(isOn: Binding(get: { session.gateEnabled }, set: { value in Task { await session.setGate(value) } })) {
+                        Label(LB("Ask for Face ID to open"), systemImage: Biometry.current.symbol)
+                    }.tint(Palette.control)
+                    if !session.deviceHasLock {
+                        Label("This iPhone has no passcode", systemImage: "exclamationmark.triangle")
                             .foregroundStyle(Palette.secondary)
                     }
-                    DisclosureGroup("Sync details") {
-                        Label(session.isAppleAccountLinked ? L("Linked to your Apple Account") : L("Apple Account unavailable"),
-                              systemImage: "icloud")
-                        Text("PassBy uses the Apple Account signed in to iCloud on this iPhone. It does not request your Apple password, name or email.")
-                            .font(.footnote).foregroundStyle(Palette.secondary)
-                        Text("Changing the Apple Account locks this notebook. Each account has separate encrypted data. A new device also needs your recovery key.")
-                            .font(.footnote).foregroundStyle(Palette.secondary)
-                    }
+                } header: { Text("Lock") } footer: {
+                    Text(session.deviceHasLock
+                        ? LB("PassBy asks when you open it, and again after 5 minutes away. Without Face ID it asks for your iPhone passcode.")
+                        : L("Without a passcode, iPhone does not encrypt your notebook file and anyone holding the phone can open PassBy. Set a passcode in iPhone Settings."))
+                }
+                Section {
+                    LabeledContent("Last export", value: lastExport)
+                    Button { showExport = true } label: { Label("Export notebook", systemImage: "square.and.arrow.up") }
+                        .disabled(session.vault.entries.isEmpty)
+                    Button { showImport = true } label: { Label("Import from a file", systemImage: "square.and.arrow.down") }
+                } header: { Text("Backup") } footer: {
+                    Text("PassBy has no account, so a backup is yours to keep. Export an encrypted file and store it somewhere else. Your notebook is also part of this iPhone’s own backups: turn on Advanced Data Protection for iCloud Backup, or use an encrypted computer backup, so nobody else can read it there.")
                 }
                 Section {
                     NavigationLink { RecentlyDeletedView() } label: {
@@ -129,34 +99,14 @@ struct SettingsView: View {
                         } label: { Label("Recently Deleted", systemImage: "trash") }
                     }
                 } footer: {
-                    Text("Deleted passwords stay encrypted on this iPhone for 30 days, including those deleted on the web or another device. They are not synced.")
+                    Text("Deleted passwords stay on this iPhone for 30 days. They are not part of an export.")
                 }
                 Section {
-                    Label("Locked whenever you leave", systemImage: Biometry.current.symbol)
-                    Label("Encrypted before syncing", systemImage: "lock.shield")
+                    Label("Kept on this iPhone", systemImage: "iphone")
+                    Label("No account, no network requests", systemImage: "wifi.slash")
                     Label("Clipboard expires after 60 seconds", systemImage: "doc.on.clipboard")
                 } header: { Text("Privacy") } footer: {
                     Text("Copying makes a password temporarily available to the app you paste into. Copies stay on this iPhone and do not use Universal Clipboard.")
-                }
-                Section {
-                    Text(LB("Use the recovery key you saved when creating this notebook to open it on a new device or after resetting Face ID. PassBy cannot recover lost keys."))
-                        .font(.subheadline).foregroundStyle(Palette.secondary)
-                    if let shownRecovery {
-                        Text(shownRecovery).font(.system(.body, design: .monospaced)).lineSpacing(6)
-                            .privacySensitive()
-                        Button {
-                            session.copy(shownRecovery, label: L("Recovery key copied for 60 seconds"))
-                        } label: { Label("Copy recovery key", systemImage: "doc.on.doc") }
-                        Button("Hide recovery key") { self.shownRecovery = nil }
-                    } else {
-                        Button { reveal() } label: { OperationLabel(title: "Show recovery key", working: revealing) }
-                            .disabled(revealing)
-                    }
-                    if let revealMessage {
-                        Text(revealMessage).font(.footnote).foregroundStyle(Palette.secondary)
-                    }
-                } header: { Text("Recovery") } footer: {
-                    Text(LB("Showing the key requires Face ID again. Anyone with it can open your notebook on another device."))
                 }
                 Section {
                     Link(destination: URL(string: UIApplication.openSettingsURLString)!) {
@@ -176,47 +126,329 @@ struct SettingsView: View {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
                     Link("Terms of Service", destination: PassByLinks.page("terms/"))
                     Link("Support", destination: PassByLinks.page("support/"))
-                    Link("Email support", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Support")!)
+                    Link("Email support", destination: SupportMail.url(subject: "PassBy Support"))
                     NavigationLink("About PassBy") { AboutPassByView() }
                 }
-                Section {
-                    Button("Lock notebook") { session.lock() }
+                if session.gateEnabled && session.deviceHasLock {
+                    Section {
+                        Button { session.lock() } label: { Label("Lock notebook", systemImage: "lock") }
+                    }
                 }
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden).background(Palette.paper)
             .navigationTitle("Settings").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .onDisappear { shownRecovery = nil }
-            .alert("Enable web access?", isPresented: $confirmWebAccess) {
-                Button("Cancel", role: .cancel) {}
-                Button("Enable web access") { sync(enableWeb: true) }
+            .sheet(isPresented: $showExport) { ExportView() }
+            .sheet(isPresented: $showImport) { ImportView() }
+        }
+    }
+}
+
+/// Mail to support, with the app and system version filled in where the
+/// person can see and remove them before sending.
+enum SupportMail {
+    static func url(subject: String) -> URL {
+        let info = Bundle.main.infoDictionary ?? [:]
+        let version = "\(info["CFBundleShortVersionString"] as? String ?? "") (\(info["CFBundleVersion"] as? String ?? ""))"
+        let body = "\n\nPassBy \(version), iOS \(UIDevice.current.systemVersion)"
+        var parts = URLComponents()
+        parts.scheme = "mailto"
+        parts.path = "support@tenonai.cn"
+        parts.queryItems = [URLQueryItem(name: "subject", value: subject), URLQueryItem(name: "body", value: body)]
+        return parts.url ?? URL(string: "mailto:support@tenonai.cn")!
+    }
+}
+
+// MARK: - Export
+
+struct ExportDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.data] }
+    var data: Data
+    init(data: Data) { self.data = data }
+    init(configuration: ReadConfiguration) throws { data = configuration.file.regularFileContents ?? Data() }
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
+}
+
+/// Writes the notebook to an encrypted file (docs/export-format.md). The code
+/// or passphrase is shown once here and is not kept anywhere.
+struct ExportView: View {
+    @EnvironmentObject private var session: VaultSession
+    @Environment(\.dismiss) private var dismiss
+    @State private var ownPassphrase = false
+    @State private var code = ExportFormat.newCode()
+    @State private var passphrase = ""
+    @State private var showPassphrase = false
+    @State private var working = false
+    @State private var document: ExportDocument?
+    @State private var showExporter = false
+    @State private var saved = false
+    @State private var error: String?
+
+    private var problem: PassphraseProblem? { ExportFormat.passphraseProblem(passphrase) }
+    private var typed: String { ownPassphrase ? passphrase : code }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        if saved { savedNote } else { form }
+                        if let error { InlineError(text: error) }
+                    }
+                    .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)
+                    .frame(maxWidth: 540, alignment: .leading).frame(maxWidth: .infinity)
+                }
+                VStack(spacing: 12) {
+                    if saved {
+                        Button { dismiss() } label: { Label("Done", systemImage: "checkmark") }.buttonStyle(PrimaryButton())
+                    } else {
+                        Button { export() } label: {
+                            if working { ProgressView().tint(Palette.paper) }
+                            else { Label("Save export file", systemImage: "square.and.arrow.down") }
+                        }
+                        .buttonStyle(PrimaryButton())
+                        .disabled(working || (ownPassphrase && problem != nil))
+                    }
+                }
+                .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 12)
+            }
+            .background(Palette.paper)
+            .navigationTitle("Export notebook").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(saved ? "Close" : "Cancel") { dismiss() } } }
+            .fileExporter(isPresented: $showExporter, document: document, contentType: .data,
+                          defaultFilename: ExportFormat.fileName()) { result in
+                document = nil
+                if case .success = result {
+                    session.exportCompleted()
+                    saved = true
+                }
+            }
+            .privacySensitive()
+        }
+        .onDisappear { passphrase = ""; code = ""; document = nil }
+    }
+
+    @ViewBuilder private var form: some View {
+        Text(String(format: L("All %d passwords and your folders go into one encrypted file. Recently Deleted is left out."), session.vault.entries.count))
+            .foregroundStyle(Palette.secondary)
+        Picker("Protect the file with", selection: $ownPassphrase) {
+            Text("Export code").tag(false)
+            Text("My own passphrase").tag(true)
+        }.pickerStyle(.segmented)
+        if ownPassphrase {
+            HStack {
+                Group {
+                    if showPassphrase { TextField("Passphrase", text: $passphrase) }
+                    else { SecureField("Passphrase", text: $passphrase) }
+                }
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button { showPassphrase.toggle() } label: { Image(systemName: showPassphrase ? "eye.slash" : "eye") }
+                    .buttonStyle(IconButton()).accessibilityLabel(L(showPassphrase ? "Hide passphrase" : "Show passphrase"))
+            }
+            .padding(.leading, 16).padding(.trailing, 6).padding(.vertical, 6)
+            .background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 14))
+            if !passphrase.isEmpty {
+                Label(problem?.message ?? L(passphrase.unicodeScalars.count >= 20 ? "Strong enough." : "Acceptable. A longer passphrase is stronger."),
+                      systemImage: problem == nil ? "checkmark.circle" : "exclamationmark.circle")
+                    .font(.footnote).foregroundStyle(Palette.secondary)
+            }
+            Text("A passphrase you make up is easier to guess than an export code. Use at least 12 characters. PassBy does not keep it; without it the file cannot be opened.")
+                .font(.footnote).foregroundStyle(Palette.secondary)
+        } else {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(code).font(.system(.title3, design: .monospaced).weight(.medium))
+                    .frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                if let image = QRCode.image(code) {
+                    Image(uiImage: image).interpolation(.none).resizable().scaledToFit()
+                        .frame(width: 148, height: 148).padding(10).background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .accessibilityLabel("Export code as a QR code")
+                }
+                Button { session.copy(code, label: L("Export code copied for 60 seconds")) } label: {
+                    Label("Copy export code", systemImage: "doc.on.doc")
+                }.buttonStyle(SecondaryButton())
+            }
+            .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
+            Text("You need this code to open the file. Write it down or save it away from the file. PassBy does not keep it; without it the file cannot be opened.")
+                .font(.footnote).foregroundStyle(Palette.secondary)
+        }
+    }
+
+    @ViewBuilder private var savedNote: some View {
+        Label("Export saved", systemImage: "checkmark.circle").font(.title2.weight(.semibold))
+        Text(L(ownPassphrase ? "Keep your passphrase. Without it the file cannot be opened."
+               : "Keep the export code. Without it the file cannot be opened."))
+            .foregroundStyle(Palette.secondary)
+        if !ownPassphrase {
+            Text(code).font(.system(.title3, design: .monospaced).weight(.medium)).textSelection(.enabled)
+        }
+    }
+
+    private func export() {
+        guard !working else { return }
+        working = true
+        error = nil
+        let vault = session.vault, secret = typed
+        Task {
+            defer { working = false }
+            // Key derivation takes a moment; keep it off the main thread.
+            let data = await Task.detached { try? ExportFormat.export(vault, typed: secret) }.value
+            guard let data else { error = VaultError.storageFailed.localizedDescription; return }
+            document = ExportDocument(data: data)
+            showExporter = true
+        }
+    }
+}
+
+enum QRCode {
+    static func image(_ text: String) -> UIImage? {
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(text.utf8)
+        filter.correctionLevel = "M"
+        guard let output = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 8, y: 8)),
+              let image = CIContext().createCGImage(output, from: output.extent) else { return nil }
+        return UIImage(cgImage: image)
+    }
+}
+
+// MARK: - Import
+
+/// Reads an export file from this or another device: choose the file, enter
+/// its code, then merge it into the notebook or replace the notebook with it.
+struct ImportView: View {
+    @EnvironmentObject private var session: VaultSession
+    @Environment(\.dismiss) private var dismiss
+    @State private var file: Data?
+    @State private var fileName = ""
+    @State private var typed = ""
+    @State private var payload: ExportPayload?
+    @State private var replacing = false
+    @State private var confirmReplace = false
+    @State private var summary: ImportSummary?
+    @State private var showPicker = false
+    @State private var working = false
+    @State private var error: String?
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        content
+                        if let error { InlineError(text: error) }
+                    }
+                    .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)
+                    .frame(maxWidth: 540, alignment: .leading).frame(maxWidth: .infinity)
+                }
+                actions.padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 12)
+            }
+            .background(Palette.paper)
+            .navigationTitle("Import from a file").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(summary == nil ? "Cancel" : "Close") { dismiss() } } }
+            .fileImporter(isPresented: $showPicker, allowedContentTypes: [.data]) { result in read(result) }
+            .confirmationDialog("Replace your notebook?", isPresented: $confirmReplace, titleVisibility: .visible) {
+                Button("Replace notebook", role: .destructive) { apply() }
             } message: {
-                Text("Sync this iPhone’s encrypted notebook with your current Apple Account so it can open on the web. Your entries and recovery key stay the same.")
+                Text(String(format: L("All %d passwords now in your notebook move to Recently Deleted for 30 days."), session.vault.entries.count))
+            }
+            .privacySensitive()
+        }
+        .onDisappear { typed = ""; file = nil; payload = nil }
+    }
+
+    @ViewBuilder private var content: some View {
+        if let summary {
+            Label("Import finished", systemImage: "checkmark.circle").font(.title2.weight(.semibold))
+            Text(String(format: L("Added %d. Already here, skipped %d. Different from yours, added with “(Imported)” %d."),
+                        summary.added, summary.skipped, summary.marked))
+                .foregroundStyle(Palette.secondary)
+            Text("The file is still where you chose it from. Delete it there if you no longer need it.")
+                .font(.footnote).foregroundStyle(Palette.secondary)
+        } else if let payload {
+            Text(String(format: L("This file holds %d passwords."), payload.entries.count)).font(.title3.weight(.semibold))
+            if session.vault.entries.isEmpty {
+                Text("They will be added to your empty notebook.").foregroundStyle(Palette.secondary)
+            } else {
+                Picker("How to import", selection: $replacing) {
+                    Text("Merge").tag(false)
+                    Text("Replace").tag(true)
+                }.pickerStyle(.segmented)
+                Text(L(replacing
+                    ? "Your notebook becomes the same as the file. Everything in it now moves to Recently Deleted for 30 days."
+                    : "Nothing in your notebook is changed. New passwords are added; ones you already have are skipped; ones that differ are added with “(Imported)” after the title."))
+                    .foregroundStyle(Palette.secondary)
+            }
+        } else if file != nil {
+            Label(fileName, systemImage: "doc").font(.subheadline).foregroundStyle(Palette.secondary)
+            Text("Enter the export code or passphrase for this file.").foregroundStyle(Palette.secondary)
+            TextField("Export code or passphrase", text: $typed, axis: .vertical)
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
+                .font(.system(.body, design: .monospaced))
+                .padding(16).background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 14))
+            Text("An export code is 20 letters and digits. Spaces, hyphens and capitals do not matter.")
+                .font(.footnote).foregroundStyle(Palette.secondary)
+        } else {
+            Text("Choose a .passby file exported from PassBy on this or another phone.")
+                .foregroundStyle(Palette.secondary)
+        }
+    }
+
+    @ViewBuilder private var actions: some View {
+        if summary != nil {
+            Button { dismiss() } label: { Label("Done", systemImage: "checkmark") }.buttonStyle(PrimaryButton())
+        } else if payload != nil {
+            Button { if replacing && !session.vault.entries.isEmpty { confirmReplace = true } else { apply() } } label: {
+                Label(L(replacing && !session.vault.entries.isEmpty ? "Replace notebook" : "Import"), systemImage: "square.and.arrow.down")
+            }.buttonStyle(PrimaryButton())
+        } else if file != nil {
+            Button { open() } label: {
+                if working { ProgressView().tint(Palette.paper) }
+                else { Label("Open file", systemImage: "lock.open") }
+            }.buttonStyle(PrimaryButton()).disabled(working || typed.isEmpty)
+        } else {
+            Button { showPicker = true } label: { Label("Choose file", systemImage: "folder") }.buttonStyle(PrimaryButton())
+        }
+    }
+
+    private func read(_ result: Result<URL, Error>) {
+        error = nil
+        guard case .success(let url) = result else { return }
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        do {
+            // An export of a very large notebook is still far below this size.
+            let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+            guard size <= 64 * 1024 * 1024, let data = try? Data(contentsOf: url) else { throw ExportError.notExport }
+            try ExportFormat.inspect(data)
+            file = data
+            fileName = url.lastPathComponent
+        } catch { self.error = (error as? ExportError ?? .notExport).localizedDescription }
+    }
+
+    private func open() {
+        guard !working, let file else { return }
+        working = true
+        error = nil
+        let secret = typed
+        Task {
+            defer { working = false }
+            let result = await Task.detached { Result { try ExportFormat.open(file, typed: secret) } }.value
+            switch result {
+            case .success(let value): payload = value; typed = ""
+            case .failure(let failure): error = (failure as? ExportError ?? .damaged).localizedDescription
             }
         }
     }
-    private func reveal() {
-        guard !revealing else { return }
-        revealing = true
-        revealMessage = nil
-        Task {
-            defer { revealing = false }
-            do { shownRecovery = try await session.revealRecoveryKey() }
-            catch { revealMessage = error.localizedDescription }
-        }
-    }
 
-    private func sync(enableWeb: Bool = false) {
-        guard !syncing, session.syncStatus != .syncing else { return }
-        syncing = true
-        Task {
-            defer { syncing = false }
-            if enableWeb { await session.enableWebAccess() }
-            else { await session.syncNow() }
-        }
+    private func apply() {
+        guard let payload else { return }
+        if let result = session.applyImport(payload, replacing: replacing && !session.vault.entries.isEmpty) {
+            summary = result
+            self.payload = nil
+            file = nil
+        } else { error = VaultError.storageFailed.localizedDescription }
     }
-
 }
 
 struct RecentlyDeletedView: View {
@@ -261,7 +493,7 @@ struct RecentlyDeletedView: View {
                 if let selected { _ = session.purgeDeleted(selected.id) }
                 selected = nil
             }
-        } message: { Text("Restoring returns it to your notebook on all synced devices. Deleting now removes this iPhone’s copy.") }
+        } message: { Text("Restoring puts it back in your notebook. Deleting now removes it for good.") }
     }
 }
 
@@ -270,25 +502,17 @@ struct PrivacyPolicyView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Privacy policy").font(.largeTitle.weight(.semibold))
-                Text("Version 3 · Effective November 7, 2026")
-                    .font(.footnote).foregroundStyle(Palette.secondary)
+                Text("Version 4").font(.footnote).foregroundStyle(Palette.secondary)
                 Text("PassBy is provided by Changsha Tenon Artificial Intelligence Technology Co., Ltd. (长沙榫卯人工智能科技有限公司), the company behind Tenon AI (\"we\"). We handle the personal information described in this policy. Contact us at support@tenonai.cn.")
-                policySection("Your notebook", "Titles, accounts, passwords, notes and folders are encrypted on your device using AES-256-GCM before they are synced to your private iCloud database. PassBy has no developer-operated password server, advertising or analytics SDK.")
-                policySection("Tenon Account", "Tenon manages your sign-in methods. PassBy account sessions last up to 30 days after verification. A rotating sign-in credential in this iPhone’s device-only Keychain securely renews the session. Closing the app does not sign you out. Sign out, credential revocation or 30 days without renewal may require a new sign-in. Face ID is still required to open the notebook, including offline. No passwords or recovery keys are sent to the account service.")
-                policySection("Account information", "Tenon processes your email, display name, account identifier and login security records for authentication and account management. PassBy receives verified identity details to establish and securely renew its account session. These are linked to your account and are not used for advertising or tracking. Notebook contents and recovery keys are never sent to Tenon.")
-                Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenonai.cn/account/privacy.html")!)
-                policySection("Apple Account and Face ID", "Your system Apple Account identifies private notebook storage. PassBy does not receive your Apple password. Apple may share identity information with Tenon when you use it to sign in. Face ID is handled by iOS; PassBy receives authentication results, never your facial data.")
-                policySection("Keys and recovery", "The local encryption key is protected by the device Keychain and current Face ID enrollment. Your recovery key is never uploaded. Save it outside PassBy. Without a working device key or your recovery key, your notebook cannot be decrypted by the developer.")
-                policySection("Clipboard and drafts", "Copied values stay on this device and expire after 60 seconds. The app you paste into can read them. Unfinished entries are saved as encrypted local drafts and are not synced to iCloud.")
-                policySection("Retention and deletion", "Delete entries and folders inside PassBy and allow iCloud sync to finish to apply those deletions to your notebook. Each iPhone keeps deleted passwords encrypted in Recently Deleted for 30 days without syncing them; you can delete them sooner there. Removing the app deletes its local files, but does not delete the iCloud notebook. Apple manages iCloud storage and service metadata under its own privacy policy.")
-                Text("PassBy sign-in sessions last up to 30 days. Signed-out and rotated sign-in credentials are remembered only as hashes for 30 days, so they cannot be reused.")
-                    .foregroundStyle(Palette.secondary)
-                Text("To keep our network secure, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months.")
-                    .foregroundStyle(Palette.secondary)
-                Text("Choose Delete account in Settings. Tenon verifies your identity, then you choose the scope. Deleting only PassBy removes your PassBy sessions and its link to your Tenon identity, and keeps your Tenon Account for other products. Deleting your Tenon Account removes central account information and revokes available Apple sign-in tokens, which affects all Tenon products. Neither deletes your Apple-stored notebook or recovery key, which are managed separately. PassBy keeps a record that the deletion happened, holding only a hashed account identifier, so a repeated request cannot delete an account you create later.")
-                    .foregroundStyle(Palette.secondary)
-                policySection("Service providers and location", "PassBy shares data only with the services it needs: Tenon Account for sign-in, operated by the same publisher; Apple for iCloud storage under your Apple Account and, if you choose it, Sign in with Apple; and our hosting provider. The PassBy server is in mainland China, and PassBy does not send your personal information outside mainland China. Apple stores your notebook according to your Apple Account region, and the Tenon Account privacy notice covers Apple sign-in.")
-                policySection("Support and your choices", "View and change your notebook in the app, and your account details in Tenon Account. Delete your account as described above. You can contact support@tenonai.cn for technical or privacy questions, or to ask what we hold about you. Any details you voluntarily send are used to answer your request. Never send passwords, recovery keys, Apple verification codes or device passcodes.")
+                Text("In short: no account. The app works offline, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone's own backups and device transfers.")
+                policySection("Your notebook", "Your entries (title, account, password and notes), folders, Recently Deleted and the date of your last export are kept in one PassBy file on this iPhone, protected by iOS file encryption: the file cannot be read while your iPhone is locked. PassBy adds no key of its own, so your notebook is only as secure as your device passcode and Face ID or Touch ID. Entries in Recently Deleted stay on this iPhone for 30 days, and you can delete them sooner. Deleting PassBy deletes the notebook on this iPhone.")
+                policySection("Backups and new iPhones", "Your notebook is included in system backups and device transfers, including iCloud Backup, computer backups and Quick Start. Apple or your computer keeps these backups; they do not pass through us. iCloud Backup: unless you turn on Advanced Data Protection, Apple can read the contents of your backup. We recommend turning on Advanced Data Protection, or using encrypted computer backups instead. Unencrypted computer backups: your notebook is likely stored unencrypted in the backup on your computer. We recommend selecting “Encrypt local backup” in Finder on a Mac, or in the Apple Devices app (or iTunes) on Windows.")
+                policySection("Encrypted export", "An export file is created only when you choose Export. It contains all entries and folders, but not Recently Deleted. It is encrypted with AES-256-GCM, using a key derived from your export code or passphrase with PBKDF2-HMAC-SHA256. The app generates the export code. We never store the export code or your passphrase; without them the file cannot be opened. You choose where the file goes. We never receive export files. If you save one to iCloud Drive, a computer or another app, that service keeps it under its own terms.")
+                policySection("Face ID and clipboard", "Face ID and Touch ID are handled by iOS. PassBy receives only the result, never your face or fingerprint data. Copied values stay on this iPhone and expire after 60 seconds; the app you paste into can read them.")
+                policySection("The iPhone app works offline", "PassBy itself makes no network requests and includes no third-party advertising, analytics or crash-reporting SDK. Links in the app, such as this policy or Support, open in your browser only when you tap them.")
+                policySection("Information we may receive", "Crash reports and usage statistics: if you turn on Share With App Developers in Settings › Privacy & Security › Analytics & Improvements, Apple provides us with PassBy crash reports and aggregated usage statistics. They do not include your notebook, and Apple states that they do not identify you personally. Support email: when you email support@tenonai.cn, we receive your email address, your message and anything you attach, and use them only to reply to you. Never send passwords, export codes or your device passcode. Website: when you visit passby.tenonai.cn, our servers record the time, IP address and page requested, and delete these logs automatically after 6 months. Downloads: Apple handles downloads on the App Store; we see only aggregated figures.")
+                policySection("Data left by earlier versions", "From version 2.0, PassBy no longer uses Tenon Account sign-in or iCloud sync. Sign-in records that earlier versions left on our servers were deleted when that service shut down. The encrypted notebook that earlier versions synced to iCloud stays in your own iCloud, and we cannot delete it; you can delete PassBy's data when you manage your iCloud storage in iPhone Settings. The earlier notebook file on this iPhone is kept after it is moved into this version.")
+                policySection("Your rights", "You can access, copy, correct or delete your personal information, withdraw consent, or ask us to explain how we handle it. You manage your notebook yourself in the app. For anything else, email support@tenonai.cn and we will reply within 15 working days.")
                 Link("Online privacy policy", destination: PassByLinks.page("privacy/"))
                 Link("Terms of Service", destination: PassByLinks.page("terms/"))
                 Link("Apple privacy policy", destination: URL(string: "https://www.apple.com/legal/privacy/")!)
@@ -301,8 +525,8 @@ struct PrivacyPolicyView: View {
 
     private func policySection(_ title: String, _ body: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(LB(title)).font(.headline)
-            Text(LB(body)).font(.body).foregroundStyle(Palette.secondary)
+            Text(L(title)).font(.headline)
+            Text(L(body)).font(.body).foregroundStyle(Palette.secondary)
         }
     }
 }
@@ -318,7 +542,7 @@ struct AboutPassByView: View {
                 NotebookTitle()
                 LabeledContent("Version", value: version).font(.subheadline).foregroundStyle(Palette.secondary)
                 Text("PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.")
-                Text(LB("Your notebook is encrypted on your device before syncing to Apple private storage. It locks whenever you leave; Face ID unlocks it. Web access uses your recovery key to decrypt the same notebook in the browser."))
+                Text("No account, and the app works offline. Your notebook is kept on this iPhone and moves with the phone’s own backups. Export an encrypted file to keep a backup of your own or to move to another phone.")
                     .foregroundStyle(Palette.secondary)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Publisher").font(.footnote).foregroundStyle(Palette.secondary)
@@ -331,7 +555,7 @@ struct AboutPassByView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     NavigationLink("Privacy policy") { PrivacyPolicyView() }
                     Link("Terms of Service", destination: PassByLinks.page("terms/"))
-                    Link("Send feedback", destination: URL(string: "mailto:support@tenonai.cn?subject=PassBy%20Feedback")!)
+                    Link("Send feedback", destination: SupportMail.url(subject: "PassBy Feedback"))
                 }
             }
             .padding(.horizontal, PageMetrics.horizontalPadding).padding(.vertical, 24)

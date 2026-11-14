@@ -159,13 +159,18 @@ struct PrivacyShield: View {
 
 struct StatusToast: View {
     let text: String
+    var action: (title: String, run: () -> Void)?
     var body: some View {
-        Label(text, systemImage: "checkmark")
-            .font(.subheadline.weight(.medium))
-            .padding(.horizontal, 20).padding(.vertical, 12)
-            .background(.regularMaterial, in: Capsule())
-            .padding(.bottom, 18)
-            .allowsHitTesting(false)
+        HStack(spacing: 14) {
+            Label(text, systemImage: "checkmark").font(.subheadline.weight(.medium))
+            if let action {
+                Button(action.title, action: action.run).font(.subheadline.weight(.semibold))
+            }
+        }
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .background(.regularMaterial, in: Capsule())
+        .padding(.bottom, 18)
+        .allowsHitTesting(action != nil)
     }
 }
 
@@ -202,43 +207,11 @@ struct ControlSurface: ViewModifier {
             Button("All") {}.buttonStyle(SecondaryButton(selected: true))
             Button("Unfiled") {}.buttonStyle(SecondaryButton())
         }
-        Button {} label: { Label("Unlock with Face ID", systemImage: "faceid") }
+        Button {} label: { Label("Open notebook", systemImage: "faceid") }
             .buttonStyle(PrimaryButton())
     }
     .padding(24).frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Palette.paper).preferredColorScheme(.dark)
-}
-
-/// Sign-in methods; each goes straight to that method on the central account page.
-struct SignInOptions: View {
-    @EnvironmentObject private var account: TenonAccount
-    @AppStorage("passby.last-method") private var lastMethod = ""
-    var body: some View {
-        VStack(spacing: 10) {
-            Text("Sign in to PassBy").font(.headline).frame(maxWidth: .infinity, alignment: .leading)
-            Button { choose("apple") } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "apple.logo").accessibilityHidden(true)
-                    OperationLabel(title: "Continue with Apple", working: account.working).tint(Palette.paper)
-                    if lastMethod == "apple" { Text("Last used").font(.caption2) }
-                }
-            }.buttonStyle(PrimaryButton())
-            Button { choose("email") } label: {
-                HStack(spacing: 8) {
-                    OperationLabel(title: "Continue with email", working: account.working)
-                    if lastMethod == "email" { Text("Last used").font(.caption2) }
-                }.frame(maxWidth: .infinity)
-            }.buttonStyle(SecondaryButton())
-            Button("More options") { account.signIn() }.font(.footnote).foregroundStyle(Palette.secondary).buttonStyle(.plain)
-            Text("Signing in for the first time creates a Tenon Account. PassBy is made by Tenon AI, and the same account works with our other products. We only receive your basic profile and email address.")
-                .font(.footnote).foregroundStyle(Palette.secondary).fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Link("Tenon Account privacy notice", destination: URL(string: "https://account.tenonai.cn/account/privacy.html")!)
-                .font(.footnote).tint(Palette.secondary).frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .disabled(account.working)
-    }
-    private func choose(_ method: String) { lastMethod = method; account.signIn(method: method) }
 }
 
 struct OperationLabel: View {

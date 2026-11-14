@@ -14,6 +14,8 @@ struct LibraryView: View {
     @State private var showFolders = false
     @State private var showSettings = false
     @State private var showGenerator = false
+    @State private var showExport = false
+    @State private var path: [UUID] = []
 
     private var entries: [VaultEntry] {
         session.vault.entries.filter { entry in
@@ -29,7 +31,7 @@ struct LibraryView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 NotebookHeader(search: {
                     showSearch.toggle()
@@ -50,6 +52,15 @@ struct LibraryView: View {
                     }
                     .opacity(showSearch ? 0 : 1)
                     .accessibilityHidden(showSearch)
+                    if !session.pendingLegacy.isEmpty {
+                        notice("Your notebook from the earlier version has not been moved yet.", icon: "arrow.right.doc.on.clipboard",
+                               action: "Move it now", run: { session.migrationDeferred = false })
+                    } else if session.showExportReminder {
+                        notice(session.lastExportAt == nil ? "You have no backup yet. Export one and keep it somewhere else."
+                               : "Your notebook changed since the last export, more than 30 days ago.",
+                               icon: "square.and.arrow.up", action: "Export", run: { showExport = true },
+                               dismiss: { session.dismissExportReminder() })
+                    }
                     if entries.isEmpty {
                         ContentUnavailableView {
                             Label(L(search.isEmpty ? "Your notebook starts here" : "No matching passwords"),
@@ -61,9 +72,8 @@ struct LibraryView: View {
                     } else {
                         List {
                             ForEach(entries) { entry in
-                                NavigationLink(value: entry.id) {
-                                    LibraryEntryRow(entry: entry)
-                                }
+                                LibraryEntryRow(entry: entry, copyPassword: { copyPassword(entry) },
+                                    copyAccount: { copyAccount(entry) }, view: { path.append(entry.id) })
                                 .listRowBackground(Palette.paper)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 0, leading: PageMetrics.horizontalPadding, bottom: 0, trailing: PageMetrics.horizontalPadding))
@@ -97,6 +107,7 @@ struct LibraryView: View {
             }
             .sheet(isPresented: $showFolders) { FoldersView() }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showExport) { ExportView() }
             .sheet(isPresented: $showGenerator) {
                 PasswordGeneratorView(copyOnly: true) { password in
                     session.copy(password, label: L("Password copied for 60 seconds"))
@@ -106,18 +117,35 @@ struct LibraryView: View {
             .onChange(of: session.vault.folders) { _, folders in
                 if case .folder(let id) = filter, !folders.contains(where: { $0.id == id }) { filter = .all }
             }
-            .task {
-                // Drafts resume only through New password. This task restarts
-                // when returning from a detail page or unlocking the notebook.
-                // Sync remote edits while the notebook is open. No sync task reads
-                // a decrypted notebook when the app is locked.
-                while !Task.isCancelled {
-                    try? await Task.sleep(for: .seconds(30))
-                    guard !Task.isCancelled else { return }
-                    await session.syncNow()
-                }
+        }
+    }
+
+    private func copyPassword(_ entry: VaultEntry) {
+        session.copy(entry.password, label: L("Password copied for 60 seconds"),
+                     action: (L("View"), { path.append(entry.id) }))
+    }
+
+    private func copyAccount(_ entry: VaultEntry) {
+        session.copy(entry.account, label: L("Account copied for 60 seconds"))
+    }
+
+    private func notice(_ text: LocalizedStringKey, icon: String, action: LocalizedStringKey, run: @escaping () -> Void,
+                        dismiss: (() -> Void)? = nil) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon).foregroundStyle(Palette.secondary).padding(.top, 2).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(text).font(.subheadline).fixedSize(horizontal: false, vertical: true)
+                Button(action, action: run).font(.subheadline.weight(.semibold))
+            }
+            Spacer(minLength: 0)
+            if let dismiss {
+                Button(action: dismiss) { Image(systemName: "xmark") }
+                    .foregroundStyle(Palette.secondary).accessibilityLabel("Dismiss")
             }
         }
+        .padding(16)
+        .background(Palette.rule.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, PageMetrics.horizontalPadding).padding(.bottom, 8)
     }
 
     private func folderChip(_ name: String, count: Int, value: FolderFilter, literal: Bool = false) -> some View {
@@ -131,23 +159,48 @@ struct LibraryView: View {
     }
 }
 
+/// Tapping a row copies its password. The button at the end copies the
+/// account; a long press offers both and the details page.
 struct LibraryEntryRow: View {
     let entry: VaultEntry
+    var copyPassword: () -> Void = {}
+    var copyAccount: () -> Void = {}
+    var view: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 14) {
-            Text(String(entry.title.prefix(1)).uppercased())
-                .font(.title3.weight(.medium)).foregroundStyle(Palette.accent)
-                .frame(width: 44, height: 44)
-                .background(Palette.rule.opacity(0.4), in: Circle())
-            VStack(alignment: .leading, spacing: 5) {
-                Text(entry.title).font(.body.weight(.semibold)).lineLimit(1)
-                Text(entry.account.isEmpty ? L("No account added") : entry.account)
-                    .font(.subheadline).foregroundStyle(Palette.secondary).lineLimit(1)
+            Button(action: copyPassword) {
+                HStack(spacing: 14) {
+                    Text(String(entry.title.prefix(1)).uppercased())
+                        .font(.title3.weight(.medium)).foregroundStyle(Palette.accent)
+                        .frame(width: 44, height: 44)
+                        .background(Palette.rule.opacity(0.4), in: Circle())
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(entry.title).font(.body.weight(.semibold)).lineLimit(1)
+                        Text(entry.account.isEmpty ? L("No account added") : entry.account)
+                            .font(.callout).foregroundStyle(entry.account.isEmpty ? Palette.secondary : Palette.ink.opacity(0.8))
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Copies the password")
+            if !entry.account.isEmpty {
+                Button(action: copyAccount) { Image(systemName: "person.crop.circle") }
+                    .buttonStyle(IconButton()).accessibilityLabel("Copy account")
             }
         }
         .padding(.vertical, 10)
         .privacySensitive()
+        .contextMenu {
+            Button(action: copyAccount) { Label("Copy account", systemImage: "person.crop.circle") }
+                .disabled(entry.account.isEmpty)
+            Button(action: copyPassword) { Label("Copy password", systemImage: "doc.on.doc") }
+            Button(action: view) { Label("View", systemImage: "doc.text.magnifyingglass") }
+        }
+        .accessibilityAction(named: Text("View"), view)
     }
 }
 
@@ -224,7 +277,7 @@ struct NotebookSearchOverlay: View {
                     ForEach([VaultEntry(title: "Mail", account: "name@example.com"),
                              VaultEntry(title: "Travel", account: "traveler"),
                              VaultEntry(title: "Work", account: "name@example.com")]) { entry in
-                        NavigationLink {} label: { LibraryEntryRow(entry: entry) }
+                        LibraryEntryRow(entry: entry)
                             .listRowInsets(EdgeInsets(top: 0, leading: PageMetrics.horizontalPadding, bottom: 0, trailing: PageMetrics.horizontalPadding))
                             .listRowBackground(Palette.paper).listRowSeparator(.hidden)
                     }
