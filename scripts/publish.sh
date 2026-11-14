@@ -6,7 +6,9 @@ component="${1:-}"
 [[ "$component" =~ ^(site|auth)$ ]] || { echo 'usage: scripts/publish.sh site|auth' >&2; exit 2; }
 cd "$(dirname "$0")/.."
 [[ "$(git symbolic-ref --short HEAD)" == main ]] || { echo 'Publish from main.' >&2; exit 1; }
-[[ -z "$(git status --porcelain)" ]] || { echo 'Commit the complete release before publishing.' >&2; exit 1; }
+# The Android app is developed in the same checkout by another session and is not
+# part of the website or the identity service, so its work in progress does not block.
+[[ -z "$(git status --porcelain -- . ':!android' ':!docs/android.md')" ]] || { echo 'Commit the complete release before publishing.' >&2; exit 1; }
 release="$(git rev-parse HEAD)"
 # Secret scan over the whole history and a dependency audit block a release.
 gitleaks git --no-banner --redact --log-level warn .
