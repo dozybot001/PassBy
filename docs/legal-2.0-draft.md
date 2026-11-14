@@ -38,7 +38,7 @@ PassBy 本身不发出任何网络请求，不使用广告、统计或崩溃收�
 
 ## 我们可能收到的信息
 - 崩溃报告和使用统计：如果你在 iPhone 的「设置 › 隐私与安全性 › 分析与改进」里打开了「与 App 开发者共享」，Apple 会向我们提供 PassBy 的崩溃报告和汇总的使用统计（例如打开次数、活跃设备数）。崩溃报告包括设备型号、系统版本、App 版本和出错时的程序状态，不含密码本内容。按 Apple 的说明，这些信息不能识别你本人。我们只在 Apple 的开发者工具（Xcode 和 App Store Connect）里查看，用来修复问题、了解使用情况，不提供给他人，也不和其他信息关联；Apple 保存的期限由 Apple 决定。你可以随时在同一处关闭。
-- 支持邮件：你发邮件到 support＠tenonai.cn 时，我们会收到你的邮箱地址、邮件内容和你附上的信息，只用来答复你。处理方式、存放地点和保存期限见 Tenon AI 隐私政策（https://tenonai.cn/privacy/）。请不要在邮件里发送密码、导出码或设备密码。
+- 支持邮件：你发邮件到 support＠tenonai.cn 时，我们会收到你的邮箱地址、邮件内容和你附上的信息，只用来答复你。处理方式、存放地点和保存期限见 Tenon AI 隐私政策（https://tenonai.cn/zh/privacy/）。请不要在邮件里发送密码、导出码或设备密码。
 - 网站：访问 passby.tenonai.cn 时，服务器会记录访问日志和安全日志，包括访问时间、IP 地址和访问的页面，不含网址中的参数；这些日志保存 6 个月后自动删除。服务器位于中国境内。
 - 购买：PassBy 在 App Store 一次性购买，付款由 Apple 处理。我们收不到你的付款信息，只能看到 Apple 提供的汇总销量。
 
@@ -81,7 +81,7 @@ PassBy itself makes no network requests and includes no third-party advertising,
 
 ## Information we may receive
 - Crash reports and usage statistics: if you turn on Share With App Developers in Settings › Privacy & Security › Analytics & Improvements, Apple provides us with PassBy crash reports and aggregated usage statistics, such as sessions and active devices. Crash reports include your device model, system version, app version and the state of the app when it crashed, but not your notebook. Apple states that this information does not identify you personally. We view it only in Apple's developer tools (Xcode and App Store Connect), to fix problems and understand usage; we do not share it with anyone or combine it with other information. Apple decides how long it keeps it. You can turn this off at any time in the same place.
-- Support email: when you email support＠tenonai.cn, we receive your email address, your message and anything you attach, and use them only to reply to you. See the Tenon AI Privacy Policy (https://tenonai.cn/en/privacy/) for how we handle, store and retain this correspondence. Never send passwords, export codes or your device passcode.
+- Support email: when you email support＠tenonai.cn, we receive your email address, your message and anything you attach, and use them only to reply to you. See the Tenon AI Privacy Policy (https://tenonai.cn/privacy/) for how we handle, store and retain this correspondence. Never send passwords, export codes or your device passcode.
 - Website: when you visit passby.tenonai.cn, our servers record access and security logs: the time, IP address and page requested, without URL parameters. These logs are deleted automatically after 6 months. The servers are in mainland China.
 - Purchases: PassBy is a one-time purchase on the App Store, and Apple handles payment. We never receive your payment details and see only aggregated sales figures from Apple.
 
