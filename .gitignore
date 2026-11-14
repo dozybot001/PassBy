@@ -8,3 +8,9 @@ xcuserdata/
 
 node_modules/
 server/var/
+
+# Signing keys stay outside the repository (product standard 15.6.2).
+*.jks
+*.keystore
+*.p12
+keystore.properties
