@@ -6,8 +6,6 @@ enum Palette {
     static let secondary = Color("Secondary")
     static let accent = Color("AccentColor")
     static let rule = Color("Rule")
-    // Keep the white system switch thumb distinct in both appearances.
-    static let control = Color(white: 0.4)
 }
 
 struct NotebookTitle: View {
