@@ -6,9 +6,6 @@ xcuserdata/
 *.ipa
 *.xcarchive
 
-node_modules/
-server/var/
-
 # Signing keys stay outside the repository (product standard 15.6.2).
 *.jks
 *.keystore

@@ -17,7 +17,6 @@
 ## 文档
 
 - [网页版与发布](docs/web-app.md)
-- [认证服务](server/README.md)
 - [隐私与数据清单](docs/privacy.md)
 - [App Store 发布记录](docs/app-store-release.md)
 - [更新记录](CHANGELOG.md)

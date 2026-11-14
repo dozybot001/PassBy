@@ -6,20 +6,18 @@ set -Eeuo pipefail
 # The body is a function so bash reads it completely from the SSH stdin before
 # running, and no child process can consume the rest of the script.
 main() {
-    component="${1:-}"
-    release="${2:-}"
-    [[ "$component" =~ ^(site|auth)$ && "$release" =~ ^[0-9a-f]{40}$ ]] || { echo 'usage: site|auth <commit> <gitee-keys>' >&2; exit 2; }
+    release="${1:-}"
+    [[ "$release" =~ ^[0-9a-f]{40}$ ]] || { echo 'usage: <commit> <gitee-keys>' >&2; exit 2; }
     builder=/opt/passby-release/builder
     key="$builder/gitee_read_ed25519"
     hosts="$builder/gitee_known_hosts"
     source="$builder/source.git"
-    node_image='docker.m.daocloud.io/library/node@sha256:235600a8101ab264e117b1768e925532262668dc9b581ef1dd7d96ced463b8e7'
     install -d -m 0750 /opt/passby-release "$builder"
     exec 9>/opt/passby-release/.controller-lock
     flock -n 9 || { echo 'Another PassBy release is running.' >&2; exit 1; }
 
     # Gitee host keys come from the repository's scripts/known_hosts, never a scan.
-    printf '%s' "${3:-}" | base64 -d > "$hosts.candidate"
+    printf '%s' "${2:-}" | base64 -d > "$hosts.candidate"
     [[ -s "$hosts.candidate" ]] && ! grep -qv '^gitee\.com ' "$hosts.candidate" || { echo 'Pinned Gitee host keys are missing.' >&2; exit 1; }
     mv "$hosts.candidate" "$hosts"
     if [[ ! -f "$key" ]]; then
@@ -42,34 +40,9 @@ main() {
 
     stage="$(mktemp -d)"
     trap 'rm -rf "$stage"' EXIT
-    git --git-dir="$source" archive "$release" public server scripts PassBy.xcodeproj/project.pbxproj | tar -x -C "$stage"
+    git --git-dir="$source" archive "$release" public scripts PassBy.xcodeproj/project.pbxproj | tar -x -C "$stage"
+    bash "$stage/scripts/release-site.sh" "$stage" "$release"
     # Housekeeping after an accepted release never fails it.
-    retain() { python3 "$stage/scripts/retention.py" "$1" || echo 'Release retention skipped.' >&2; }
-    if [[ "$component" == site ]]; then
-        bash "$stage/scripts/release-site.sh" "$stage" "$release"
-        retain site
-        exit
-    fi
-
-    # Install the exact locked dependencies in the pinned runtime image, without host secrets.
-    docker run --rm --cap-drop ALL --security-opt no-new-privileges \
-        --mount "type=bind,src=$stage/server,dst=/app" --workdir /app --env npm_config_cache=/tmp/npm-cache \
-        "$node_image" npm ci --ignore-scripts --no-audit --no-fund >/dev/null
-    bundle="$stage/bundle"
-    mkdir -p "$bundle/scripts"
-    cp -R "$stage/server" "$bundle/server"
-    cp "$stage/scripts/release-auth.py" "$bundle/scripts/"
-    python3 - "$bundle" "$release" <<'PY'
-import hashlib, json, pathlib, sys
-root = pathlib.Path(sys.argv[1]); files = {}
-for p in root.rglob('*'):
-    if p.is_symlink() or p.suffix == '.node': raise SystemExit('Only regular portable dependencies are supported')
-    if p.is_file(): files[str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
-(root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}))
-PY
-    tar --no-xattrs -czf "/tmp/passby-auth-$release.tar.gz" -C "$bundle" server scripts manifest.json
-    python3 "$stage/scripts/release-auth.py" "$release"
-    rm -f "/tmp/passby-auth-$release.tar.gz"
-    retain auth
+    python3 "$stage/scripts/retention.py" || echo 'Release retention skipped.' >&2
 }
 main "$@" </dev/null
