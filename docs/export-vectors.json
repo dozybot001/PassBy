@@ -1,0 +1,173 @@
+{
+  "format": "PassBy export v1",
+  "generatedBy": "scripts/export-format.mjs",
+  "valid": [
+    {
+      "name": "export code",
+      "typed": "7K3M9-Q2XHB-R8T4V-W6YZ0",
+      "equivalentInputs": [
+        "7k3m9 q2xhb r8t4v w6yz0",
+        "7K3M9Q2XHBR8T4VW6YZO",
+        " 7k3m9-q2xhb-r8t4v-w6yzo "
+      ],
+      "kind": "code",
+      "secretHex": "374b334d39513258484252385434565736595a30",
+      "iterations": 600000,
+      "saltHex": "e175a04c7e41bfd55b3f3e393589f087",
+      "nonceHex": "44a2ac6694c4671425c89155",
+      "masterKeyHex": "489a9ca69585243842a30f1563bc776afbdbe54f877f1b82f35a47204c9d547a",
+      "encryptKeyHex": "bf67407c42a00392ba8cfb3d03ebb27bcb4921abc3b6f8130941827c921250e0",
+      "checkKeyHex": "9bea906d956e98dab0bb7d5c856e1d778a6517e0cb1f0944dd5c6e3774d2d7de",
+      "checkHex": "823b0dc414a39b894a4d8d31cb053683",
+      "plaintext": "{\"format\":1,\"exportedAt\":\"2026-11-14T12:00:00Z\",\"folders\":[{\"id\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\",\"name\":\"工作 Work\"}],\"entries\":[{\"id\":\"0E8F6A2B-1C3D-4E5F-8A9B-0C1D2E3F4A5B\",\"title\":\"个人邮箱\",\"account\":\"alex@example.com\",\"password\":\"p@ss 密码 🔑\",\"notes\":\"第一行\\nsecond line\",\"folderID\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\"},{\"id\":\"A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D\",\"title\":\"Café\",\"account\":\"\",\"password\":\"x\",\"notes\":\"\"}]}",
+      "fileBase64": "UEFTU0JZRVgBAQAJJ8DhdaBMfkG/1Vs/Pjk1ifCHRKKsZpTEZxQlyJFVgjsNxBSjm4lKTY0xywU2gz1yeqwnOfcMCZy1T8UgEHKT7Egqk++75W19AwEXPsgE54gQpud92gx8XkjiefPkyH2Ssw64R8l6hUUf1c25FID9CKgaek3Xa6FlNB18lyhdepZEqrL901BfKIpUftkgi6vgDOEqhEaRpmd5nvXmNs08xT0jmOK/qBsbp292ldxuhwJK5VT///z3MEIlSIcHom/FNi8JLZ8k14heGrKudrer5Zt973D/yJ0mav8VTttb+CDu3X3dbRZDolzMgf/X/ju1N+tajetAEBrTdHlKDpd5ER0eobBxjUkHMjo+1/ODdaipAjIkvKTBCelrXv9b19B0yvGx+yTqkifHIjaJm9HpwCF9JjfWLnlHVh3SqcNGTgOmUb5ttZgzz2IztkeAc8UY7t7loN5VoGOTlHriwIC9Usxkw26dV8v1pU5i47HuZAFD9jcA/6h7IflA1Ea0f4+VFEoiJAa4M2SaiL1iG9OxGG4/E5btJm32jZwY0YRTyeTOJxbmDEramwa/qb2GvUb2+iolse+XC5IZRii+BjVJh7GYgEsy5t9IWNDsWdGJj8ClX7KSnC10u+7Og48aP22IXGnNxX6Kg6KZzDJXBjmr0SWT8DfXyqmpTTNYQR9ngn3N"
+    },
+    {
+      "name": "export code with I and L",
+      "typed": "IL000-11111-22222-33333",
+      "equivalentInputs": [
+        "1100011111222223333 3",
+        "il0oo-1lI1l-22222-33333"
+      ],
+      "kind": "code",
+      "secretHex": "3131303030313131313132323232323333333333",
+      "iterations": 100000,
+      "saltHex": "772df51f7665325c4ddd9aae2f55fb91",
+      "nonceHex": "efe47c6e744194b2bcef9ad4",
+      "masterKeyHex": "f9cf9e4a927a5075d7a1934ae93c60f4674f3a1477698b0660623efde6ead518",
+      "encryptKeyHex": "75f11b0445344da21aca0276741b92198f11ac4877bedadc63205c49237aee48",
+      "checkKeyHex": "146fbaf30065a0703bcdee7ef40d6e615405e34f300c66eb9c0bb5b292a3882a",
+      "checkHex": "5e51f08beae5df753f76f5f3cdf6e233",
+      "plaintext": "{\"format\":1,\"exportedAt\":\"2026-11-14T12:00:00Z\",\"folders\":[],\"entries\":[]}",
+      "fileBase64": "UEFTU0JZRVgBAQABhqB3LfUfdmUyXE3dmq4vVfuR7+R8bnRBlLK875rUXlHwi+rl33U/dvXzzfbiM66iWM3igoEJdruoYK0amkiO/mY5PsIVoSxLBRT9KvTPORpUVfvYt4NS5Y+rizOkxh+5TZ8qMPibob54r2bAfv7RN061S4gEc6JMg/Ab3IF6h0Xd+oPfpM1CeA=="
+    },
+    {
+      "name": "Chinese passphrase",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "equivalentInputs": [],
+      "kind": "passphrase",
+      "secretHex": "e68891e79a84e5af86e7a081e69cace5a487e4bbbde58fa3e4bba4e4ba8ce38087e4ba8ce585ad",
+      "iterations": 100000,
+      "saltHex": "c3aa5730fc38781561a0ae672d5a77e6",
+      "nonceHex": "e213ba9218ee6d22844dcab1",
+      "masterKeyHex": "ed2111fc8d7f4a2164b15380db71bb8131a39fa75f01ed4fe2e6bb15dddc4b45",
+      "encryptKeyHex": "39fe03646a15d89e32061edd5157468870641a07b0befc730d555ae22b78ba92",
+      "checkKeyHex": "1585dbcb2b1e74e14e7da7732bee22cbf3fc7232f1c15566bcab1508274d0209",
+      "checkHex": "8b727d3488a240f99233c00839265980",
+      "plaintext": "{\"format\":1,\"exportedAt\":\"2026-11-14T12:00:00Z\",\"folders\":[{\"id\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\",\"name\":\"工作 Work\"}],\"entries\":[{\"id\":\"0E8F6A2B-1C3D-4E5F-8A9B-0C1D2E3F4A5B\",\"title\":\"个人邮箱\",\"account\":\"alex@example.com\",\"password\":\"p@ss 密码 🔑\",\"notes\":\"第一行\\nsecond line\",\"folderID\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\"},{\"id\":\"A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D\",\"title\":\"Café\",\"account\":\"\",\"password\":\"x\",\"notes\":\"\"}]}",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH"
+    },
+    {
+      "name": "passphrase with emoji (surrogate pair)",
+      "typed": "Backup 🔐 notebook 2026",
+      "equivalentInputs": [],
+      "kind": "passphrase",
+      "secretHex": "4261636b757020f09f9490206e6f7465626f6f6b2032303236",
+      "iterations": 100000,
+      "saltHex": "d05eb03b28765c1b9c5724392dae89ea",
+      "nonceHex": "6d010d6af5f343c04a52ab7a",
+      "masterKeyHex": "7112f9ce2a37bcaa72350e83c4acc9d57e1371b5961baa4895b7e526f4442a72",
+      "encryptKeyHex": "907dceb0d1e9b7fcf48b526f9b3030f33693eb371573413f1634cd8133b102dd",
+      "checkKeyHex": "9e45293e7ae2b4f14851014bfc6cffd2cc131ae6dfed87e3d6267fdfb59b18db",
+      "checkHex": "87e5147d46c5d654190f26eaee53611b",
+      "plaintext": "{\"format\":1,\"exportedAt\":\"2026-11-14T12:00:00Z\",\"folders\":[{\"id\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\",\"name\":\"工作 Work\"}],\"entries\":[{\"id\":\"0E8F6A2B-1C3D-4E5F-8A9B-0C1D2E3F4A5B\",\"title\":\"个人邮箱\",\"account\":\"alex@example.com\",\"password\":\"p@ss 密码 🔑\",\"notes\":\"第一行\\nsecond line\",\"folderID\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\"},{\"id\":\"A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D\",\"title\":\"Café\",\"account\":\"\",\"password\":\"x\",\"notes\":\"\"}]}",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDQXrA7KHZcG5xXJDktronqbQENavXzQ8BKUqt6h+UUfUbF1lQZDybq7lNhG1whf/BgHSNxBgspXtOan3SHu/tShp1Ka792mPZgZ3sBxhO0g8SluoZuxjuUifkEL6PAKScKL4rTeB42/UfG7pJ15WOsj2+E7LfEeRZZymASUlwuIHqIRaZCtYd5qorYi1BWKRFnDEbSf1hV/procc5vOAVf0axnpmicmmqIS0KtCITT5v2ut+6bGW5mzfBDqnFGjIZVlZs9ydXSRTT5agdOJ0YCsJVfIIjLV4mlvEllo0daSjQtRYqCOmRe5myt9yWKY0rAi5HBGJba0O3noBuW1qqJZ9/x3s+JpD8phnZOkcJGtIu4oqeEjXb1+7PH7dNH8l3eEPnBaA34+hcVyC9C34kyYM0aveKFslXimuTFznhrnLSuXU+gAwFNEQQ6JtLuPkG5yOfibBAl5Yjwlx0VsGRRuQhHshVAg1qszWp4M+vzy0w5Sb6F5jrud7SF6yK5BVh9aRFLCEQMr3ieRzZJlV22r2j+KAoWMoTdPIH23ZP31EiS0kcKxK0Fsa5b+KUVNXqg1ah2KPa+FZ1pamdGtkHUNfxADdzPtqO9KHv3l5F2hnQoXBDWpYMpnD3OnGnWF1Eq8p4anTU5iPkoTNaXGI2LxRSojNptg1aIuUmJ9M0o"
+    },
+    {
+      "name": "passphrase typed with combining marks (NFD)",
+      "typed": "Café crème brûlée",
+      "equivalentInputs": [],
+      "kind": "passphrase",
+      "secretHex": "436166c3a9206372c3a86d65206272c3bb6cc3a965",
+      "iterations": 100000,
+      "saltHex": "b44e04ee461de289a805dcda89995d7b",
+      "nonceHex": "f0dc224ff8bf759fc423ad30",
+      "masterKeyHex": "46e03b96e320e71e7c43694802ff299287c8762eb3a2a901be6efd5472e8b831",
+      "encryptKeyHex": "4017590aa9e69e98581f1e5baf1b73e4904542c9f7942a558bb4981c7660b8df",
+      "checkKeyHex": "495f69b965cf394e8dff2646e9687ad728ad1a5d81fec099118eda3271df7d27",
+      "checkHex": "5066d7b2f674bb3e7d2db6018c311fb9",
+      "plaintext": "{\"format\":1,\"exportedAt\":\"2026-11-14T12:00:00Z\",\"folders\":[{\"id\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\",\"name\":\"工作 Work\"}],\"entries\":[{\"id\":\"0E8F6A2B-1C3D-4E5F-8A9B-0C1D2E3F4A5B\",\"title\":\"个人邮箱\",\"account\":\"alex@example.com\",\"password\":\"p@ss 密码 🔑\",\"notes\":\"第一行\\nsecond line\",\"folderID\":\"6F1C2A4E-8B3D-4C5E-9F60-1A2B3C4D5E6F\"},{\"id\":\"A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D\",\"title\":\"Café\",\"account\":\"\",\"password\":\"x\",\"notes\":\"\"}]}",
+      "fileBase64": "UEFTU0JZRVgBAQABhqC0TgTuRh3iiagF3NqJmV178NwiT/i/dZ/EI60wUGbXsvZ0uz59LbYBjDEfuXh2HCES2lLxYIO18N5pchfB935OddmR8fiGHj77GilUFUTKXeFGMGBUN0wzawmyeQothvxFBxnDJgdkq8M/4mwtdEOAtwaHu0PuCrSzLFVXUxZvZSNhmu9pKjD7y07rfa87MtR3H+22xqKrbQGJ3F9akO7z8SbGBqdDJZ9Wdjb1sjDGg6h9DGSLHDLMfgqC3ePxT6FKoVoBANl45ND7ADfpCG/ujTNObpKLA/fEMqXHm2uXa04n4Dd7ZhRrHzL5eUxHqowMguU6KJpt9EtzuSPV2mnVFteqLRw0xWfigYPsdfqPIK1VFpLUN0DspRhkiqHBBQuslVkmOla/Tu69d9BkmgkffxWhgXZXHIb2/DE9zLJ4zXVapf48mWyCEloVdVUU4EMUBAgr0Gc5OHp0HW+iXPt2+YHqd+TFW8rYhmGNG8BQGzbjvx28uFSRqNh2PDiYO9MT+x3L3n8aBkDo71LE+YUsREvgZJYYXKEL6uZMA01Ayof7bMaeoP9YBJgeo1DhcJzGUwP22eVU2XWGJ4ZRTuT9HWnLZDJy/Nlm+leyqre1yqBVqphLtaAJNpjUYJmeVavLA4bEsrv27yr17gghLmZ/XXQIosBLzsDNbBfFLmvQ"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "wrong passphrase",
+      "typed": "我的密码本备份口令二〇二七",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "wrongCode"
+    },
+    {
+      "name": "ciphertext changed",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGnk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "damaged"
+    },
+    {
+      "name": "nonce changed",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4xO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "damaged"
+    },
+    {
+      "name": "tag changed",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRG",
+      "error": "damaged"
+    },
+    {
+      "name": "iterations below range",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAQABhp/Dqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "damaged"
+    },
+    {
+      "name": "iterations above range",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAQCYloHDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "damaged"
+    },
+    {
+      "name": "unknown format version",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgCAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "update"
+    },
+    {
+      "name": "unknown key derivation",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAgABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "update"
+    },
+    {
+      "name": "not an export file",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "WEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1OELGTNFRVzdPAPXcwGT9NkiSxueQ+EVZ+9inAx26WQ2i+Ue/LMDKTcIqR2O8Q37Ml6gWaW4myihIBzFss6IBSjoe+J6I9UBOEOc0BKvUZ/ZPJi+aKiKr0nYpdVfcaWlPOvqOVJY++nfwS4NYFSlZLids6MbYOOQJ75YsY4ffp7GnvhdVb6UjA/FC6JKVR6ix3+wXc8DkebMmQxz0AHw6S9T2elrqOQUmaAuHTtzlKIDsNlb/0wPfM53Q1n+Xoa/qLvLgYeTx7hIpaiRHNlREw2asXgFVPM8B1AcTftMNRjh4qctJ5ukQmKtz9C4aEbDdS1pgXKgAVR4YXOqWdAcLru9dMtFmCpW2Ho4lb7vbMpzKpe/Blk5NbQboshWI7QBONp2r6KlkziHln6yZfcjdGPeYiPPFWMKNDjeIJ7kjl0ZOtWjfP1I3lHgg5Kjpgdz2h9lTX0nQRaUdhz/XVLiPRRK9ZJjuFwJ/xVBAXJLqamMdPp4pJUipoxLxGDiDBpTd/nJfwn/pf5fBCeIjZOLdlXHUSRWqE1WUR/1MD0domKdhN40E9Kr9f9j35VBRHtJVR3zX9p/fYxe6yrdIGkSkfGW+yRH",
+      "error": "notExport"
+    },
+    {
+      "name": "truncated file",
+      "typed": "  我的密码本备份口令二〇二六  ",
+      "fileBase64": "UEFTU0JZRVgBAQABhqDDqlcw/Dh4FWGgrmctWnfm4hO6khjubSKETcqxi3J9NIiiQPmSM8AIOSZZgGjk/ERquPZvPNDK7DRJ1A==",
+      "error": "notExport"
+    }
+  ],
+  "passphraseRules": [
+    {
+      "typed": "short 密码",
+      "problem": "tooShort"
+    },
+    {
+      "typed": " leading space passphrase",
+      "problem": "surroundingSpace"
+    },
+    {
+      "typed": "abcde-fghjk-mnpqr-stvwx",
+      "problem": "looksLikeCode"
+    },
+    {
+      "typed": "我的密码本备份口令二〇二六",
+      "problem": null
+    }
+  ]
+}
