@@ -1,5 +1,5 @@
 .wordmark,nav .brand{display:inline-flex;align-items:center;gap:.3em;white-space:nowrap}
-.product-symbol{fill:currentColor}
+.product-symbol{fill:var(--accent,currentColor)}
 .wordmark .product-symbol,nav .brand .product-symbol{width:1em;height:1em;flex:none}
 .product-name{display:inline-flex;align-items:flex-start;gap:max(4px,.18em)}
 .product-name .tenon-mark{width:max(14px,.58em);height:max(14px,.58em);margin-top:-.04em;flex:none}
