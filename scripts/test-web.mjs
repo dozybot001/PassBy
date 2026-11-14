@@ -6,6 +6,9 @@ import { validateVault, mergeVault } from '../public/web/model.mjs';
 import { NotebookSession } from '../public/web/session.mjs';
 import { CloudNotebook } from '../public/web/cloud.mjs';
 import { TENON_SESSION_TTL, validIdentity, scheduleExpiry, requestProductDeletion } from '../public/web/auth.mjs';
+import { newExportCode, exportNotebook, exportFileName } from '../public/web/export.mjs';
+import { decode, canonicalCode } from './export-format.mjs';
+import { readFileSync } from 'node:fs';
 const id = '11111111-1111-4111-8111-111111111111';
 const entry = {id,title:'Example',account:'example@test.invalid',password:'Test-Only-Password',notes:'兼容性'};
 const vault = () => ({schemaVersion:1,folders:[],entries:[{...entry}]});
@@ -180,4 +183,27 @@ test('website choices persist, invalid values keep prior choices, and blocked st
   assert.deepEqual(boot('',Object.fromEntries(first.values)).root,first.root);
   assert.deepEqual(boot('?theme=invalid&lang=fr',Object.fromEntries(first.values)).root,first.root);
   assert.deepEqual(boot('?theme=light&lang=en',{},true).root.dataset,{theme:'light',uiLanguage:'en'});
+});
+test('web export writes a .passby file that the reference implementation opens',async()=>{
+  const code=newExportCode();
+  assert.match(code,/^[0-9A-HJKMNP-TV-Z]{5}(-[0-9A-HJKMNP-TV-Z]{5}){3}$/);
+  assert.notEqual(code,newExportCode());
+  const folderID='6f1c2a4e-8b3d-4c5e-9f60-1a2b3c4d5e6f';
+  const source={schemaVersion:1,folders:[{id:folderID,name:'工作 Work'}],entries:[{...entry,folderID},{id:'A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D',title:'🔑 Café',account:'',password:'x',notes:'第一行\nsecond'}]};
+  const now=new Date('2026-11-14T12:34:56.789Z');
+  const file=Buffer.from(await exportNotebook(source,code,{now}));
+  const notebook=decode(file,code.toLowerCase().replaceAll('-',' '));
+  assert.deepEqual(notebook,{format:1,exportedAt:'2026-11-14T12:34:56Z',folders:[{id:folderID.toUpperCase(),name:'工作 Work'}],
+    entries:[{id,title:entry.title,account:entry.account,password:entry.password,notes:entry.notes,folderID:folderID.toUpperCase()},{id:'A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D',title:'🔑 Café',account:'',password:'x',notes:'第一行\nsecond'}]});
+  assert.throws(()=>decode(file,newExportCode()),{code:'wrongCode'});
+  const other=Buffer.from(await exportNotebook(source,code,{now}));
+  assert.notDeepEqual(other.subarray(14,42),file.subarray(14,42));
+  assert.equal(exportFileName(new Date(2026,10,4)),'PassBy-2026-11-04.passby');
+});
+test('web export reproduces the shared test vector byte for byte',async()=>{
+  const vector=JSON.parse(readFileSync(new URL('../docs/export-vectors.json',import.meta.url),'utf8')).valid[0];
+  const plain=JSON.parse(vector.plaintext);
+  const file=await exportNotebook({folders:plain.folders,entries:plain.entries},canonicalCode(vector.typed),
+    {now:new Date(plain.exportedAt),salt:Buffer.from(vector.saltHex,'hex'),nonce:Buffer.from(vector.nonceHex,'hex')});
+  assert.equal(Buffer.from(file).toString('base64'),vector.fileBase64);
 });

@@ -6,6 +6,7 @@ import { newID } from './model.mjs';
 import { TrustedBrowser, bindingID } from './trusted-browser.mjs';
 import { validIdentity, scheduleExpiry, requestProductDeletion } from './auth.mjs';
 import { moveNotice } from './config.mjs';
+import { newExportCode, exportNotebook, exportFileName } from './export.mjs';
 
 const copy = {
   en: {
@@ -187,6 +188,7 @@ function changeLanguage(value) {
   else if(kind==='discard')cancelEditor();
   else if(kind==='about')openAbout();
   else if(kind==='settings')openSettings();
+  else if(kind==='export')openExport(exportCode);
   else if(kind==='search')openSearch(searchTerm);
   else if(kind==='confirm' && pendingDelete){
     const translate=text=>{const key=Object.keys(copy[previous]).find(k=>copy[previous][k]===text);return key?t(key):text;};
@@ -485,7 +487,8 @@ function openSettings(){
     const notebook=section(language==='zh'?'密码本':'Notebook');
     if(session.key){
       notebook.append(settingsAction(t('refresh'),async()=>{setBusy(inner,true);try{await session.refresh();renderWorkspace();notify(t('refreshed'));}catch(error){if(error.code!=='locked')showError(inner,error);}finally{setBusy(inner,false);}},'sync'),
-        settingsAction(t('lock'),lock,'lock'));
+        settingsAction(t('lock'),lock,'lock'),
+        settingsAction(language==='zh'?'导出为 .passby 文件':'Export as a .passby file',()=>openExport(),'notebook',true));
     }
     if(trustBinding)notebook.append(settingsAction(language==='zh'?'撤销浏览器授权':'Forget this browser',async()=>{
       try{await trustedBrowser.forget(trustBinding);trustedKey=null;trustBinding=null;lock();notify(language==='zh'?'已撤销浏览器授权':'Browser authorization removed');}catch{notify(t('browserStorage'));}
@@ -510,6 +513,30 @@ function openSettings(){
   product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook',true));
 }
 
+let exportCode='';
+// Encrypts the open notebook in this browser and downloads it; nothing is uploaded.
+function openExport(code=newExportCode()){
+  if(!session.vault)return;
+  exportCode=code;
+  const zh=language==='zh',inner=showDialog(zh?'导出密码本':'Export notebook','export');
+  inner.append(node('p','about-description',zh?'把密码本加密成一个 .passby 文件，下载到这台电脑。加密在浏览器里完成，文件不经过我们的服务器。PassBy 2.0 和安卓版可以导入它。':'Encrypts your notebook into a .passby file and downloads it to this computer. Encryption happens in your browser, and the file never passes through our servers. PassBy 2.0 and the Android app can import it.'));
+  inner.append(node('div','helper',zh?'导出码':'Export code'));
+  const output=node('div','generated',code);output.setAttribute('aria-label',zh?'导出码':'Export code');output.tabIndex=0;inner.append(output);
+  inner.append(node('p','helper',zh?'导入时要输入这串导出码。请先把它抄下来或存到别处：我们不保存它，丢了就打不开这个文件。每次导出的导出码都不同。':'You will need this export code to import the file. Write it down or save it somewhere else first: we never store it, and without it the file cannot be opened. Every export has a different code.'));
+  const actions=node('div','form-actions');
+  actions.append(button(zh?'复制导出码':'Copy export code',()=>copyText(code)),button(zh?'下载文件':'Download file',async()=>{
+    setBusy(inner,true);
+    try{
+      const now=new Date(),file=await exportNotebook(session.vault,code,{now});
+      const url=URL.createObjectURL(new Blob([file],{type:'application/octet-stream'})),link=document.createElement('a');
+      link.href=url;link.download=exportFileName(now);document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      notify(zh?`已导出 ${session.vault.entries.length} 条`:`Exported ${session.vault.entries.length} entries`);
+    }catch{showError(inner,{code:'service'});}
+    finally{setBusy(inner,false);}
+  },'pill primary'));
+  dialogActions(inner,actions);
+}
 function openAbout(){
   const inner=showDialog(language==='zh'?'关于 PassBy':'About PassBy','about');
   const logo=node('div','wordmark');logo.setAttribute('role','img');logo.setAttribute('aria-label',language==='zh'?'PassBy，Tenon 出品':'PassBy, by Tenon');
