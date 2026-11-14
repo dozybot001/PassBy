@@ -158,7 +158,7 @@
     <string name="export_failed">The export did not finish. Please try again.</string>
     <string name="export_empty">The notebook is empty. There is nothing to export.</string>
 
-    <string name="import_intro">Import passwords from a PassBy export file. Files exported on iPhone, Android and the web app all work.</string>
+    <string name="import_intro">Import passwords from a PassBy export file. Files exported on iPhone and Android both work.</string>
     <string name="import_choose">Choose a file</string>
     <string name="import_choose_other">Choose another file</string>
     <string name="import_secret">Export code or passphrase</string>

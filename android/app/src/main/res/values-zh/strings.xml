@@ -155,7 +155,7 @@
     <string name="export_failed">导出没有完成，请重试。</string>
     <string name="export_empty">密码本是空的，没有可导出的内容。</string>
 
-    <string name="import_intro">从 PassBy 的导出文件导入密码。iPhone、安卓和网页版导出的文件都能用。</string>
+    <string name="import_intro">从 PassBy 的导出文件导入密码。iPhone 和安卓导出的文件都能用。</string>
     <string name="import_choose">选择文件</string>
     <string name="import_choose_other">换一个文件</string>
     <string name="import_secret">导出码或口令</string>
