@@ -1,8 +1,12 @@
 #!/bin/bash
-# Backs up PassBy's Android signing key and proves the backup can be restored. Run on the day the key
-# is created, with the founder present. Product standard 15.6.3.
+# Backs up PassBy's Android signing key and proves the backup can be restored. Run with the founder
+# present, before anything signed with the key is released or given to anyone else to install.
+# Product standard 15.6.3.
 #
-# Usage: backup-signing-key.sh <folder in iCloud Drive> <folder on the USB drive>
+# Usage: backup-signing-key.sh <first place> <second place>
+#
+# The two places are folders outside this Mac's own disk and apart from each other: a USB drive and
+# a folder in iCloud Drive that is not shared, or two USB drives of which one is kept somewhere else.
 #
 # Run it in a terminal the founder types into. The image passphrase is read from the keyboard and
 # must never be piped in, passed as an argument, or typed into a Claude session.
@@ -14,11 +18,14 @@ set -euo pipefail
 umask 077
 source "$(dirname "${BASH_SOURCE[0]}")/signing-common.sh"
 
-[ $# -eq 2 ] || fail "用法：backup-signing-key.sh <iCloud 云盘里的文件夹> <U 盘上的文件夹>"
-ICLOUD_DIR="$1"
-USB_DIR="$2"
-[ -d "$ICLOUD_DIR" ] || fail "找不到 iCloud 云盘里的文件夹：$ICLOUD_DIR"
-[ -d "$USB_DIR" ] || fail "找不到 U 盘上的文件夹：$USB_DIR"
+[ $# -eq 2 ] || fail "用法：backup-signing-key.sh <第一处的文件夹> <第二处的文件夹>"
+FIRST_DIR="$1"
+SECOND_DIR="$2"
+[ -d "$FIRST_DIR" ] || fail "找不到第一处的文件夹：$FIRST_DIR"
+[ -d "$SECOND_DIR" ] || fail "找不到第二处的文件夹：$SECOND_DIR"
+[ "$(cd "$FIRST_DIR" && pwd -P)" != "$(cd "$SECOND_DIR" && pwd -P)" ] || fail "两处不能是同一个文件夹"
+case "$(cd "$FIRST_DIR" && pwd -P)/" in "$HOME/.tenon-keys/"*) fail "第一处不能在放密钥的目录里" ;; esac
+case "$(cd "$SECOND_DIR" && pwd -P)/" in "$HOME/.tenon-keys/"*) fail "第二处不能在放密钥的目录里" ;; esac
 [ -f "$KEYSTORE" ] || fail "找不到密钥库：$KEYSTORE"
 [ -f "$FINGERPRINT_FILE" ] || fail "找不到登记的证书指纹：$FINGERPRINT_FILE"
 EXPECTED="$(tr -d '[:space:]' < "$FINGERPRINT_FILE")"
@@ -100,13 +107,13 @@ CERT_KEY="$(printf '%s\n' "$RESTORED_CERT" | openssl x509 -noout -pubkey)"
 echo "恢复演练通过：从备份打开密钥库，用里面的私钥签名并验签成功；证书 SHA-256 指纹是 $RESTORED，和登记的一致。"
 
 # 3. The same image to both places.
-cp "$IMAGE" "$ICLOUD_DIR/"
-cp "$IMAGE" "$USB_DIR/"
-for copy in "$ICLOUD_DIR/$(basename "$IMAGE")" "$USB_DIR/$(basename "$IMAGE")"; do
+cp "$IMAGE" "$FIRST_DIR/"
+cp "$IMAGE" "$SECOND_DIR/"
+for copy in "$FIRST_DIR/$(basename "$IMAGE")" "$SECOND_DIR/$(basename "$IMAGE")"; do
     cmp -s "$IMAGE" "$copy" || fail "复制出去的映像和原件不一样：$copy"
 done
 echo "备份映像：$(basename "$IMAGE")，SHA-256 $(shasum -a 256 "$IMAGE" | cut -d' ' -f1)"
-echo "已复制到：$ICLOUD_DIR"
-echo "已复制到：$USB_DIR"
+echo "已复制到：$FIRST_DIR"
+echo "已复制到：$SECOND_DIR"
 echo "请推出 U 盘并收好。备份口令在密码管理器里，另有一份纸质的。"
-echo "纸质口令和 U 盘分开放。iCloud 云盘里的这个文件夹不要设成共享。"
+echo "纸质口令和 U 盘分开放。用了 iCloud 云盘的话，那个文件夹不要设成共享；用两个 U 盘的话，其中一个放到这台 Mac 不在的地方。"
