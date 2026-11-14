@@ -53,7 +53,7 @@ struct LockView: View {
                     }.padding(.bottom, 30)
                     Text(LB("Keep your recovery key somewhere safe, outside PassBy. You need it on a new device or after resetting Face ID. We cannot recover a lost key."))
                         .font(.footnote).foregroundStyle(Palette.secondary).padding(.bottom, 14)
-                    Toggle("I understand how recovery works", isOn: $understood).tint(Palette.accent)
+                    Toggle("I understand how recovery works", isOn: $understood).tint(Palette.control)
                         .font(.subheadline).padding(.bottom, 24)
                 }
                 if needsRecovery {

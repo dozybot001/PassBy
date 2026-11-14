@@ -1,13 +1,13 @@
 /* PassBy owns its palette, original system typography, and layout tokens. */
 :root{
   color-scheme:light;
-  --bg:#f4ecdb;--fg:#2a241c;--muted:#6b6152;--surface:#ede3cf;--hover:#e2d5bc;--border:#d6c8ac;--accent:#a63f28;
-  --button:#2a241c;--button-text:#f4ecdb;--dialog-width:600px;--dialog-height:640px;--dialog-padding:28px;
+  --bg:#fafafa;--fg:#141414;--muted:#6b6b6b;--surface:#efefef;--hover:#e5e5e5;--border:#ddd;
+  --button:#171717;--button-text:#fff;--dialog-width:600px;--dialog-height:640px;--dialog-padding:28px;
   --popover-shadow:0 12px 32px #00000016,0 2px 6px #00000008;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;
 }
-:root[data-theme=dark]{color-scheme:dark;--bg:#1c1915;--fg:#efe7d6;--muted:#a89d8b;--surface:#312b24;--hover:#3a332a;--border:#4a4236;--accent:#e58a6e;--button:#efe7d6;--button-text:#1c1915;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}
-@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;--bg:#1c1915;--fg:#efe7d6;--muted:#a89d8b;--surface:#312b24;--hover:#3a332a;--border:#4a4236;--accent:#e58a6e;--button:#efe7d6;--button-text:#1c1915;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}}
+:root[data-theme=dark]{color-scheme:dark;--bg:#080808;--fg:#f6f6f6;--muted:#9a9a9a;--surface:#171717;--hover:#252525;--border:#333;--button:#f6f6f6;--button-text:#111;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;--bg:#080808;--fg:#f6f6f6;--muted:#9a9a9a;--surface:#171717;--hover:#252525;--border:#333;--button:#f6f6f6;--button-text:#111;--popover-shadow:0 12px 32px #00000066,0 2px 6px #00000033}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg)}
 body:has(>.app){height:100dvh;min-height:460px;display:flex;flex-direction:column}
 button,input,textarea,select{font:inherit;color:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
@@ -132,5 +132,4 @@ input.capsule-switch{appearance:none!important;width:40px!important;height:24px!
 .login-transition{width:min(360px,calc(100vw - 48px));min-height:100dvh;margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 0}.login-transition h1{font-size:22px;line-height:1.5;letter-spacing:-.4px;margin:24px 0 12px}.transition-progress{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:14px;margin:0}.login-transition .tenon-actions{align-self:stretch;margin-top:28px}
 .about-links{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:12px}.about-links a{text-decoration:underline;text-underline-offset:3px}
 .error-id{font-size:12px;color:var(--muted);user-select:all;margin:-8px 0 16px}
-
 .access-note a{color:inherit;text-decoration:underline;text-underline-offset:3px}

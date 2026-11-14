@@ -43,10 +43,10 @@ struct PasswordGeneratorView: View {
                         Text("Enter 8–4096 characters. The slider covers 8–24.")
                             .font(.footnote).foregroundStyle(Palette.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Toggle("Lowercase letters (a–z)", isOn: $options.lowercase).tint(Palette.accent)
-                        Toggle("Uppercase letters (A–Z)", isOn: $options.uppercase).tint(Palette.accent)
-                        Toggle("Numbers (0–9)", isOn: $options.digits).tint(Palette.accent)
-                        Toggle("Symbols (!@#)", isOn: $options.symbols).tint(Palette.accent)
+                        Toggle("Lowercase letters (a–z)", isOn: $options.lowercase).tint(Palette.control)
+                        Toggle("Uppercase letters (A–Z)", isOn: $options.uppercase).tint(Palette.control)
+                        Toggle("Numbers (0–9)", isOn: $options.digits).tint(Palette.control)
+                        Toggle("Symbols (!@#)", isOn: $options.symbols).tint(Palette.control)
                     }
                     if let error { InlineError(text: error) }
                     if options.length < 20 || options.alphabets.count == 1 {
