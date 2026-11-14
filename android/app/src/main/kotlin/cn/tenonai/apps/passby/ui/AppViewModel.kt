@@ -21,6 +21,7 @@ import cn.tenonai.apps.passby.core.ImportMerge
 import cn.tenonai.apps.passby.core.Notebook
 import cn.tenonai.apps.passby.core.newId
 import cn.tenonai.apps.passby.data.NotebookState
+import cn.tenonai.apps.passby.system.ExportCache
 import cn.tenonai.apps.passby.system.Gate
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +44,7 @@ sealed interface Screen {
     data object Deleted : Screen
     data object Settings : Screen
     data object About : Screen
+    data object Licenses : Screen
     data object Export : Screen
     data object Import : Screen
 }
@@ -106,6 +108,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val away = leftAt?.let { SystemClock.elapsedRealtime() - it }
         leftAt = null
         if (away != null && away >= Gate.AWAY_LIMIT_MS) locked = true
+        viewModelScope.launch(Dispatchers.IO) { ExportCache.removeOld(app) }
     }
 
     fun onBackground() {

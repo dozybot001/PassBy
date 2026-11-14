@@ -19,6 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,7 +43,7 @@ fun GeneratorScreen(model: AppViewModel, forEditor: Boolean) {
     var options by remember { mutableStateOf(PasswordOptions()) }
     var lengthText by remember { mutableStateOf(options.length.toString()) }
     // Counts the taps on Generate another, so the same options give a new password.
-    var round by remember { mutableStateOf(0) }
+    var round by remember { mutableIntStateOf(0) }
     val password = remember(options, round) { if (options.isValid) PasswordGenerator.generate(options) else null }
     val lengthLabel = stringResource(R.string.password_length)
 
@@ -84,11 +85,10 @@ fun GeneratorScreen(model: AppViewModel, forEditor: Boolean) {
                 OutlinedTextField(
                     value = lengthText,
                     onValueChange = { setLength(it) },
-                    modifier = Modifier.width(96.dp),
+                    modifier = Modifier.width(96.dp).semantics { contentDescription = lengthLabel },
                     singleLine = true,
                     isError = options.length !in PasswordOptions.LENGTHS,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    label = { Text(lengthLabel) },
                 )
             }
             Text(

@@ -45,6 +45,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -67,8 +68,8 @@ import cn.tenonai.apps.passby.core.ExportSecret
 import cn.tenonai.apps.passby.core.ExportedNotebook
 import cn.tenonai.apps.passby.core.Notebook
 import cn.tenonai.apps.passby.core.Qr
+import cn.tenonai.apps.passby.system.ExportCache
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.IOException
 import java.text.Normalizer
 import java.time.LocalDate
@@ -86,6 +87,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ExportScreen(model: AppViewModel, notebook: Notebook) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     var useCode by remember { mutableStateOf(true) }
     var code by remember { mutableStateOf(ExportSecret.newCode()) }
@@ -102,7 +104,7 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
     val fileName = remember { "PassBy-${LocalDate.now()}.passby" }
 
     fun secret(): ByteArray = ExportSecret.secretBytes(if (useCode) ExportSecret.grouped(code) else passphrase).bytes
-    fun notice(id: Int, vararg arguments: Any) = model.notices.tryEmit(Notice(context.getString(id, *arguments)))
+    fun notice(id: Int, vararg arguments: Any) = model.notices.tryEmit(Notice(resources.getString(id, *arguments)))
 
     val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -142,7 +144,7 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
         scope.launch {
             val file = try {
                 val bytes = model.buildExport(secret())
-                if (bytes == null) null else withContext(Dispatchers.IO) { writeShareCopy(context, fileName, bytes) }
+                if (bytes == null) null else withContext(Dispatchers.IO) { ExportCache.write(context, fileName, bytes) }
             } catch (e: IOException) {
                 null
             }
@@ -240,14 +242,6 @@ fun ExportScreen(model: AppViewModel, notebook: Notebook) {
     }
 }
 
-/** The encrypted file as a copy in the cache, which is what a share needs. Older copies are removed first. */
-private fun writeShareCopy(context: Context, name: String, bytes: ByteArray): File {
-    val directory = File(context.cacheDir, "exports")
-    if (!directory.isDirectory && !directory.mkdirs()) throw IOException("cannot create the exports directory")
-    directory.listFiles()?.forEach { it.delete() }
-    return File(directory, name).also { it.writeBytes(bytes) }
-}
-
 /** A rough reading of how hard a passphrase is to guess, from its length and the kinds of character in it. */
 private fun strength(passphrase: String): Int {
     val text = Normalizer.normalize(passphrase, Normalizer.Form.NFC)
@@ -337,6 +331,7 @@ private fun message(kind: ExportException.Kind): Int = when (kind) {
 @Composable
 fun ImportScreen(model: AppViewModel, notebook: Notebook) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     var file by remember { mutableStateOf<ByteArray?>(null) }
     var typed by remember { mutableStateOf("") }
@@ -408,15 +403,15 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
                                 val result = model.applyImport(incoming, replacing)
                                 working = false
                                 if (result == null) {
-                                    model.notices.tryEmit(Notice(context.getString(R.string.save_failed)))
+                                    model.notices.tryEmit(Notice(resources.getString(R.string.save_failed)))
                                 } else {
                                     // The decrypted file is not kept once it is in the notebook.
                                     opened = null
                                     file = null
                                     done = if (replacing) {
-                                        context.getString(R.string.import_done_replace, result.added, result.movedToDeleted)
+                                        resources.getString(R.string.import_done_replace, result.added, result.movedToDeleted)
                                     } else {
-                                        context.getString(R.string.import_done_merge, result.added, result.skipped, result.marked)
+                                        resources.getString(R.string.import_done_merge, result.added, result.skipped, result.marked)
                                     }
                                 }
                             }

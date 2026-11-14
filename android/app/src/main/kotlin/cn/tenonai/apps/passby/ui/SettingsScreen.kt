@@ -17,10 +17,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -45,6 +47,7 @@ fun formatDate(millis: Long): String {
 @Composable
 fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentActivity) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val gateTitle = stringResource(R.string.gate_title)
     Page(title = stringResource(R.string.settings), onBack = { model.back() }) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -87,7 +90,7 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
                         try {
                             context.startActivity(intent)
                         } catch (e: android.content.ActivityNotFoundException) {
-                            model.notices.tryEmit(Notice(context.getString(R.string.no_app_for_link)))
+                            model.notices.tryEmit(Notice(resources.getString(R.string.no_app_for_link)))
                         }
                     },
                 )
@@ -103,8 +106,9 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
 @Composable
 fun AboutScreen(model: AppViewModel) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     fun open(action: () -> Boolean) {
-        if (!action()) model.notices.tryEmit(Notice(context.getString(R.string.no_app_for_link)))
+        if (!action()) model.notices.tryEmit(Notice(resources.getString(R.string.no_app_for_link)))
     }
     Page(title = stringResource(R.string.about), onBack = { model.back() }) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -134,6 +138,25 @@ fun AboutScreen(model: AppViewModel) {
             SettingRow(title = stringResource(R.string.privacy_policy), onClick = { open { openLink(context, PRIVACY_URL) } })
             SettingRow(title = stringResource(R.string.terms), onClick = { open { openLink(context, TERMS_URL) } })
             SettingRow(title = stringResource(R.string.feedback), text = SUPPORT_EMAIL, onClick = { open { writeToSupport(context) } })
+            SettingRow(title = stringResource(R.string.licenses), onClick = { model.open(Screen.Licenses) })
+        }
+    }
+}
+
+/** The third-party software in the app and the licence it comes under, with the licence text in full. */
+@Composable
+fun LicensesScreen(model: AppViewModel) {
+    val resources = LocalResources.current
+    val license = remember { resources.openRawResource(R.raw.apache_license_2_0).bufferedReader().use { it.readText() } }
+    Page(title = stringResource(R.string.licenses), onBack = { model.back() }) {
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = PagePadding, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(stringResource(R.string.licenses_intro), style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.licenses_components), style = MaterialTheme.typography.bodyMedium)
+            HorizontalDivider(color = palette.rule)
+            Text(license, style = MaterialTheme.typography.bodySmall, color = palette.secondary)
         }
     }
 }

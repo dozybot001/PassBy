@@ -53,12 +53,19 @@ android {
     }
 }
 
+// Every resolved version is written to app/gradle.lockfile. A build fails if a version drifts from it;
+// `./gradlew :app:dependencies --write-locks` updates it on purpose.
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
     implementation(libs.activity.compose)
     implementation(libs.biometric)
+    implementation(libs.fragment)
 
     testImplementation(libs.junit)
     testImplementation(libs.zxing.core)

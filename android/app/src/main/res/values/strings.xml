@@ -7,10 +7,8 @@
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="done">Done</string>
-    <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="back">Back</string>
-    <string name="close">Close</string>
     <string name="more">More actions</string>
 
     <string name="lock_title">Unlock your notebook</string>
@@ -39,7 +37,6 @@
     <string name="view">View</string>
     <string name="copied_password">Password copied for 60 seconds</string>
     <string name="copied_account">Account copied for 60 seconds</string>
-    <string name="row_action">Tap to copy the password, long-press for more actions</string>
 
     <string name="export_reminder_never">You have not exported a backup yet. If this phone is lost or breaks, the notebook cannot be recovered.</string>
     <string name="export_reminder_stale">Your last export is over 30 days old and the notebook has changed since.</string>
@@ -130,6 +127,9 @@
     <string name="brand_description">PassBy, by Tenon AI</string>
     <string name="about_what">PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.</string>
     <string name="about_how">No account. The app does not connect to the internet and nothing goes through our servers. The notebook is kept by your phone and follows the phone\'s own backup and transfer to a new phone.</string>
+    <string name="licenses">Open-source licenses</string>
+    <string name="licenses_intro">PassBy includes the open-source software below. All of it is licensed under the Apache License, Version 2.0, which follows in full.</string>
+    <string name="licenses_components" translatable="false">AndroidX and Jetpack Compose — The Android Open Source Project\nKotlin standard library, kotlinx.coroutines, kotlinx.serialization — JetBrains s.r.o. and Kotlin contributors\nJetBrains Annotations — JetBrains s.r.o.\nJSpecify — The JSpecify Authors\nGuava ListenableFuture — The Guava Authors</string>
     <string name="no_app_for_link">No app on this phone can open it.</string>
     <string name="date_pattern">MMM d, yyyy</string>
 
@@ -176,7 +176,7 @@
     <string name="import_replace_text">The notebook becomes what the file holds. Passwords on this phone now (%1$d) move to Recently Deleted and stay there for 30 days.</string>
     <string name="import_confirm">Import</string>
     <string name="import_done_merge">Added: %1$d. Skipped: %2$d. Marked “(Imported)”: %3$d.</string>
-    <string name="import_done_replace">Replaced with the %1$d in the file. The %2$d that were here are in Recently Deleted for 30 days.</string>
+    <string name="import_done_replace">Replaced. From the file: %1$d. Moved to Recently Deleted, kept for 30 days: %2$d.</string>
     <string name="imported_mark">" (Imported)"</string>
 
     <string name="unreadable_title">The notebook cannot be opened</string>

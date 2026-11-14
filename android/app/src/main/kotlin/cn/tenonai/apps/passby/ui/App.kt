@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import cn.tenonai.apps.passby.BuildConfig
 import cn.tenonai.apps.passby.R
@@ -49,12 +50,12 @@ const val WEBSITE_URL = "https://tenonai.cn/"
 const val SUPPORT_EMAIL = "support@tenonai.cn"
 
 /** Hands a web address to the system browser. The app itself has no network access. */
-fun openLink(context: Context, url: String): Boolean = start(context, Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+fun openLink(context: Context, url: String): Boolean = start(context, Intent(Intent.ACTION_VIEW, url.toUri()))
 
 /** Opens the person's mail app with the version and platform filled in, and nothing else. */
 fun writeToSupport(context: Context): Boolean {
     val subject = "PassBy Android ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
-    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$SUPPORT_EMAIL?subject=${Uri.encode(subject)}"))
+    val intent = Intent(Intent.ACTION_SENDTO, "mailto:$SUPPORT_EMAIL?subject=${Uri.encode(subject)}".toUri())
     return start(context, intent)
 }
 
@@ -111,6 +112,7 @@ private fun Pages(model: AppViewModel, notebook: Notebook, activity: FragmentAct
         Screen.Deleted -> DeletedScreen(model, notebook)
         Screen.Settings -> SettingsScreen(model, notebook, activity)
         Screen.About -> AboutScreen(model)
+        Screen.Licenses -> LicensesScreen(model)
         Screen.Export -> ExportScreen(model, notebook)
         Screen.Import -> ImportScreen(model, notebook)
     }

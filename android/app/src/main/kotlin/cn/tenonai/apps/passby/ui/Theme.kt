@@ -20,8 +20,8 @@ data class Palette(
     /** Between paper and rule, for raised surfaces such as dialogs and menus. */
     val raised: Color,
 ) {
-    /** The fill of chips and round icon buttons. */
-    val wash: Color get() = rule.copy(alpha = 0.55f)
+    /** The fill of chips, round icon buttons and the circle behind a row's initial: rule at 40% over paper, as on iPhone. */
+    val wash: Color get() = rule.copy(alpha = 0.4f)
 }
 
 private val Light = Palette(

@@ -5,10 +5,8 @@
     <string name="cancel">取消</string>
     <string name="save">保存</string>
     <string name="done">完成</string>
-    <string name="delete">删除</string>
     <string name="edit">编辑</string>
     <string name="back">返回</string>
-    <string name="close">关闭</string>
     <string name="more">更多操作</string>
 
     <string name="lock_title">解锁你的密码本</string>
@@ -37,7 +35,6 @@
     <string name="view">查看</string>
     <string name="copied_password">已复制密码，60 秒后清除</string>
     <string name="copied_account">已复制账户，60 秒后清除</string>
-    <string name="row_action">点一下复制密码，长按有更多操作</string>
 
     <string name="export_reminder_never">还没有导出过备份。手机丢了或坏了，密码本就找不回来。</string>
     <string name="export_reminder_stale">距上次导出已超过 30 天，期间有改动。</string>
@@ -128,6 +125,8 @@
     <string name="brand_description">PassBy，榫卯 Tenon AI 出品</string>
     <string name="about_what">PassBy 是一个简单的密码本。将标题、账户、密码和备注保存在一起，按文件夹整理，并生成强密码，复制到其他应用中使用。</string>
     <string name="about_how">没有账号，App 不联网，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。</string>
+    <string name="licenses">开源许可</string>
+    <string name="licenses_intro">PassBy 用到下面这些开源软件，它们都按 Apache License 2.0 授权，许可证全文附在后面。</string>
     <string name="no_app_for_link">这台手机上没有能打开它的应用。</string>
     <string name="date_pattern">yyyy 年 M 月 d 日</string>
 

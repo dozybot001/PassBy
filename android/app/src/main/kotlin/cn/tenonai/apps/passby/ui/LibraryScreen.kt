@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import cn.tenonai.apps.passby.R
 import cn.tenonai.apps.passby.core.Entry
@@ -226,7 +227,7 @@ private fun EntryRow(model: AppViewModel, entry: Entry) {
                 Icon(Icons.Copy, contentDescription = copyAccount)
             }
         }
-        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }, offset = DpOffset(PagePadding, 0.dp)) {
             DropdownMenuItem(
                 text = { Text(copyAccount) },
                 enabled = entry.account.isNotEmpty(),

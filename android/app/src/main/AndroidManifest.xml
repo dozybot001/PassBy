@@ -3,7 +3,8 @@
   No INTERNET permission, here or in any library: the app cannot open a network connection.
   The build checks the merged manifest (app/build.gradle.kts, CheckPermissions).
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:name=".PassByApp"
@@ -14,7 +15,8 @@
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PassBy">
+        android:theme="@style/Theme.PassBy"
+        tools:targetApi="33">
 
         <activity
             android:name=".MainActivity"
