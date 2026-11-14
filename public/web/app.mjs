@@ -5,7 +5,6 @@ import { generatePassword } from './crypto.mjs';
 import { newID } from './model.mjs';
 import { TrustedBrowser, bindingID } from './trusted-browser.mjs';
 import { validIdentity, scheduleExpiry, requestProductDeletion } from './auth.mjs';
-import { moveNotice } from './config.mjs';
 import { newExportCode, exportNotebook, exportFileName } from './export.mjs';
 
 const copy = {
@@ -153,14 +152,6 @@ function render() {
   if(session.key) tools.prepend(button(t('search'),()=>openSearch(),'icon-button','search'));
   if(session.key) tools.append(button(t('lock'),lock,'icon-button desktop-only','lock'));
   if(session.key) renderWorkspace(); else renderWelcome();
-  const text=moveText();let note=$('move-notice');
-  if(!text)note?.remove();
-  else{if(!note){note=node('p','move-notice');note.id='move-notice';note.setAttribute('role','note');document.querySelector('.header').after(note);}note.textContent=text;}
-}
-// Origins keep their own cookies and IndexedDB, so the new host starts unauthorized.
-function moveText() {
-  if(location.hostname!==moveNotice.host || session.key)return '';
-  return language==='zh'?`PassBy 网页已迁到 ${moveNotice.host}。这台浏览器需要重新登录 Tenon、授权 Apple 账号，并用恢复密钥授权一次。`:`PassBy on the web has moved to ${moveNotice.host}. This browser needs to sign in to Tenon, authorize your Apple Account and be authorized with your recovery key once more.`;
 }
 function changeLanguage(value) {
   if(busyOperations || value===language)return;
