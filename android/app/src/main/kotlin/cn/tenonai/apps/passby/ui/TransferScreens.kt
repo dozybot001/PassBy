@@ -376,19 +376,53 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
         }
     }
 
+    val finished = done
+    val incoming = opened
+    val bytes = file
+
+    fun openFile(bytes: ByteArray) {
+        working = true
+        error = null
+        scope.launch {
+            try {
+                opened = model.openImport(bytes, typed)
+                typed = ""
+            } catch (e: ExportException) {
+                error = message(e.kind)
+            }
+            working = false
+        }
+    }
+
+    fun apply(incoming: ExportedNotebook) {
+        working = true
+        scope.launch {
+            val replacing = replace && !localIsEmpty
+            val result = model.applyImport(incoming, replacing)
+            working = false
+            if (result == null) {
+                model.notices.tryEmit(Notice(resources.getString(R.string.save_failed)))
+            } else {
+                // The decrypted file is not kept once it is in the notebook.
+                opened = null
+                file = null
+                done = if (replacing) {
+                    resources.getString(R.string.import_done_replace, result.added, result.movedToDeleted)
+                } else {
+                    resources.getString(R.string.import_done_merge, result.added, result.skipped, result.marked)
+                }
+            }
+        }
+    }
+
     Page(title = stringResource(R.string.import_), onBack = { model.back() }) {
+        // What to read sits at the top; what to press sits at the bottom, within reach of a thumb.
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = PagePadding, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            val finished = done
-            val incoming = opened
-            val bytes = file
             when {
-                finished != null -> {
-                    Text(finished, style = MaterialTheme.typography.bodyLarge)
-                    PrimaryButton(stringResource(R.string.done), onClick = { model.back() })
-                }
+                finished != null -> Text(finished, style = MaterialTheme.typography.bodyLarge)
                 incoming != null -> {
                     Text(
                         stringResource(R.string.import_found, incoming.entries.size, incoming.folders.size, formatDate(incoming.exportedAt.toEpochMilli())),
@@ -404,61 +438,43 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
                             ) { replace = true }
                         }
                     }
-                    PrimaryButton(
-                        stringResource(R.string.import_confirm),
-                        enabled = !working,
-                        onClick = {
-                            working = true
-                            scope.launch {
-                                val replacing = replace && !localIsEmpty
-                                val result = model.applyImport(incoming, replacing)
-                                working = false
-                                if (result == null) {
-                                    model.notices.tryEmit(Notice(resources.getString(R.string.save_failed)))
-                                } else {
-                                    // The decrypted file is not kept once it is in the notebook.
-                                    opened = null
-                                    file = null
-                                    done = if (replacing) {
-                                        resources.getString(R.string.import_done_replace, result.added, result.movedToDeleted)
-                                    } else {
-                                        resources.getString(R.string.import_done_merge, result.added, result.skipped, result.marked)
-                                    }
-                                }
-                            }
-                        },
-                    )
                 }
                 bytes != null -> {
                     SecretField(typed, { typed = it }, stringResource(R.string.import_secret), revealed) { revealed = !revealed }
                     error?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = palette.accent) }
-                    PrimaryButton(
-                        stringResource(R.string.import_open),
-                        enabled = typed.isNotBlank() && !working,
-                        onClick = {
-                            working = true
-                            error = null
-                            scope.launch {
-                                try {
-                                    opened = model.openImport(bytes, typed)
-                                    typed = ""
-                                } catch (e: ExportException) {
-                                    error = message(e.kind)
-                                }
-                                working = false
-                            }
-                        },
-                    )
-                    TextButton(onClick = { pick.launch(arrayOf("*/*")) }, enabled = !working) { Text(stringResource(R.string.import_choose_other)) }
                 }
                 else -> {
                     Text(stringResource(R.string.import_intro), style = MaterialTheme.typography.bodyMedium, color = palette.secondary)
                     error?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = palette.accent) }
-                    PrimaryButton(stringResource(R.string.import_choose), onClick = { pick.launch(arrayOf("*/*")) })
                 }
             }
         }
         if (working) Working(stringResource(R.string.import_working))
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            when {
+                finished != null -> PrimaryButton(stringResource(R.string.done), onClick = { model.back() }, modifier = Modifier.fillMaxWidth())
+                incoming != null -> PrimaryButton(
+                    stringResource(R.string.import_confirm),
+                    onClick = { apply(incoming) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !working,
+                )
+                bytes != null -> {
+                    TextButton(onClick = { pick.launch(arrayOf("*/*")) }, enabled = !working) { Text(stringResource(R.string.import_choose_other)) }
+                    PrimaryButton(
+                        stringResource(R.string.import_open),
+                        onClick = { openFile(bytes) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = typed.isNotBlank() && !working,
+                    )
+                }
+                else -> PrimaryButton(stringResource(R.string.import_choose), onClick = { pick.launch(arrayOf("*/*")) }, modifier = Modifier.fillMaxWidth())
+            }
+        }
     }
 }
 
