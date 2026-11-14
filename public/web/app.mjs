@@ -62,7 +62,7 @@ const tenonCallbackFailed = new URLSearchParams(location.search).has('auth_error
 const requestId = value => /^[0-9a-f-]{36}$/.test(value || '') ? value : null;
 let tenonRequestId = requestId(new URLSearchParams(location.search).get('request_id'));
 try { rememberApple = localStorage.getItem('passby.rememberApple') === 'true'; } catch {}
-let editor = null, dialogKind = null, generatorValue = '', idleTimer, statusTimer;
+let editor = null, dialogKind = null, generatorValue = '', exportCode = '', idleTimer, statusTimer;
 let dialogCleanups = [];
 let busyOperations = 0, deletion = null;
 const busyControls = new WeakMap();
@@ -119,7 +119,7 @@ function setBusy(parent, busy) {
   $('language').disabled=busyOperations>0;
   const select=$('app-language');if(select)select.disabled=busyOperations>0;
 }
-function closeDialog() { dialogCleanups.forEach(cleanup=>cleanup());dialogCleanups=[];dialog.close(); dialog.replaceChildren(); dialogKind=null; generatorValue=''; deletion=null; }
+function closeDialog() { dialogCleanups.forEach(cleanup=>cleanup());dialogCleanups=[];dialog.close(); dialog.replaceChildren(); dialogKind=null; generatorValue=''; exportCode=''; deletion=null; }
 function lock() {
   if(!validTenon()){trustedKey=null;trustBinding=null;}
   const hadSecrets = !!session.key || !!editor || !!generatorValue;
@@ -155,7 +155,7 @@ function render() {
 }
 function changeLanguage(value) {
   if(busyOperations || value===language)return;
-  const previous=language, kind=dialogKind;
+  const previous=language, kind=dialogKind, code=exportCode;
   const keyInput=$('recovery-key')?.value || '';
   const searchTerm=$('search-input')?.value || '';
   const folderName=$('field-folderName')?.value || '';
@@ -176,7 +176,7 @@ function changeLanguage(value) {
   else if(kind==='discard')cancelEditor();
   else if(kind==='about')openAbout();
   else if(kind==='settings')openSettings();
-  else if(kind==='export')openExport(exportCode);
+  else if(kind==='export')openExport(code);
   else if(kind==='search')openSearch(searchTerm);
   else if(kind==='confirm' && pendingDelete){
     const translate=text=>{const key=Object.keys(copy[previous]).find(k=>copy[previous][k]===text);return key?t(key):text;};
@@ -501,7 +501,6 @@ function openSettings(){
   product.append(settingsAction(language==='zh'?'关于 PassBy':'About PassBy',openAbout,'notebook',true));
 }
 
-let exportCode='';
 // Encrypts the open notebook in this browser and downloads it; nothing is uploaded.
 function openExport(code=newExportCode()){
   if(!session.vault)return;
