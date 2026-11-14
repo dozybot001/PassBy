@@ -196,7 +196,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 | 浏览器授权（IndexedDB 中不可导出的密钥，按来源隔离） | 新来源没有，旧来源的授权留在原浏览器里，不再使用 | 用户在新域名用恢复密钥重新授权这台浏览器一次；可在旧域名的设置里先撤销 |
 | iPhone 钥匙串里的产品会话和续期凭据 | 两个主机共用同一会话槽，不受影响 | 无；Tenon 确认切换前的续期凭据在新地址能续期 |
 
-**页面内提示**：`public/web/config.mjs` 的 `moveNotice.date` 填上切换日期（YYYY-MM-DD）并发布后，旧域名在各个状态的页头下方提示迁移日期，并说明要重新登录、授权 Apple 账号和用恢复密钥授权浏览器；新域名在未解锁时说明为什么要重新授权。留空则不显示。D7 要求切换前通知用户，所以定下日期就填。
+**页面内提示**：切换前旧地址上有过「将于 11 月 17 日迁移」的提示，切换后新地址上有过「已迁到这里」的提示。11-14 切换后创始人问为什么还留着，当晚已连同 `moveNotice` 配置一起删掉（5be1d86）。
 
 **新旧并行（2026-11-13 起，0ca148c）**：安全组解析好 `passby.tenonai.cn` 后，`web_hosts` 已改成 `passby.tenon.asia passby.tenonai.cn` 并发布。Let's Encrypt 证书自动签发，新地址的页面、`/api/health`、`/passby/api/health` 都返回 200。链接和流量仍在旧地址。11-13 Tenon 已登记新回调，CloudKit 已加来源（Q82），新地址上的 Tenon 登录入口和 Apple 授权都已核对。页脚备案号按地址不同（法务组 D6）：发布脚本另生成 `public-tenonai`，把个人的 湘ICP备2026031578号-1 换成公司的 湘ICP备2026054319号-1，并去掉公安号（公司的公安备案下来后再加），Caddy 按主机分别提供；passby.tenon.asia 仍显示个人的两个号。
 
