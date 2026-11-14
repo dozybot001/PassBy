@@ -45,6 +45,8 @@ data class Notebook(
     val reminderDismissedAt: Long? = null,
     /** Ask for a fingerprint, face or the screen lock when opening. On by default. */
     val gateEnabled: Boolean = true,
+    /** The one-time notice that this phone has no screen lock has been shown. */
+    val noLockNoticeShown: Boolean = false,
 ) {
     fun folder(id: String?): Folder? = folders.firstOrNull { it.id == id }
 

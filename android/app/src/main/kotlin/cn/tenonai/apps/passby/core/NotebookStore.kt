@@ -29,6 +29,7 @@ object NotebookCodec {
                 },
             ),
             "gate" to JsonBool(notebook.gateEnabled),
+            "noLockNoticeShown" to JsonBool(notebook.noLockNoticeShown),
         )
         notebook.draft?.let { root["draft"] = JsonObject(entryMembers(it)) }
         notebook.lastExportAt?.let { root["lastExportAt"] = JsonNumber(it.toString()) }
@@ -76,6 +77,7 @@ object NotebookCodec {
             changedAt = root["changedAt"].long,
             reminderDismissedAt = root["reminderDismissedAt"].long,
             gateEnabled = root["gate"].bool ?: true,
+            noLockNoticeShown = root["noLockNoticeShown"].bool ?: false,
         )
     }
 

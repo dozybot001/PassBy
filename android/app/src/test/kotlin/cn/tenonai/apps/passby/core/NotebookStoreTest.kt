@@ -22,6 +22,7 @@ class NotebookStoreTest {
         changedAt = 1_700_000_000_002,
         reminderDismissedAt = 1_700_000_000_003,
         gateEnabled = false,
+        noLockNoticeShown = true,
     )
 
     private fun directory() = File(temporary.root, "notebook")
@@ -115,6 +116,7 @@ class NotebookStoreTest {
         val notebook = NotebookCodec.decode(json.toByteArray())
         assertEquals(listOf(Entry("E1", "t")), notebook.entries)
         assertTrue(notebook.gateEnabled)
+        assertFalse(notebook.noLockNoticeShown)
     }
 
     @Test

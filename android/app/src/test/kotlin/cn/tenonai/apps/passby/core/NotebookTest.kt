@@ -104,7 +104,7 @@ class NotebookTest {
         assertFalse(Notebook(entries = listOf(mail)).toString().contains("p1"))
     }
 
-    // ---- Import ----
+    // ---- Import (docs/export-format.md §7) ----
 
     private fun file(folders: List<Folder> = emptyList(), vararg entries: Entry) = ExportedNotebook(Instant.EPOCH, folders, entries.toList())
 
@@ -114,7 +114,7 @@ class NotebookTest {
         assertEquals(listOf(work), result.notebook.folders)
         assertEquals(listOf(mail, bank), result.notebook.entries)
         assertEquals(2, result.added)
-        assertEquals(0, result.unchanged)
+        assertEquals(0, result.skipped)
         assertEquals(7L, result.notebook.changedAt)
     }
 
@@ -124,16 +124,17 @@ class NotebookTest {
         val result = ImportMerge.merge(local, file(listOf(work), mail, bank), "（导入）", 7, freshId)
         assertSame(local, result.notebook)
         assertEquals(0, result.added)
-        assertEquals(2, result.unchanged)
+        assertEquals(2, result.skipped)
     }
 
     @Test
     fun mergingKeepsBothWhenTheSameEntryDiffers() {
         val local = Notebook(folders = listOf(work), entries = listOf(mail))
-        val result = ImportMerge.merge(local, file(listOf(work), mail.copy(password = "older")), "（导入）", 7, freshId)
-        assertEquals(listOf(mail, mail.copy(id = "NEW1", title = "邮箱（导入）", password = "older")), result.notebook.entries)
-        assertEquals(1, result.keptBoth)
-        assertEquals(1, result.added)
+        val result = ImportMerge.merge(local, file(listOf(work), mail.copy(password = "older")), " (Imported)", 7, freshId)
+        assertEquals(listOf(mail, mail.copy(id = "NEW1", title = "邮箱 (Imported)", password = "older")), result.notebook.entries)
+        assertEquals(1, result.marked)
+        assertEquals(0, result.added)
+        assertEquals(0, result.skipped)
     }
 
     @Test
@@ -151,7 +152,32 @@ class NotebookTest {
         assertEquals(listOf(work, brandNew), result.notebook.folders)
         // The entry that pointed at F9 points at the local folder, so it is the same as the one here.
         assertEquals(listOf(mail, bank.copy(folderId = "F3")), result.notebook.entries)
-        assertEquals(1, result.unchanged)
+        assertEquals(1, result.skipped)
+        assertEquals(1, result.added)
+    }
+
+    @Test
+    fun folderNamesAreComparedAfterNfc() {
+        val local = Notebook(folders = listOf(Folder("F1", "Caf\u00E9")))
+        val result = ImportMerge.merge(local, file(listOf(Folder("F2", "Cafe\u0301")), bank.copy(folderId = "F2")), "（导入）", 7, freshId)
+        assertEquals(local.folders, result.notebook.folders)
+        assertEquals("F1", result.notebook.entries.single().folderId)
+    }
+
+    @Test
+    fun twoFoldersInTheFileWithTheSameNameAreBothAdded() {
+        val result = ImportMerge.merge(Notebook(), file(listOf(Folder("F2", "家"), Folder("F3", "家"))), "（导入）", 7, freshId)
+        assertEquals(listOf("F2", "F3"), result.notebook.folders.map { it.id })
+    }
+
+    @Test
+    fun anIdentifierUsedInRecentlyDeletedIsChangedWithoutAMark() {
+        val local = Notebook(deleted = listOf(DeletedEntry(mail.copy(folderId = null), 1)))
+        val result = ImportMerge.merge(local, file(emptyList(), mail.copy(folderId = null, password = "from file")), "（导入）", 7, freshId)
+        assertEquals(listOf(mail.copy(id = "NEW1", folderId = null, password = "from file")), result.notebook.entries)
+        assertEquals(local.deleted, result.notebook.deleted)
+        assertEquals(1, result.added)
+        assertEquals(0, result.marked)
     }
 
     @Test
@@ -165,27 +191,30 @@ class NotebookTest {
     }
 
     @Test
-    fun replacingMovesWhatWasHereToRecentlyDeleted() {
+    fun replacingMovesEverythingThatWasHereToRecentlyDeletedWithoutItsFolder() {
         val local = Notebook(folders = listOf(work), entries = listOf(mail, bank), deleted = listOf(DeletedEntry(bank.copy(password = "x"), 1)))
-        val incoming = file(listOf(Folder("F3", "家")), mail.copy(folderId = null), Entry("E3", "新"))
+        val incoming = file(listOf(Folder("F3", "家")), mail.copy(folderId = null), Entry("E3", "新", folderId = "F3"))
         val result = ImportMerge.replace(local, incoming, 50, freshId)
         assertEquals(incoming.folders, result.notebook.folders)
         assertEquals(incoming.entries, result.notebook.entries)
-        // Both local entries are kept for 30 days: mail differs from the file's copy, bank is not in the file.
+        // Both local entries are kept for 30 days, even the one the file also holds unchanged.
         assertEquals(2, result.movedToDeleted)
+        assertEquals(2, result.added)
         assertEquals(
-            listOf(DeletedEntry(bank.copy(password = "x"), 1), DeletedEntry(mail, 50), DeletedEntry(bank.copy(id = "NEW1"), 50)),
+            listOf(DeletedEntry(bank.copy(password = "x"), 1), DeletedEntry(mail.copy(folderId = null), 50), DeletedEntry(bank.copy(id = "NEW1"), 50)),
             result.notebook.deleted,
         )
+        // Restoring one of them does not collide with the entry the file brought in under the same identifier.
+        val restored = result.notebook.restore("E1", 60, freshId)
+        assertEquals(listOf("E1", "E3", "NEW2"), restored.entries.map { it.id })
     }
 
     @Test
-    fun replacingDoesNotDuplicateAnEntryThatIsUnchanged() {
-        val local = Notebook(folders = listOf(work), entries = listOf(mail, bank))
-        val result = ImportMerge.replace(local, file(listOf(work), mail), 50, freshId)
-        assertEquals(listOf(mail), result.notebook.entries)
-        assertEquals(listOf(DeletedEntry(bank, 50)), result.notebook.deleted)
-        assertEquals(1, result.unchanged)
-        assertEquals(1, result.movedToDeleted)
+    fun replacingKeepsTheDraft() {
+        val local = Notebook(folders = listOf(work), entries = listOf(mail), draft = bank.copy(id = "D", folderId = "F1"))
+        val result = ImportMerge.replace(local, file(emptyList()), 50, freshId)
+        assertEquals(bank.copy(id = "D", folderId = null), result.notebook.draft)
+        assertTrue(result.notebook.entries.isEmpty())
+        assertEquals(1, result.notebook.deleted.size)
     }
 }
