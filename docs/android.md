@@ -225,6 +225,8 @@ Android Gradle 插件 9.5.1（要求 Gradle 不低于 9.6.0、JDK 不低于 17�
 - U 盘加 iCloud 云盘。云盘里只有加密映像，口令不在那里，密钥的使用也不依赖云端。
 - 两个 U 盘，其中一个放在这台 Mac 不在的地方。
 
+创始人 11-14 定：「备份本地和云盘各一份」（安卓会话；总办转达的原话是「备份加 iCloud 云盘吧」）。云盘那份放 iCloud 云盘。「本地」那份放 U 盘还是就留在这台 Mac 上，还要和他确认：安全组要求两份都在这台 Mac 之外。
+
 - 一把应用签名密钥：RSA 4096，有效期 30 年，PKCS12，别名 `passby`。放在仓库外的 `~/.tenon-keys/android/passby/passby-release.p12`，目录 0700、文件 0600。
 - 证书主体：`CN=PassBy, O=Changsha Tenon Artificial Intelligence Technology Co., Ltd., L=Changsha, C=CN`。用了就 30 年不变。公司英文名法务组 11-14 确认过，和邓白氏编码申请里的逐字一致。脚本生成后会读出证书里实际的主体，公司名不完整就报错。
 - 口令由脚本随机生成，直接存进登录钥匙串（服务 `tenon-android-signing`，账户 `passby`）。它不显示出来，不进文件、命令参数和日志。
