@@ -248,3 +248,22 @@ This policy covers the PassBy iPhone app, Android app and web app. The Android a
 ## Android app
 The Android app has no account and works offline. Your notebook exists only on your phone, in system backups and in files you export, so we cannot read, recover or reset it. Download the app only from the channels we publish, namely the PassBy website and the PassBy release pages on Gitee and GitHub, and check the signing certificate fingerprint; we cannot guarantee that an installer obtained elsewhere has not been altered. Export regularly, and keep your export code or passphrase outside PassBy. If you lose or damage your phone without a usable backup or export file, neither you nor we can recover the passwords.
 [Add to the causes listed in "Liability"] "a lost export code or passphrase, or an installer obtained from an unofficial channel"
+
+---- 支持页「核对安卓安装包」（法务组 11-14，Tenon-AI 9ffd32a；指纹由安卓会话给，法务组从证书读回核对过）----
+和安卓版同一天上线。上线前 PassBy 用 `apksigner verify --print-certs` 对要发布的安装包再核一次指纹，不一致就停。
+
+中文：
+## 核对安卓安装包
+PassBy 安卓版只在这几处发布：PassBy 官网，以及 Gitee 和 GitHub 上的 PassBy 发布页。安装前可以核对安装包的签名：
+- 包名：cn.tenonai.apps.passby
+- 签名证书 SHA-256：CDD81F2D2D37F3DB9C460C4F6E2186C900D6C68337589541284A683FD44A4984
+- 核对方法：在电脑上运行 `apksigner verify --print-certs PassBy-<版本号>.apk`（apksigner 在 Android SDK 的 build-tools 里），输出里「certificate SHA-256 digest」一行应和上面的值相同。它打印的是小写字母，字母和数字一致就是同一个。
+更新时如果系统提示签名不一致，或者要你先卸载旧版才能安装，请不要安装，先回到本页核对安装包是从哪里来的。卸载 PassBy 会删掉只存在这台手机上的密码本；确实要换安装包时，先导出一份，记好导出码或口令。
+
+English:
+## Verify the Android app
+The PassBy Android app is published only on the PassBy website and on the PassBy release pages on Gitee and GitHub. Before installing, you can check the installer's signature:
+- Package name: cn.tenonai.apps.passby
+- Signing certificate SHA-256: CDD81F2D2D37F3DB9C460C4F6E2186C900D6C68337589541284A683FD44A4984
+- How to check: on a computer, run `apksigner verify --print-certs PassBy-<version>.apk` (apksigner is in the Android SDK build-tools). The "certificate SHA-256 digest" line should match the value above; it is printed in lowercase, and the same letters and digits mean the same certificate.
+If an update warns that the signature does not match, or asks you to uninstall the old version first, do not install it. Come back to this page and check where the installer came from. Uninstalling PassBy deletes the notebook that exists only on this phone; if you really need to switch installers, export first and keep your export code or passphrase.
