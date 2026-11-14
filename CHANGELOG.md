@@ -2,7 +2,7 @@
 
 格式按 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-CN/1.1.0/)，版本号按语义化版本。iPhone 版本号与 App Store 一致；网页随时发布，记在下一个 iPhone 版本或「未发布」之下。
 
-## 未发布
+## [1.3] - 2026-11-14
 
 ### 新增
 - 网页的分享图（512×512）和手机桌面图标（180×180），用 PassBy 应用图标。
