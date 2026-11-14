@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  No INTERNET permission, here or in any library: the app cannot open a network connection.
+  The build checks the merged manifest (app/build.gradle.kts, CheckPermissions).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:name=".PassByApp"
+        android:allowBackup="@bool/system_backup"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/full_backup_content"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PassBy">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Clears a copied password if the app's own timer is no longer running. -->
+        <receiver
+            android:name=".system.ClipboardClearReceiver"
+            android:exported="false" />
+
+        <!-- Told by the system when the person picks an app in the share sheet for an export. -->
+        <receiver
+            android:name=".ui.ExportSharedReceiver"
+            android:exported="false" />
+
+        <!-- Hands the encrypted export file to the app the person shares it with. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.exports"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/export_paths" />
+        </provider>
+    </application>
+</manifest>

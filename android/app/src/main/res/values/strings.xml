@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">PassBy</string>
+    <string name="website" translatable="false">tenonai.cn</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="done">Done</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="back">Back</string>
+    <string name="close">Close</string>
+    <string name="more">More actions</string>
+
+    <string name="lock_title">Unlock your notebook</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock PassBy</string>
+    <string name="lock_prompt_subtitle">Verify to open your notebook</string>
+    <string name="lock_confirm_off_title">Turn off verification on open</string>
+
+    <string name="search_hint">Search titles or accounts</string>
+    <string name="search_open">Search passwords</string>
+    <string name="search_close">Close search</string>
+    <string name="search_clear">Clear search</string>
+    <string name="generator_open">Generate strong password</string>
+    <string name="settings">Settings</string>
+    <string name="filter_all">All</string>
+    <string name="filter_unfiled">Unfiled</string>
+    <string name="empty_title">Your notebook starts here</string>
+    <string name="empty_text">Add an account and password. Keep the details in one place.</string>
+    <string name="no_match_title">No matching passwords</string>
+    <string name="no_match_text">Try a different title or account.</string>
+    <string name="new_password">New password</string>
+    <string name="manage_folders">Manage folders</string>
+    <string name="no_account">No account added</string>
+    <string name="copy_account">Copy account</string>
+    <string name="copy_password">Copy password</string>
+    <string name="view">View</string>
+    <string name="copied_password">Password copied for 60 seconds</string>
+    <string name="copied_account">Account copied for 60 seconds</string>
+    <string name="row_action">Tap to copy the password, long-press for more actions</string>
+
+    <string name="export_reminder_never">You have not exported a backup yet. If this phone is lost or breaks, the notebook cannot be recovered.</string>
+    <string name="export_reminder_stale">Your last export is over 30 days old and the notebook has changed since.</string>
+    <string name="export_reminder_action">Export</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="restored_title">Restored the previous version</string>
+    <string name="restored_text">Your last change was not saved completely, so the notebook was restored to the version before it. The file that could not be read is still on this phone and was not deleted.</string>
+
+    <string name="title">Title</string>
+    <string name="account">Account</string>
+    <string name="password">Password</string>
+    <string name="notes">Notes</string>
+    <string name="folder">Folder</string>
+    <string name="not_added">Not added</string>
+    <string name="no_notes">No notes added</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="password_hidden">Password hidden</string>
+    <string name="delete_password">Delete password</string>
+    <string name="delete_password_title">Delete this password?</string>
+    <string name="delete_password_text">It moves to Recently Deleted and stays there for 30 days.</string>
+    <string name="password_removed">Password removed</string>
+
+    <string name="edit_password">Edit password</string>
+    <string name="title_hint">For example, personal email</string>
+    <string name="account_hint">Username or email</string>
+    <string name="new_folder">New folder</string>
+    <string name="folder_name">Folder name</string>
+    <string name="draft_note">What you have not saved stays on this phone. If you leave, tap New password to pick it up again.</string>
+    <string name="save_failed">Your changes could not be saved. Check available storage and try again.</string>
+
+    <string name="generated_password">Generated password</string>
+    <string name="generate_another">Generate another</string>
+    <string name="length">Length</string>
+    <string name="password_length">Password length</string>
+    <string name="lowercase">Lowercase letters (a–z)</string>
+    <string name="uppercase">Uppercase letters (A–Z)</string>
+    <string name="digits">Numbers (0–9)</string>
+    <string name="symbols">Symbols (!@#)</string>
+    <string name="use_password">Use this password</string>
+    <string name="generator_tip">For important accounts, use 20 or more characters and multiple character types.</string>
+    <string name="generator_length_help">Enter 8–4096 characters. The slider covers 8–24.</string>
+    <string name="generator_length_error">Enter a length between 8 and 4096.</string>
+    <string name="generator_types_error">Choose at least one character type.</string>
+    <string name="generator_copy_note">Copies the password for 60 seconds. Paste it into another app.</string>
+    <string name="generator_fill_note">Use fills the password field and copies it for 60 seconds.</string>
+
+    <string name="folders">Folders</string>
+    <string name="rename_folder">Rename folder</string>
+    <string name="delete_folder">Delete folder</string>
+    <string name="delete_folder_title">Delete this folder?</string>
+    <string name="delete_folder_text">Its passwords will move to Unfiled.</string>
+    <string name="no_folders">No folders yet</string>
+    <string name="no_folders_text">Use folders to keep passwords apart, such as work and home.</string>
+    <string name="folder_count">%1$d</string>
+
+    <string name="recently_deleted">Recently Deleted</string>
+    <string name="deleted_empty">No recently deleted passwords</string>
+    <string name="deleted_on">Deleted %1$s</string>
+    <string name="deleted_note">Deleted passwords stay on this phone for 30 days, then are removed automatically.</string>
+    <string name="restore_password">Restore password</string>
+    <string name="delete_now">Delete now</string>
+    <string name="delete_now_title">Delete this password now?</string>
+    <string name="delete_now_text">This cannot be undone.</string>
+
+    <string name="gate_title">Verify on open</string>
+    <string name="gate_text">Open the notebook with your fingerprint, face or screen lock. If you are away for less than 5 minutes, you are not asked again.</string>
+    <string name="gate_no_lock">This phone has no screen lock</string>
+    <string name="no_lock_notice_text">Without a screen lock, the phone\'s file encryption does not protect the notebook, and anyone holding the phone can open it. Set a screen lock in system settings.</string>
+    <string name="open_security_settings">Open settings</string>
+    <string name="not_now">Not now</string>
+    <string name="backup">Backup</string>
+    <string name="export">Export</string>
+    <string name="import_">Import</string>
+    <string name="last_export">Last export: %1$s</string>
+    <string name="never_exported">Never exported</string>
+    <string name="language">Language</string>
+    <string name="language_system">Choose the language for PassBy in system settings</string>
+    <string name="language_follow">Follows the system language</string>
+    <string name="about">About PassBy</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms">Terms of Service</string>
+    <string name="feedback">Send feedback</string>
+    <string name="version">Version</string>
+    <string name="version_value">%1$s (%2$d)</string>
+    <string name="publisher">Publisher</string>
+    <string name="publisher_name">Tenon AI</string>
+    <string name="brand_description">PassBy, by Tenon AI</string>
+    <string name="about_what">PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.</string>
+    <string name="about_how">No account. The app does not connect to the internet and nothing goes through our servers. The notebook is kept by your phone and follows the phone\'s own backup and transfer to a new phone.</string>
+    <string name="no_app_for_link">No app on this phone can open it.</string>
+    <string name="date_pattern">MMM d, yyyy</string>
+
+    <string name="export_intro">Export an encrypted backup file, for a new phone or to keep a copy elsewhere. Passwords in Recently Deleted are not in the file.</string>
+    <string name="export_use_code">Use an export code (recommended)</string>
+    <string name="export_use_passphrase">Set my own passphrase</string>
+    <string name="export_code">Export code</string>
+    <string name="export_code_note">Write the export code down, or let the camera on the other phone read this QR code. You need it to import. PassBy does not keep the export code; without it the file cannot be opened.</string>
+    <string name="export_code_new">New export code</string>
+    <string name="export_code_confirm">I have written down the export code</string>
+    <string name="export_qr">QR code of the export code</string>
+    <string name="export_passphrase">Passphrase</string>
+    <string name="export_passphrase_again">Enter it again</string>
+    <string name="export_passphrase_note">At least 12 characters. A passphrase you choose is easier to guess than an export code, so the export code is recommended. PassBy does not keep the passphrase.</string>
+    <string name="export_problem_space">The passphrase cannot start or end with a space</string>
+    <string name="export_problem_code">This passphrase looks like an export code. Choose another.</string>
+    <string name="export_problem_short">At least 12 characters</string>
+    <string name="export_problem_mismatch">The two entries do not match</string>
+    <string name="strength_weak">Strength: weak</string>
+    <string name="strength_fair">Strength: fair</string>
+    <string name="strength_strong">Strength: strong</string>
+    <string name="export_save">Save to a file</string>
+    <string name="export_share">Share</string>
+    <string name="export_working">Encrypting…</string>
+    <string name="export_done">Passwords exported: %1$d</string>
+    <string name="export_failed">The export did not finish. Please try again.</string>
+    <string name="export_empty">The notebook is empty. There is nothing to export.</string>
+
+    <string name="import_intro">Import passwords from a PassBy export file. Files exported on iPhone, Android and the web app all work.</string>
+    <string name="import_choose">Choose a file</string>
+    <string name="import_choose_other">Choose another file</string>
+    <string name="import_secret">Export code or passphrase</string>
+    <string name="import_open">Open</string>
+    <string name="import_working">Decrypting…</string>
+    <string name="error_not_export">This is not a PassBy export file</string>
+    <string name="error_update">Please update PassBy</string>
+    <string name="error_damaged">The file is damaged or has been changed</string>
+    <string name="error_wrong_code">The export code or passphrase is not right</string>
+    <string name="error_read">The file could not be read. Please try again.</string>
+    <string name="import_found">Passwords in the file: %1$d. Folders: %2$d. Exported %3$s.</string>
+    <string name="import_merge">Merge (recommended)</string>
+    <string name="import_merge_text">What is on this phone stays as it is, and what is new in the file is added. When the same entry differs, both are kept and the one from the file gets “(Imported)” after its title.</string>
+    <string name="import_replace">Replace</string>
+    <string name="import_replace_text">The notebook becomes what the file holds. Passwords on this phone now (%1$d) move to Recently Deleted and stay there for 30 days.</string>
+    <string name="import_confirm">Import</string>
+    <string name="import_done_merge">Added: %1$d. Skipped: %2$d. Marked “(Imported)”: %3$d.</string>
+    <string name="import_done_replace">Replaced with the %1$d in the file. The %2$d that were here are in Recently Deleted for 30 days.</string>
+    <string name="imported_mark">" (Imported)"</string>
+
+    <string name="unreadable_title">The notebook cannot be opened</string>
+    <string name="unreadable_newer">This notebook was saved by a newer version of PassBy. Update the app to open it.</string>
+    <string name="unreadable_damaged">The notebook could not be read. Your saved files have been kept unchanged.</string>
+    <string name="unreadable_start_over">Start with an empty notebook</string>
+    <string name="unreadable_start_over_title">Start with an empty notebook?</string>
+    <string name="unreadable_start_over_text">The files that could not be read are renamed and kept on this phone, not deleted. You can import from an export file afterwards.</string>
+    <string name="contact_support">Contact support</string>
+</resources>

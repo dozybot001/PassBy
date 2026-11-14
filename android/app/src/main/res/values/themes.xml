@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only what shows before Compose draws: the window background. The rest of the look is in ui/Theme.kt. -->
+<resources>
+    <style name="Theme.PassBy" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/paper</item>
+        <item name="android:colorAccent">@color/accent</item>
+    </style>
+</resources>

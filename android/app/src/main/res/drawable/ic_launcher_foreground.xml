@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The PassBy mark: a margin line and three lines of writing. Geometry from scripts/generate-brand.swift. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- The 100-unit icon canvas is drawn across the 72dp that a launcher shows. -->
+    <group
+        android:scaleX="0.72"
+        android:scaleY="0.72"
+        android:translateX="18"
+        android:translateY="18">
+        <path
+            android:fillColor="@color/icon_accent"
+            android:pathData="M28.25,30.25a3.25,3.25 0 0 1 6.5,0v39.5a3.25,3.25 0 0 1 -6.5,0z" />
+        <path
+            android:fillColor="@color/icon_ink"
+            android:pathData="M47,33.25h21.5a3.25,3.25 0 0 1 0,6.5h-21.5a3.25,3.25 0 0 1 0,-6.5z" />
+        <path
+            android:fillColor="@color/icon_ink"
+            android:pathData="M47,46.75h15.5a3.25,3.25 0 0 1 0,6.5h-15.5a3.25,3.25 0 0 1 0,-6.5z" />
+        <path
+            android:fillColor="@color/icon_ink"
+            android:fillAlpha="0.4"
+            android:pathData="M47,60.25h8.5a3.25,3.25 0 0 1 0,6.5h-8.5a3.25,3.25 0 0 1 0,-6.5z" />
+    </group>
+</vector>

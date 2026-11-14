@@ -158,18 +158,27 @@ object ExportFile {
     }
 
     /**
-     * Checks 1 to 5 of §5, in that order, and returns the decrypted bytes. The iteration count is
-     * checked before any derivation so a hostile file cannot keep the phone busy.
+     * Checks 1 to 3 of §5, which need no secret, and returns the iteration count. Import runs this as
+     * soon as a file is chosen, so a file that is not an export is refused before a code is asked for.
      */
-    fun open(file: ByteArray, typed: String, check: (() -> Unit)? = null): ByteArray {
+    fun checkHeader(file: ByteArray): Int {
         if (file.size < HEADER_LENGTH + TAG_LENGTH) throw ExportException(ExportException.Kind.NOT_EXPORT)
         for (i in MAGIC.indices) if (file[i] != MAGIC[i]) throw ExportException(ExportException.Kind.NOT_EXPORT)
         if (file[8].toInt() != 1 || file[9].toInt() != 1) throw ExportException(ExportException.Kind.UPDATE)
         val iterations = ((file[10].toLong() and 0xFF) shl 24) or ((file[11].toLong() and 0xFF) shl 16) or
             ((file[12].toLong() and 0xFF) shl 8) or (file[13].toLong() and 0xFF)
         if (iterations < MIN_ITERATIONS || iterations > MAX_ITERATIONS) throw ExportException(ExportException.Kind.DAMAGED)
+        return iterations.toInt()
+    }
+
+    /**
+     * Checks 1 to 5 of §5, in that order, and returns the decrypted bytes. The iteration count is
+     * checked before any derivation so a hostile file cannot keep the phone busy.
+     */
+    fun open(file: ByteArray, typed: String, check: (() -> Unit)? = null): ByteArray {
+        val iterations = checkHeader(file)
         val secret = ExportSecret.secretBytes(typed).bytes
-        val keys = deriveKeys(secret, file.copyOfRange(14, 30), iterations.toInt(), check)
+        val keys = deriveKeys(secret, file.copyOfRange(14, 30), iterations, check)
         secret.fill(0)
         try {
             // MessageDigest.isEqual takes the same time whatever the bytes are.

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scheme A, "kraft paper with a vermilion margin" (docs/local-notebook.md §7). -->
+<resources>
+    <color name="paper">#F4ECDB</color>
+    <color name="ink">#2A241C</color>
+    <color name="accent">#A63F28</color>
+    <!-- The launcher icon keeps the light colours in both appearances, as the iPhone icon does. -->
+    <color name="icon_paper">#F4ECDB</color>
+    <color name="icon_ink">#2A241C</color>
+    <color name="icon_accent">#A63F28</color>
+</resources>

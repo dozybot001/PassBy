@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 9 to 11. A file is included when either line for it applies: the cloud backup is
+  end-to-end encrypted, or the data is going straight to another phone.
+  Android 8 cannot encrypt backups this way, so system backup is off there (res/values/bools.xml).
+-->
+<full-backup-content>
+    <include domain="file" path="notebook/notebook.json" requireFlags="clientSideEncryption" />
+    <include domain="file" path="notebook/notebook.json" requireFlags="deviceToDeviceTransfer" />
+    <include domain="file" path="notebook/notebook.json.previous" requireFlags="clientSideEncryption" />
+    <include domain="file" path="notebook/notebook.json.previous" requireFlags="deviceToDeviceTransfer" />
+</full-backup-content>

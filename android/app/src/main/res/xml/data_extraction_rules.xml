@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12 and later. Only the notebook and its previous version are backed up or transferred.
+  Cloud backup happens only when the backup is end-to-end encrypted, which needs a screen lock.
+-->
+<data-extraction-rules>
+    <cloud-backup disableIfNoEncryptionCapabilities="true">
+        <include domain="file" path="notebook/notebook.json" />
+        <include domain="file" path="notebook/notebook.json.previous" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="notebook/notebook.json" />
+        <include domain="file" path="notebook/notebook.json.previous" />
+    </device-transfer>
+</data-extraction-rules>
