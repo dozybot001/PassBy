@@ -9,7 +9,7 @@
 2. 真机核对：2.0 复制时仍设 `localOnly`（1.x 在 `VaultSession.swift` 里设了）；「设置 › 隐私与安全性 › 分析与改进 › 与 App 开发者共享」的路径；iCloud 储存空间里删除 PassBy 数据的路径。核对后可以写得更具体。
 3. 2.0 的反馈邮件正文预填 App 和系统版本，用户发送前能看到、能删；「支持邮件」那条的「你附上的信息」已经覆盖。
 4. 用户协议的「责任」「适用法律」两节在页面上加粗（格式条款的提示义务，民法典第四百九十六条）。
-5. 「一句话」按「没有账号，不经过我们的服务器」写。创始人定了别的说法，告诉法务组一起改。
+5. 「一句话」用创始人定的说法，法务组 11-14 核对属实（Tenon-AI 84c5a56）。前提：「App 不联网」只指 iPhone 版，以 2.0 真机抓包验收为准；系统做的事不算 App 联网（iCloud 云备份、Apple 转的崩溃报告、App Store 更新、用户点链接在浏览器打开、用分享面板存到 iCloud 云盘或隔空投送）。讲到网页版的地方另写「网页版从我们的服务器加载页面，导入和解密都在你的浏览器里，密码本不上传」。
 6. 邮箱在初稿里写成全角 ＠，页面上用正常的 support@tenonai.cn 链接。
 7. 「不联网」只说 iPhone 应用；网页版说「导入和解密都在你的浏览器里，不上传」。网页版不影响 iPhone 的隐私标签。
 8. 通行密钥的用户名用固定的「PassBy」，不放个人信息。
@@ -20,7 +20,7 @@
 
 PassBy 由长沙榫卯人工智能科技有限公司（品牌「榫卯 Tenon AI」，下称「我们」）提供。我们是本政策所述个人信息的处理者。本政策适用于 PassBy 2.0 及以后的 iPhone 应用和 passby.tenonai.cn 上的网页版，旧版本见上一版本。联系方式：support＠tenonai.cn。
 
-一句话：PassBy 没有账号。iPhone 应用不联网；网页版只从我们的服务器加载页面，导入和解密都在你的浏览器里。你的密码本不经过我们的服务器，我们看不到，也拿不到。
+一句话：没有账号，App 不联网，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。网页版从我们的服务器加载页面，导入和解密都在你的浏览器里，密码本不上传。
 
 ## 你的密码本
 条目（标题、账号、密码、备注）、分组、「最近删除」和上次导出日期，存在这台 iPhone 上 PassBy 的一个文件里，由 iOS 的文件加密保护：手机锁着时读不出这个文件。PassBy 不另加自己的密钥，所以密码本的安全取决于你的锁屏密码和 Face ID 或触控 ID。
@@ -69,7 +69,7 @@ Version 4 · Effective [2.0 release date] · Previous version
 
 PassBy is provided by Changsha Tenon Artificial Intelligence Technology Co., Ltd. (长沙榫卯人工智能科技有限公司), the company behind Tenon AI ("we"). We handle the personal information described in this policy. This policy covers the PassBy iPhone app from version 2.0 and the web version at passby.tenonai.cn; for earlier versions, see the previous version. Contact us at support＠tenonai.cn.
 
-In short: PassBy has no account. The iPhone app works offline; the web version only loads its pages from our server, and importing and decryption happen in your browser. Your notebook never passes through our servers, so we cannot see it or get it.
+In short: no account. The app works offline, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone's own backups and device transfers. The web version loads its pages from our server; importing and decryption happen in your browser, and your notebook is never uploaded.
 
 ## Your notebook
 Your entries (title, account, password and notes), folders, Recently Deleted and the date of your last export are kept in one PassBy file on this iPhone, protected by iOS file encryption: the file cannot be read while your iPhone is locked. PassBy adds no key of its own, so your notebook is only as secure as your device passcode and Face ID or Touch ID.
