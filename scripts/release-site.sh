@@ -65,25 +65,17 @@ source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
 # that one site. Its handles outrank a main-site catch-all handle redirect.
 address=re.findall(r'^(?:[\w.-]+, )*tenon\.asia(?:, [\w.-]+)* \{\n',source,flags=re.M)
 assert len(address)==1,'Expected one tenon.asia site block'
-auth_route=pathlib.Path('/opt/passby-auth/current-route.caddy').read_text()
+# The identity service was retired on 2026-11-15: every old API path answers 410
+# so that old apps stop retrying, and nothing is proxied to a backend.
+gone='{"type":"about:blank","title":"Gone","status":410,"detail":"PassBy sign-in and sync were retired on 2026-11-15."}'
+auth_route=('\thandle /passby/api/* {\n\t\theader Cache-Control "no-store"\n'
+            '\t\theader Content-Type application/problem+json\n\t\trespond `'+gone+'` 410\n\t}\n')
 hosts,moved=sys.argv[5].split(),sys.argv[6].split()
 assert hosts and all(re.fullmatch(r'passby\.tenon(?:\.asia|ai\.cn)',host) for host in hosts+moved) and not set(hosts)&set(moved)
 legacy=('\t# BEGIN PASSBY\n'+auth_route+'\t@passby_legacy path /passby /passby/*\n'
         '\thandle @passby_legacy {\n\t\troute {\n\t\t\turi strip_prefix /passby\n'
         '\t\t\tredir https://'+hosts[0]+'{uri} permanent\n\t\t}\n\t}\n\t# END PASSBY\n')
 pathlib.Path(sys.argv[2]).write_text(source.replace(address[0],address[0]+legacy,1))
-port=json.loads(pathlib.Path('/opt/passby-auth/active.json').read_text())['port']
-assert port in (7280,7281)
-# New hosts also carry the iPhone API, which the old app reaches on tenon.asia.
-native=' '.join(host for host in hosts if host!='passby.tenon.asia')
-native_route=f"""    @native {{
-        host {native}
-        path /passby/api/*
-    }}
-    handle @native {{
-        reverse_proxy 127.0.0.1:PORT
-    }}
-""" if native else ''
 web="""HOSTS {
     import access_log
     encode zstd gzip
@@ -97,31 +89,26 @@ web="""HOSTS {
         Cross-Origin-Opener-Policy "same-origin-allow-popups"
         Permissions-Policy "camera=(), microphone=(), geolocation=(), clipboard-read=()"
     }
-    handle /api/* {
-        reverse_proxy 127.0.0.1:PORT
+    @api path /api/* /passby/api/*
+    handle @api {
+        header Content-Type application/problem+json
+        respond `GONE` 410
     }
-NATIVE    handle {
+    handle {
         root * DIRECTORY/public
         file_server
     }
     handle_errors {
-        @api path /api/*
-        handle @api {
-            header Content-Type application/problem+json
-            respond `{"type":"about:blank","title":"Service Unavailable","status":503}` 503
-        }
-        handle {
-            root * DIRECTORY/public
-            @missing expression `{err.status_code} == 404`
-            rewrite @missing /404.html
-            @down expression `{err.status_code} in [502, 503, 504]`
-            rewrite @down /maintenance.html
-            rewrite * /500.html
-            file_server
-        }
+        root * DIRECTORY/public
+        @missing expression `{err.status_code} == 404`
+        rewrite @missing /404.html
+        @down expression `{err.status_code} in [502, 503, 504]`
+        rewrite @down /maintenance.html
+        rewrite * /500.html
+        file_server
     }
 }
-""".replace('NATIVE',native_route).replace('HOSTS',', '.join(hosts)).replace('PORT',str(port)).replace('DIRECTORY',sys.argv[3])
+""".replace('GONE',gone).replace('HOSTS',', '.join(hosts)).replace('DIRECTORY',sys.argv[3])
 for host in moved:
     web+=f"""{host} {{
     import access_log
@@ -162,6 +149,12 @@ if ! python3 - "$directory" "$web_hosts" "$moved_hosts" <<'PY'
 import hashlib, json, pathlib, sys, time, urllib.error, urllib.request
 hsts = 'max-age=31536000; includeSubDomains'
 hosts, moved = sys.argv[2].split(), sys.argv[3].split()
+def gone(url):
+    try:
+        urllib.request.urlopen(url, timeout=20)
+    except urllib.error.HTTPError as error:
+        return error.code == 410 and 'problem+json' in error.headers.get('Content-Type', '')
+    return False
 class Stay(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args): return None
 for host in moved:
@@ -176,15 +169,14 @@ for host in hosts:
     tries = 6 if host == 'passby.tenon.asia' else 60
     for attempt in range(tries):
         try:
-            health = urllib.request.urlopen(f'https://{host}/api/health',timeout=10)
+            home = urllib.request.urlopen(f'https://{host}/',timeout=10)
             break
         except Exception:
             if attempt==tries-1: raise
             time.sleep(3)
-    assert health.headers.get('Strict-Transport-Security') == hsts
-    if host != 'passby.tenon.asia':
-        assert urllib.request.urlopen(f'https://{host}/passby/api/health',timeout=20).status == 200
-    home = urllib.request.urlopen(f'https://{host}/',timeout=20)
+    assert home.headers.get('Strict-Transport-Security') == hsts
+    for path in ('/api/health', '/api/auth/start', '/passby/api/health'):
+        assert gone(f'https://{host}{path}'), path
     assert home.headers.get('X-Frame-Options') == 'DENY'
     footer = home.read().decode()
     assert '湘ICP备2026054319号-1' in footer and '湘公网安备' not in footer, host
@@ -207,7 +199,7 @@ except urllib.error.HTTPError as missing:
     assert missing.code == 404 and b'Page not found' in missing.read()
 legacy=urllib.request.urlopen('https://tenon.asia/passby/',timeout=20)
 assert legacy.url==f'https://{hosts[0]}/'
-assert urllib.request.urlopen('https://tenon.asia/passby/api/health',timeout=20).status==200
+assert gone('https://tenon.asia/passby/api/health')
 PY
 then
     rollback
@@ -222,4 +214,4 @@ fi
 ln -sfn "$directory" /opt/passby-site/current
 printf '%s\n' "$release" > /opt/passby-site/last-successful-commit
 rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/candidate.caddy" "$lock/previous.caddy" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
-echo "Published PassBy web app, support and privacy pages: $release"
+echo "Published PassBy introduction, support and legal pages: $release"
