@@ -4,6 +4,27 @@
 
 临时文件：做 2.0 时照此改 `public/privacy/`、`public/terms/`（中英文），旧版存档到按日期的目录；页面做好后删掉本文件（规范 3.8）。在 2.0 上架前不上线，因为现在卖的 1.3 还在登录和同步。
 
+**分三步发**（法务组 11-14 定，Tenon-AI 1d888b2），每一天线上的文本都和实际一致。下面「==== 隐私政策 ====」起的全文是第三步（新网页版上线当天）的样子；前两步照这里改。
+
+1. **旧网页版加导出时**（2.0 送审前）：现行 3.x 隐私政策「网页版访问」一节末尾补一句。用户协议不用改。
+   - 中文：网页版可以把密码本导出为加密的 .passby 文件：加密在你的浏览器里完成，文件直接下载到你的电脑，不经过我们的服务器。导出码或口令我们不保存，丢了就打不开这个文件。
+   - English: The web app can export your notebook as an encrypted .passby file. Encryption happens in your browser, and the file downloads straight to your computer without passing through our servers. We never store the export code or passphrase; without it the file cannot be opened.
+   - 版本号：11-17 当天或之前上线，并进 3.1，版本说明写「网址改为 passby.tenonai.cn；网页版增加加密导出」；11-17 之后上线，发 3.2，版本说明写「网页版增加加密导出」。
+2. **2.0 上架当天**：隐私政策第 4 版、用户协议第 3 版，只写 iPhone 应用。用下面的全文，改三处：
+   - 隐私政策第一段的适用范围换成（3.x 写当时实际的版本号，并链接过去）：
+     - 中文：本政策适用于 PassBy 2.0 及以后的 iPhone 应用。新网页版上线前，passby.tenonai.cn 上的旧网页版只能查看和导出，仍按第 3.x 版处理（包括用 Tenon 账号登录、从 iCloud 读取密码本）；新网页版上线后，本政策会更新并加上网页版。旧版本见上一版本。
+     - English: This policy covers the PassBy iPhone app from version 2.0. Until the new web version launches, the earlier web app at passby.tenonai.cn can only view and export your notebook, and version 3.x of this policy still applies to it, including Tenon Account sign-in and reading your notebook from iCloud. When the new web version launches, we will update this policy to cover it. For earlier versions, see the previous version.
+   - 隐私政策：「一句话」只留 App 的那句，去掉网页版那句；「网页版」一节先不放；「旧版本留下的数据」先不放旧网页版那条。
+   - 用户协议「关于本协议」的适用范围换成，「网页版」一节先不放：
+     - 中文：本协议适用于 PassBy 2.0 及以后的 iPhone 应用。新网页版上线前，passby.tenonai.cn 上的旧网页版只能查看和导出，仍适用第 2.x 版；新网页版上线后，本协议会更新并加上网页版。
+     - English: These terms apply to the PassBy iPhone app from version 2.0. Until the new web version launches, the earlier web app at passby.tenonai.cn can only view and export your notebook, and version 2.x of these terms still applies to it. When the new web version launches, we will update these terms to cover it.
+3. **新网页版上线当天**：隐私政策 4.1、用户协议 3.1，就是下面的全文，另把「旧版本留下的数据」里旧网页版那条换成：
+   - 中文：旧网页版在 passby.tenonai.cn 上留在你浏览器里的授权密钥和登录偏好，新网页版第一次打开时会自动清除，语言偏好保留。旧地址 passby.tenon.asia 上留下的，可以在浏览器设置里清除该网站的数据。
+   - English: The authorization key and sign-in preferences that the earlier web app left in your browser at passby.tenonai.cn are removed automatically the first time you open the new web version; your language preference is kept. Anything it left at the old address, passby.tenon.asia, can be removed by clearing that site's data in your browser settings.
+   - 版本说明：「加上新网页版；旧网页版和 Tenon 账号登录已停用」。
+
+送审前把两步的文本都发法务组看预览；新网页版上线那天，两份也发法务组看一眼。
+
 做页面时要落实（法务组）：
 1. 生效日期填 2.0 上架当天。版本号接 11-17 的 3.1 和 2.1：隐私政策第 4 版，用户协议第 3 版。
 2. 真机核对：2.0 复制时仍设 `localOnly`（1.x 在 `VaultSession.swift` 里设了）；「设置 › 隐私与安全性 › 分析与改进 › 与 App 开发者共享」的路径；iCloud 储存空间里删除 PassBy 数据的路径。核对后可以写得更具体。
