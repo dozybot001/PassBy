@@ -59,9 +59,13 @@ import cn.tenonai.apps.passby.core.Notebook
 /** The first page: every password, filtered by folder or search. Tapping a row copies its password. */
 @Composable
 fun LibraryScreen(model: AppViewModel, notebook: Notebook) {
-    // A folder that was the filter and has since been deleted falls back to everything.
-    LaunchedEffect(notebook.folders, model.filter) {
+    // The Unfiled chip is shown only while some entry has no folder.
+    val unfiledCount = notebook.entries.count { it.folderId == null }
+    // A folder that was the filter and has since been deleted falls back to everything,
+    // and so does Unfiled once nothing is unfiled.
+    LaunchedEffect(notebook.folders, unfiledCount, model.filter) {
         val filter = model.filter
+        if (filter == AppViewModel.UNFILED && unfiledCount == 0) model.filter = ""
         if (filter != "" && filter != AppViewModel.UNFILED && notebook.folder(filter) == null) model.filter = ""
     }
     val collator = remember {
@@ -123,12 +127,14 @@ fun LibraryScreen(model: AppViewModel, notebook: Notebook) {
                     item {
                         CountChip(stringResource(R.string.filter_all), notebook.entries.size, model.filter == "") { model.filter = "" }
                     }
-                    item {
-                        CountChip(
-                            stringResource(R.string.filter_unfiled),
-                            notebook.entries.count { it.folderId == null },
-                            model.filter == AppViewModel.UNFILED,
-                        ) { model.filter = AppViewModel.UNFILED }
+                    if (unfiledCount > 0) {
+                        item {
+                            CountChip(
+                                stringResource(R.string.filter_unfiled),
+                                unfiledCount,
+                                model.filter == AppViewModel.UNFILED,
+                            ) { model.filter = AppViewModel.UNFILED }
+                        }
                     }
                     items(notebook.folders, key = { it.id }) { folder ->
                         CountChip(folder.name, notebook.entries.count { it.folderId == folder.id }, model.filter == folder.id) { model.filter = folder.id }

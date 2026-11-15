@@ -30,6 +30,8 @@ struct LibraryView: View {
         }.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
     }
 
+    private var unfiledCount: Int { session.vault.entries.filter { $0.folderID == nil }.count }
+
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 0) {
@@ -42,7 +44,10 @@ struct LibraryView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             folderChip("All", count: session.vault.entries.count, value: .all)
-                            folderChip("Unfiled", count: session.vault.entries.filter { $0.folderID == nil }.count, value: .unfiled)
+                            // Shown only while some entry has no folder.
+                            if unfiledCount > 0 {
+                                folderChip("Unfiled", count: unfiledCount, value: .unfiled)
+                            }
                             ForEach(session.vault.folders) { folder in
                                 folderChip(folder.name,
                                     count: session.vault.entries.filter { $0.folderID == folder.id }.count,
@@ -116,6 +121,9 @@ struct LibraryView: View {
             }
             .onChange(of: session.vault.folders) { _, folders in
                 if case .folder(let id) = filter, !folders.contains(where: { $0.id == id }) { filter = .all }
+            }
+            .onChange(of: unfiledCount) { _, count in
+                if filter == .unfiled, count == 0 { filter = .all }
             }
         }
     }

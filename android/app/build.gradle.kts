@@ -14,8 +14,8 @@ android {
         applicationId = "cn.tenonai.apps.passby"
         minSdk = 26
         targetSdk = 37
-        versionCode = 2
-        versionName = "2.1.0"
+        versionCode = 3
+        versionName = "2.1.1"
     }
 
     androidResources {
