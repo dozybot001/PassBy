@@ -64,6 +64,7 @@ const T = zh ? {
 
 const ADDRESS_KEY = 'passby-sync-address';
 const IDLE_MS = 5 * 60 * 1000;
+const UNTOUCHED_MS = 10 * 60 * 1000;
 const main = document.getElementById('main');
 const disconnectButton = document.getElementById('disconnect');
 
@@ -174,6 +175,13 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+// A page left open in front is cleared too, once nobody has touched it for ten minutes.
+let touchedAt = Date.now();
+for (const type of ['keydown', 'pointerdown', 'pointermove', 'wheel', 'touchstart']) {
+  document.addEventListener(type, () => { touchedAt = Date.now(); }, { passive: true, capture: true });
+}
+setInterval(() => { if (session && Date.now() - touchedAt >= UNTOUCHED_MS) clear(); }, 15000);
+
 // Sends the page's whole state and takes the phone's merged answer. The page changes nothing by
 // itself: what is shown is always what the phone confirmed.
 async function sync(next) {
@@ -205,7 +213,9 @@ async function sync(next) {
 
 async function renderConnect(message = '') {
   disconnectButton.hidden = true;
-  const fromLink = privateAddress(decodeURIComponent(location.hash.slice(1)));
+  // The address may arrive after the # of a link shared from the phone. Anything else there is ignored.
+  let fromLink = null;
+  try { fromLink = privateAddress(decodeURIComponent(location.hash.slice(1))); } catch { /* Not an address. */ }
   const address = el('input', { id: 'address', class: 'mono', inputmode: 'decimal', autocomplete: 'off', spellcheck: 'false', placeholder: '192.168.1.20:52814',
     value: fromLink ? `${fromLink.host}:${fromLink.port}` : stored.get() });
   const code = el('input', { id: 'code', class: 'mono', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', placeholder: 'XXXX-XXXX-XXXX', maxlength: '20' });

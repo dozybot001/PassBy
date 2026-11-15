@@ -114,7 +114,7 @@ hostNonce(16) | guestNonce(16) | counter(8，大端) | 密文 | 标签(16)
 - 同一个会话可以交换多次（网页每次保存一次）。来宾的 `counter` 每次加一，主机只接受比上一次大的；主机回复用同一个 `counter`。
 - **配对码一次性**：第一个会话的问候通过认证后，主机只认这个会话，`begin` 不再发新的 `hostNonce`（回 403）；换一台设备要重开同步页面出新码。
 - 没用掉的 `hostNonce` 同时最多留 4 个，满了 `begin` 回 403；每个 60 秒后作废。
-- 解不开或认证不过：回 403，计一次失败。别的错误回 400；主机已经停止监听的回 410。回复体为空，不带任何说明。`begin` 的 403 和来源不对的 403 不计入失败次数。
+- 解不开或认证不过：回 403，计一次失败。别的错误回 400；主机已经停止监听的回 410。回复体为空，不带任何说明。`begin` 的 403 和来源不对的 403 不计入失败次数；会话建立以后配对码已经用掉、猜不了了，解不开的帧只回 403，也不再计数（免得局域网里别的设备发几个乱帧就把正在用的同步停掉）。
 - 主机核对请求：
   - `Host` 头必须等于自己显示的「地址:端口」，不等直接断开，不回复（防 DNS 重绑定）。
   - 带了 `Origin` 而不是 `https://passby.tenonai.cn` 的回 403。
@@ -166,7 +166,7 @@ aad      = "PassBy sync v1" | hostNonce | guestNonce | 方向(1 字节：0 来�
 
 - 静态页面，放在 passby.tenonai.cn 的 `/app/`。不登录，不向我们的服务器发任何东西。
 - 只连用户输入的那个地址：必须是私有 IPv4 字面量（10/8、172.16/12、192.168/16）加端口，别的不连。
-- 解开的内容只放在内存里：不写 IndexedDB、localStorage、sessionStorage，不用 service worker。只把上次连上的地址记在 localStorage 里；地址也可以从链接的 `#` 后面带进来（见第 3 节），带进来的同样要过私有地址的校验。离开窗口 5 分钟或关掉页面就清掉并断开。
+- 解开的内容只放在内存里：不写 IndexedDB、localStorage、sessionStorage，不用 service worker。只把上次连上的地址记在 localStorage 里；地址也可以从链接的 `#` 后面带进来（见第 3 节），带进来的同样要过私有地址的校验。离开窗口 5 分钟、在前台 10 分钟没有任何操作，或关掉页面，就清掉并断开。
 - 条目内容当作不可信：只用 `textContent`，不用 `innerHTML`。
 - 内容安全策略（只这个页面）：`default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src http:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'`。`connect-src http:` 是因为 CSP 没法只写私有网段；页面自己只连校验过的私有地址。要不要这样放开请安全组定。
 - 复制：浏览器不能让剪贴板自动过期，页面上写明，只在自己的电脑上用。

@@ -99,7 +99,7 @@ web="""HOSTS {
     }
     @pages not path /app /app/*
     header @pages {
-        Content-Security-Policy "frame-ancestors 'none'"
+        Content-Security-Policy "PAGES_CSP"
         Cross-Origin-Opener-Policy "same-origin-allow-popups"
     }
     @api path /api/* /passby/api/*
@@ -121,7 +121,9 @@ web="""HOSTS {
         file_server
     }
 }
-""".replace('GONE',gone).replace('HOSTS',', '.join(hosts)).replace('DIRECTORY',sys.argv[3]).replace('APP_CSP',
+""".replace('GONE',gone).replace('HOSTS',', '.join(hosts)).replace('DIRECTORY',sys.argv[3]).replace('PAGES_CSP',
+    "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; "
+    "base-uri 'none'; form-action 'none'; frame-ancestors 'none'").replace('APP_CSP',
     "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src http:; "
     "base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'")
 for host in moved:
@@ -206,7 +208,9 @@ for name, digest in json.loads((root / 'manifest.json').read_text())['files'].it
         assert response.headers.get('Strict-Transport-Security') == hsts
         assert response.headers.get('X-Frame-Options') == 'DENY'
         assert 'no-store' in response.headers.get('Cache-Control', '')
-        assert response.headers.get('Content-Security-Policy') == "frame-ancestors 'none'"
+        pages = response.headers.get('Content-Security-Policy', '')
+        assert "default-src 'none'" in pages and "frame-ancestors 'none'" in pages and 'connect-src' not in pages, pages
+        assert response.headers.get('Cross-Origin-Opener-Policy') == 'same-origin-allow-popups'
     if path.startswith('app/'):
         policy = response.headers.get('Content-Security-Policy', '')
         assert "default-src 'none'" in policy and "script-src 'self'" in policy and "connect-src http:;" in policy, policy
