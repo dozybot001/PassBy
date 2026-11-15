@@ -175,7 +175,10 @@ final class SyncHostCore {
                 guard let body = try answer(request.body) else { return reply("400 Bad Request") }
                 return reply("200 OK", body)
             } catch SyncError.refused {
-                failures += 1
+                // Once a session holds the code it cannot be guessed any more, so frames that do not
+                // open no longer count: another device on the network must not be able to stop a
+                // sync in progress by sending five of them.
+                if session == nil { failures += 1 }
                 return reply("403 Forbidden")
             } catch {
                 return reply("400 Bad Request")

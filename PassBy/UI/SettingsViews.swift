@@ -63,6 +63,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showExport = false
     @State private var showImport = false
+    @State private var aiOn = false
 
     private var lastExport: String {
         session.lastExportAt.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? L("Never")
@@ -96,6 +97,18 @@ struct SettingsView: View {
                     NavigationLink { SyncView() } label: { Label("Sync", systemImage: "arrow.triangle.2.circlepath") }
                 } footer: {
                     Text("With another device on the same Wi-Fi. Nothing passes through our servers.")
+                }
+                Section {
+                    NavigationLink { AiView() } label: {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("AI grouping")
+                                Text(L(aiOn ? "On. Connects to the network when used" : "Off"))
+                                    .font(.subheadline).foregroundStyle(Palette.secondary)
+                            }
+                        } icon: { Image(systemName: "sparkles") }
+                    }
+                    .onAppear { aiOn = AiSettings().load() != nil }
                 }
                 Section {
                     NavigationLink { RecentlyDeletedView() } label: {
@@ -507,14 +520,16 @@ struct PrivacyPolicyView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Privacy policy").font(.largeTitle.weight(.semibold))
-                Text("Version 4").font(.footnote).foregroundStyle(Palette.secondary)
+                Text("Version 4.2").font(.footnote).foregroundStyle(Palette.secondary)
                 Text("PassBy is provided by Changsha Tenon Artificial Intelligence Technology Co., Ltd. (长沙榫卯人工智能科技有限公司), the company behind Tenon AI (\"we\"). We handle the personal information described in this policy. Contact us at support@tenonai.cn.")
-                Text("In short: no account. The app works offline, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone's own backups and device transfers.")
+                Text("In short: no account, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone's own backups and device transfers. The app stays offline by default, with two exceptions: when you turn on AI grouping it connects to the model provider you choose, and when you use Sync it connects directly to your other device on the same Wi-Fi.")
                 policySection("Your notebook", "Your entries (title, account, password and notes), folders, Recently Deleted and the date of your last export are kept in one PassBy file on this iPhone, protected by iOS file encryption: the file cannot be read while your iPhone is locked. PassBy adds no key of its own, so your notebook is only as secure as your device passcode and Face ID or Touch ID. Entries in Recently Deleted stay on this iPhone for 30 days, and you can delete them sooner. Deleting PassBy deletes the notebook on this iPhone.")
                 policySection("Backups and new iPhones", "Your notebook is included in system backups and device transfers, including iCloud Backup, computer backups and Quick Start. Apple or your computer keeps these backups; they do not pass through us. iCloud Backup: unless you turn on Advanced Data Protection, Apple can read the contents of your backup. We recommend turning on Advanced Data Protection, or using encrypted computer backups instead. Unencrypted computer backups: your notebook is likely stored unencrypted in the backup on your computer. We recommend selecting “Encrypt local backup” in Finder on a Mac, or in the Apple Devices app (or iTunes) on Windows.")
                 policySection("Encrypted export", "An export file is created only when you choose Export. It contains all entries and folders, but not Recently Deleted. It is encrypted with AES-256-GCM, using a key derived from your export code or passphrase with PBKDF2-HMAC-SHA256. The app generates the export code. We never store the export code or your passphrase; without them the file cannot be opened. You choose where the file goes. We never receive export files. If you save one to iCloud Drive, a computer or another app, that service keeps it under its own terms.")
                 policySection("Face ID and clipboard", "Face ID and Touch ID are handled by iOS. PassBy receives only the result, never your face or fingerprint data. Copied values stay on this iPhone and expire after 60 seconds; the app you paste into can read them.")
-                policySection("The iPhone app works offline", "PassBy itself makes no network requests and includes no third-party advertising, analytics or crash-reporting SDK. Links in the app, such as this policy or Support, open in your browser only when you tap them.")
+                policySection("Network", "PassBy stays offline by default. It does not connect to our servers and includes no third-party advertising, analytics or crash-reporting SDK. It uses the network in only two cases: when you turn on AI grouping, and when you use Sync. Links in the app, such as this policy or Support, open in your browser only when you tap them.")
+                policySection("Sync", "Sync happens only when you start it in Settings › Sync, with another device on the same local network. The two devices connect directly; nothing passes through our servers. All entries and folders are sent, encrypted with a key derived from the pairing code. The first time, iOS asks whether PassBy may use the local network. See the online privacy policy for details.")
+                policySection("AI grouping", "AI grouping is off by default. It uses the model provider you choose and your own API key; the service is provided by that provider, not by us. Only after you tap Send does PassBy send your entries' titles and folder names from this iPhone straight to that provider; accounts, passwords and notes are never sent, and nothing passes through our servers. Your API key is kept in the iOS keychain on this device only. See the online privacy policy for details.")
                 policySection("Information we may receive", "Crash reports and usage statistics: if you turn on Share With App Developers in Settings › Privacy & Security › Analytics & Improvements, Apple provides us with PassBy crash reports and aggregated usage statistics. They do not include your notebook, and Apple states that they do not identify you personally. Support email: when you email support@tenonai.cn, we receive your email address, your message and anything you attach, and use them only to reply to you. Never send passwords, export codes or your device passcode. Website: when you visit passby.tenonai.cn, our servers record the time, IP address and page requested, and delete these logs automatically after 6 months. Downloads: Apple handles downloads on the App Store; we see only aggregated figures.")
                 policySection("Data left by earlier versions", "From version 2.0, PassBy no longer uses Tenon Account sign-in or iCloud sync. Sign-in records that earlier versions left on our servers were deleted when that service shut down. The encrypted notebook that earlier versions synced to iCloud stays in your own iCloud, and we cannot delete it; you can delete PassBy's data when you manage your iCloud storage in iPhone Settings. The earlier notebook file on this iPhone is kept after it is moved into this version.")
                 policySection("Your rights", "You can access, copy, correct or delete your personal information, withdraw consent, or ask us to explain how we handle it. You manage your notebook yourself in the app. For anything else, email support@tenonai.cn and we will reply within 15 working days.")
@@ -547,7 +562,7 @@ struct AboutPassByView: View {
                 NotebookTitle()
                 LabeledContent("Version", value: version).font(.subheadline).foregroundStyle(Palette.secondary)
                 Text("PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.")
-                Text("No account, and the app works offline. Your notebook is kept on this iPhone and moves with the phone’s own backups. Export an encrypted file to keep a backup of your own or to move to another phone.")
+                Text("No account, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone's own backups and device transfers. The app stays offline by default, with two exceptions: when you turn on AI grouping it connects to the model provider you choose, and when you use Sync it connects directly to your other device on the same Wi-Fi. Export an encrypted file to keep a backup of your own or to move to another phone.")
                     .foregroundStyle(Palette.secondary)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Publisher").font(.footnote).foregroundStyle(Palette.secondary)

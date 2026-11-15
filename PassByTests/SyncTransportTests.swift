@@ -96,6 +96,12 @@ final class SyncTransportTests: XCTestCase {
         XCTAssertEqual(host.respond(to: message("POST", SyncHTTP.begin))?.status, "403 Forbidden")
         XCTAssertEqual(status(host, try waiting.frame(0, SyncCodec.hello)), "403 Forbidden")
         XCTAssertEqual(status(host, try first.frame(1, emptyState)), "200 OK", "the session itself carries on")
+        for _ in 0..<SyncHostCore.maxFailures + 2 {
+            XCTAssertEqual(status(host, try waiting.frame(1, emptyState)), "403 Forbidden")
+            XCTAssertEqual(status(host, try first.frame(9, emptyState, otherKey: true)), "403 Forbidden")
+        }
+        XCTAssertEqual(host.failures, 0, "with the code used up, refused frames no longer count")
+        XCTAssertEqual(status(host, try first.frame(20, emptyState)), "200 OK")
 
         let other = core()
         for attempt in 1...SyncHostCore.maxFailures {
@@ -182,8 +188,24 @@ final class SyncTransportTests: XCTestCase {
         XCTAssertEqual(seen, [0, SyncCrypto.requestHeader + SyncCodec.hello.count + SyncCrypto.tagLength])
     }
 
+    /// A port nothing is listening on right now, found by letting the system pick one.
+    private func freePort() throws -> UInt16 {
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        defer { close(fd) }
+        var address = sockaddr_in()
+        address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        address.sin_family = sa_family_t(AF_INET)
+        address.sin_addr.s_addr = inet_addr("127.0.0.1")
+        var length = socklen_t(MemoryLayout<sockaddr_in>.size)
+        let bound = withUnsafeMutablePointer(to: &address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { bind(fd, $0, length) == 0 && getsockname(fd, $0, &length) == 0 }
+        }
+        try XCTSkipUnless(bound, "no free port")
+        return UInt16(bigEndian: address.sin_port)
+    }
+
     func testTwoPhonesEndUpWithTheSameNotebookOverLoopback() async throws {
-        let address = SyncAddress(host: "127.0.0.1", port: UInt16.random(in: 50000...60000))
+        let address = SyncAddress(host: "127.0.0.1", port: try freePort())
         let host = try SyncHost(code: code, address: address, iterations: iterations, exchange: { guest in
             guard let merged = try? SyncMerge.merge(host: self.hostNotebook.syncState(), guest: guest, marker: " (Conflict copy)"),
                   (try? self.hostNotebook.takeSynced(merged.state, now: self.clock)) != nil,
