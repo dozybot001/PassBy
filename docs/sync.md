@@ -199,4 +199,6 @@ aad      = "PassBy sync v1" | hostNonce | guestNonce | 方向(1 字节：0 来�
 - 没测的：
   - 从 https://passby.tenonai.cn 这个真实来源连手机（要先发布，还要本人在 Chrome 里点一次「允许访问本地网络」）；Chrome 和 Edge 正式版上的动态 CSP；Firefox、Safari。
   - 两台真手机之间；真实 Wi-Fi 下的地址选择；Android 8–16；离开 5 分钟自动清除（代码有，没等过）。
-- 还没做：iPhone 端、法律文字和对外说法、发布。**下一次运行 `scripts/publish.sh` 会把 `/app/` 一起发出去，所以在安全组验过、创始人同意之前不运行它。**
+- iPhone：数据记号、合并、加密（`PassBy/Models/Sync.swift`）、主机和来宾（`PassBy/Security/SyncTransport.swift`，Network.framework）、「设置 › 同步」页面（`PassBy/UI/SyncView.swift`）都已提交，**还没送审**。单元测试 52 个通过：同一份向量、协议规则（重放、计数器回退、换方向、一次性配对码、Host 和来源、畸形请求）、假主机只收到问候、本机回环上主机和来宾对接。页面用截图测试看过中文版。加了「本地网络」用途说明。
+- iPhone 没测的：真机上的本地网络权限弹窗和被拒绝后的表现；iPhone 和安卓、iPhone 和网页之间的实际对接（三端只在各自的测试里过了同一份向量）；模拟器里没有点过页面。
+- 还没做：法律文字和对外说法（11-15 已请法务组起草）、发布。iPhone 的 AI 分组在做。**下一次运行 `scripts/publish.sh` 会把 `/app/` 一起发出去，所以在安全组验过、创始人同意之前不运行它。**
