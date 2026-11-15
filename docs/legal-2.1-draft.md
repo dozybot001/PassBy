@@ -4,7 +4,7 @@
 
 依据创始人 11-15 在安卓会话的原话：「只发标题……」「默认 DeepSeek」「可以说明仅这一个功能会联网，默认关闭，支持用户手动开启」。备案结论：直接发 Releases 不用办（Tenon-AI `docs/setup/china-app-store.md`「2026-11-15」PassBy 一段）。已记进 Tenon-AI `docs/compliance-plan.md` 第 11 节。
 
-> **创始人 11-15 的意见**（PassBy 开发会话，看了更正后的「AI 分组」一节）：「这种 ai 服务由模型服务商提供的我们不要过于揽责」。已转法务组重看隐私政策和用户协议：我们只陈述应用自己做的事（发什么、不发什么、不经过我们的服务器、key 怎么存和删），不替服务商作陈述或担保（怎么处理、存不存、服务器在哪、准不准、稳不稳、收不收费）。下面的文本等法务组改完再用；应用内的说明文案照同一口径。
+> **创始人 11-15 的意见**（PassBy 开发会话）：「这种 ai 服务由模型服务商提供的我们不要过于揽责」。法务组据此改成下面的定稿（Tenon-AI `docs/compliance-plan.md` 第 11 节，1e030e0），替换之前两版。口径：我们自己的行为一句不减（发什么、不发什么、不经过我们、IP 地址、key 的存放和删除、默认关闭、发送前预览）；服务商一侧的事全划给服务商，不替它描述，也不放它隐私政策的链接。没写「与我们无关」：格式条款里免责说过头反而无效（民法典第四百九十七条、第五百零六条），而且默认地址是我们预填的、请求是我们的应用发出的。境外那句保留。
 
 ## 一、隐私政策
 
@@ -24,31 +24,29 @@ English: The Android app stays offline by default. It includes no advertising, a
 
 ### 3. 新增一节，放在「联网」后
 
-法务组 11-15 更正过一次：原稿写「DeepSeek 服务器在中国境内」，不能用。`api.deepseek.com` 解析到亚马逊 CloudFront，入口后面的服务器在哪我们证明不了，只能指向 DeepSeek 自己的隐私政策。下面是更正后的全文，另按做出来的实际补了预览、勾选后应用并可撤销、一次最多 500 个标题、IP 地址和应用版本号、换地址时删 key。页面上「它的隐私政策」链到 https://cdn.deepseek.com/policies/zh-CN/deepseek-privacy-policy.html，英文页用它的英文版。
-
 中文：
 
 ## AI 分组
-AI 分组默认关闭。打开时，你填入模型服务商的接口地址、模型名称和你自己的 API Key。默认填好的服务商是 DeepSeek，由杭州深度求索人工智能基础技术研究有限公司提供；它怎样处理和存放你发去的内容，以它的隐私政策为准。
+AI 分组默认关闭。它用的是你自己选的模型服务商和你自己的 API Key：这项服务由服务商提供，不是我们提供的，PassBy 只负责把请求从你的手机发给它。默认填的是 DeepSeek 的接口地址，你可以换成别的。
 
 你开始一次分组时，PassBy 先给你看将要发送的内容，你点「发送」后，才从你的手机直接向这家服务商发出一次请求。请求里有：条目的标题（一次最多 500 个，没有标题的条目不发送）、你现有文件夹的名称、一段固定的说明文字，以及应用的名称和版本号。账户、密码和备注这三栏不会发送。请求不经过我们的服务器，我们收不到其中的任何内容；和访问任何网络服务一样，服务商会看到你的 IP 地址。
 
 模型返回的是建议：条目分到哪个文件夹，哪些标题不清楚、需要你补充（放进「待明确」文件夹），以及标题的规范写法。你勾选要采用的建议并点「应用」后才改动，应用后可以撤销；不会删除条目。
 
-发出去的内容由你选的服务商按它的隐私政策处理，它可能会保存；你选境外的服务商时，这些内容会发往境外。标题里如果写了账号、姓名之类的信息，会随标题一起发出。
+发出去的内容由你选的服务商按它自己的协议和隐私政策处理，我们不参与，也收不到；使用前请先看它的政策。你选境外的服务商时，这些内容会发往境外。标题里如果写了账号、姓名之类的信息，会随标题一起发出。
 
 API Key 加密保存在这台手机上，不进系统备份和导出文件；你关闭 AI 分组、换了服务商的地址或卸载 PassBy 时删除。
 
 English:
 
 ## AI grouping
-AI grouping is off by default. When you turn it on, you enter a model provider's endpoint, a model name and your own API key. The provider filled in by default is DeepSeek, a service of Hangzhou DeepSeek Artificial Intelligence Basic Technology Research Co., Ltd.; how it handles and stores what you send is set out in its privacy policy.
+AI grouping is off by default. It uses the model provider you choose and your own API key: the service is provided by that provider, not by us, and PassBy only sends the request from your phone to it. The endpoint filled in by default is DeepSeek's; you can change it.
 
 When you start a grouping, PassBy first shows you what will be sent. Only after you tap Send does it make one request from your phone straight to that provider. The request contains your entries' titles (up to 500 at a time; entries without a title are not sent), the names of your existing folders, a fixed piece of instruction text, and the app's name and version. The account, password and notes fields are never sent. The request does not pass through our servers, and we receive none of it; as with any online service, the provider sees your IP address.
 
 What comes back is a set of suggestions: which folder each entry goes in, which titles are unclear and need your attention (placed in the "To clarify" folder), and tidier wording for titles. Nothing changes until you tick the suggestions you want and tap Apply, and you can undo it afterwards; no entry is deleted.
 
-What you send is handled by the provider you chose under its own privacy policy, and it may keep it. If you choose a provider outside mainland China, this content is sent abroad. Anything you wrote into a title, such as an account name or a person's name, is sent along with the title.
+What you send is handled by the provider you chose under its own terms and privacy policy. We take no part in that and receive none of it; read its policy before you use it. If you choose a provider outside mainland China, this content is sent abroad. Anything you wrote into a title, such as an account name or a person's name, is sent along with the title.
 
 Your API key is stored encrypted on this phone and is left out of system backups and export files. It is deleted when you turn AI grouping off, change the provider's address, or uninstall PassBy.
 
@@ -57,12 +55,18 @@ Your API key is stored encrypted on this phone and is left out of system backups
 加一节，放在「备份和导出」后：
 
 ## AI 分组
-AI 分组用的是你自己选的模型服务商和你自己的 API Key，服务商的协议和费用由你和它之间处理，我们不经手。模型给的建议可能不准确，确认之前请自己看一遍。
+AI 分组这项服务由你选的模型服务商提供，用的是你自己的 API Key；PassBy 只提供把请求从你的手机发给它的功能。你和服务商之间适用它的协议和隐私政策，费用由你和它结算。模型的结果是否准确、服务是否可用、它怎样处理你发去的内容，由服务商负责，我们不参与。模型给的只是建议，采用前请自己看一遍。
 
 ## AI grouping
-AI grouping uses the model provider you choose and your own API key; that provider's terms and charges are between you and it, and we take no part in them. The model's suggestions may be wrong; check them before you confirm.
+AI grouping is a service provided by the model provider you choose, using your own API key; PassBy only provides the function that sends the request from your phone to it. Your dealings with the provider are governed by its terms and privacy policy, and its charges are settled between you and it. Whether the model's results are accurate, whether the service is available and how it handles what you send are the provider's responsibility, and we take no part in them. The model only makes suggestions; check them before you adopt them.
 
-「责任」一节列举的情形里加：「你选的模型服务商的服务，以及按模型建议所作的改动」/ "the service of the model provider you chose, or changes made on a model's suggestions"。
+「责任」一节（加粗的那节）列举的情形里加：「你选的模型服务商的服务，包括模型的结果、服务的可用性、收费和它对你发去内容的处理，以及你采用模型建议所作的改动」/ "the service of the model provider you chose, including the model's results, the availability of the service, its charges and its handling of what you send, or changes you make by adopting a model's suggestions"。「在法律允许的范围内」和末句「本协议不限制法律不允许限制的权利」保持不动。
+
+### 应用内文案（两端同口径）
+
+- `ai_provider_note`：「默认填的是 DeepSeek 的接口地址，可以换成其他兼容 chat/completions 接口的服务商。服务由服务商提供，按它自己的协议和隐私政策处理；填境外服务商时，标题会发往境外。」/ The endpoint filled in by default is DeepSeek's; you can change it to any provider with a compatible chat/completions endpoint. The service is provided by that provider under its own terms and privacy policy; with a provider outside mainland China, your titles are sent abroad.
+- `ai_turn_on_provider`：「内容从这台手机直接发给你填的模型服务商，不经过我们。这项服务由服务商提供，按它自己的协议和隐私政策处理；选境外服务商时，内容会发往境外。标题里如果写了账号或姓名，会随标题一起发出。」/ What you send goes from this phone straight to the provider you entered, not through us. The service is provided by that provider under its own terms and privacy policy; with a provider outside mainland China, the content is sent abroad. An account name or a person's name written into a title is sent along with it.
+- `ai_never_sent`：写「这三栏不会发送」。其余不动。
 
 ## 三、同一天改的其他地方
 
