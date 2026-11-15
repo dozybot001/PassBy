@@ -231,16 +231,22 @@ final class ScreenSnapshots: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let store = NotebookStore(directory: root)
-        let work = VaultFolder(name: "工作")
-        let mail = VaultEntry(title: "个人邮箱", account: "alex@example.com", password: "example-only-1", notes: "虚构数据\n第二行")
+        // Fictional entries in the language the app is running in.
+        let chinese = Bundle.main.preferredLocalizations.first?.hasPrefix("zh") == true
+        let work = VaultFolder(name: chinese ? "工作" : "Work")
+        let mail = VaultEntry(title: chinese ? "个人邮箱" : "Personal email", account: "alex@example.com",
+            password: "example-only-1", notes: chinese ? "虚构数据\n第二行" : "Sample data\nSecond line")
         var notebook = Notebook()
         notebook.update(Vault(folders: [work], entries: [mail,
-            VaultEntry(title: "公司邮箱", account: "alex@example.org", password: "example-only-2", folderID: work.id),
-            VaultEntry(title: "路由器", password: "example-only-3"),
-            VaultEntry(title: "旧账号", account: "old@example.com", password: "example-only-4")]))
+            VaultEntry(title: chinese ? "公司邮箱" : "Work email", account: "alex@example.org", password: "example-only-2", folderID: work.id),
+            VaultEntry(title: chinese ? "路由器" : "Router", password: "example-only-3"),
+            VaultEntry(title: chinese ? "旧账号" : "Old account", account: "old@example.com", password: "example-only-4")]))
         var next = notebook.vault
         next.entries.removeLast()
         notebook.update(next)
+        // Exported just now, so the list shows no reminder.
+        notebook.lastExportAt = Date()
+        notebook.changedSinceExport = false
         try store.save(notebook)
         let suite = "passby-snapshots-" + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

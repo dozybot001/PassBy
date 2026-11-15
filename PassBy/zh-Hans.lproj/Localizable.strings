@@ -137,7 +137,7 @@
 "It stays in Recently Deleted for 30 days, then it is removed for good." = "它会在「最近删除」里保留 30 天，之后彻底移除。";
 "Keep the export code. Without it the file cannot be opened." = "请保存好导出码，丢了就打不开这个文件。";
 "Keep your passphrase. Without it the file cannot be opened." = "请记住口令，丢了就打不开这个文件。";
-"Kept on this iPhone" = "只存在这台 iPhone 上";
+"Kept on this iPhone" = "存在这台 iPhone 上";
 "Last export" = "上次导出";
 "Lock" = "锁";
 "Merge" = "合并";
