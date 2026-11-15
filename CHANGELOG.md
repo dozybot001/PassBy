@@ -4,6 +4,9 @@
 
 ## 未发布
 
+### 安卓 2.0.0（2026-11-15 发布）
+- 第一个安卓版，安装包在 [GitHub](https://github.com/dozybot001/PassBy/releases/tag/android-v2.0.0) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases/tag/android-v2.0.0) 的 Releases 里，由长沙榫卯人工智能科技有限公司签名。做了什么见 [docs/android.md](docs/android.md)。首页和支持页同日写明安卓版已发布。
+
 ### iPhone 2.0（开发中，未送审）
 - 密码本只存在这台 iPhone 上：一个由 iOS 文件加密保护的文件，跟着系统备份和换机走。不再有 Tenon 登录、iCloud 同步和恢复密钥，App 不发网络请求。
 - 一道门：冷启动验证一次，离开满 5 分钟再验证；用 Face ID 或触控 ID，没有就用锁屏密码；可在设置里关闭。没设锁屏的手机不拦，提示一次。

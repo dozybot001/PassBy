@@ -334,7 +334,7 @@ PassBy 11-14 定（法务组的出口合规意见）：导出加密只用系统�
 - 当天做了：加 `LICENSE`（MIT，公司版权行）和 `SECURITY.md`；README 按 2.0 重写，加「名称和标志」「第三方声明」两节；App 的版权行改成公司；旧网页版文档移到 `docs/archive/`。
 - 当天查了全部历史：gitleaks（`--log-opts="--all"`）为 0；服务器 IP、个人邮箱、手机号、私钥、飞书机器人地址都没有出现，IP 只有 127.0.0.1 和 0.0.0.0；提交者邮箱只有 GitHub 的 noreply 地址。
 - **11-15 已公开**：法务组按全部历史复核通过（让改三处：把 JetBrains Mono 的 OFL 许可原文放回 `docs/third-party/`、README 里文件加密和备份保存方的两句，4fed9f5），安全组重扫为 0，公开前再扫一次为 0。GitHub（dozybot001/PassBy）用命令行设成公开，打开了 Secret scanning、Push protection、Dependabot alerts、Private vulnerability reporting；Gitee（dozybot/PassBy）在创始人的 Chrome 里改成开源。两边不登录都能访问。App 审核账号的账号名留在历史里，没有密码，法务组和安全组都认为可以。
-- 还没做：隐私政策第 4 版、用户协议第 3 版、支持页「核对安卓安装包」和首页的更新（定稿在 `docs/legal-2.0-draft.md`（页面上线后已删，见 git 历史），预览已发法务组）；之后安卓会话放 Releases。
+- **11-15 安卓 2.0.0 已发布**：隐私政策第 4 版、用户协议第 3 版和支持页的指纹先上线（dbb0e7e、2c762a3，法务组线上核对通过）；创始人在安卓会话确认后，安卓会话把安装包放到两边 Releases（标签 `android-v2.0.0`）。我不登录从 GitHub 和 Gitee 各下载一次：SHA-256 都是 32273a6c2dad207efef0ec6f77536eccb9a12a19d8e8eff70d0604488a8f598c，apksigner 读出的证书 SHA-256 是 cdd81f2d…a4984、主体是公司。之后首页和支持页开头改成「安卓 2.0 已发布」。
 - 原定顺序：法务组按当时全部历史复核 → 两边仓库设公开，GitHub 打开安全设置 → 法律页面加安卓内容并上线 → 安卓会话从发布提交重新构建、安全组验收 → 放 Releases → 告诉平台组、运营组、产品组。
 
 公开前的准备：
