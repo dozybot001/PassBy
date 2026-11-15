@@ -207,7 +207,7 @@
     <string name="ai_model">模型名称</string>
     <string name="ai_endpoint_error">接口地址要以 https:// 开头。</string>
     <string name="ai_host_changes">换了服务商的地址，保存后原来的 API Key 会被删除，需要重新填写。</string>
-    <string name="ai_provider_note">默认是 DeepSeek，由中国公司深度求索提供；内容怎样处理和存放，以它的隐私政策为准。也可以填其他兼容 chat/completions 接口的服务商；填境外服务商时，标题会发往境外。</string>
+    <string name="ai_provider_note">默认填的是 DeepSeek 的接口地址，可以换成其他兼容 chat/completions 接口的服务商。服务由服务商提供，按它自己的协议和隐私政策处理；填境外服务商时，标题会发往境外。</string>
     <string name="ai_save_provider">保存</string>
     <string name="ai_use_deepseek">恢复 DeepSeek 默认</string>
     <string name="ai_key">API Key</string>
@@ -219,7 +219,7 @@
     <string name="ai_turn_on_title">打开 AI 分组？</string>
     <string name="ai_turn_on_network">打开后，PassBy 会在你每次点「发送」时联网一次，其他时候不联网。</string>
     <string name="ai_turn_on_sent">发送的只有条目的标题和文件夹名。账户、密码、备注不会发送。</string>
-    <string name="ai_turn_on_provider">内容从这台手机直接发给你填的模型服务商，不经过我们。服务商按它自己的隐私政策处理，可能会保存；选境外服务商时，内容会发往境外。标题里如果写了账号或姓名，会随标题一起发出。</string>
+    <string name="ai_turn_on_provider">内容从这台手机直接发给你填的模型服务商，不经过我们。这项服务由服务商提供，按它自己的协议和隐私政策处理；选境外服务商时，内容会发往境外。标题里如果写了账号或姓名，会随标题一起发出。</string>
     <string name="ai_turn_on_key">API Key 只加密保存在这台手机上。</string>
     <string name="ai_turn_on">打开</string>
     <string name="ai_turn_off_title">关闭 AI 分组？</string>

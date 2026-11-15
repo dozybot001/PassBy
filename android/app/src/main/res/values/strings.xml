@@ -210,7 +210,7 @@
     <string name="ai_model">Model name</string>
     <string name="ai_endpoint_error">The endpoint has to start with https://.</string>
     <string name="ai_host_changes">The provider\'s address has changed. Saving deletes the API key you entered, and you will need to enter one again.</string>
-    <string name="ai_provider_note">The default is DeepSeek, a service of the Chinese company DeepSeek; how it handles and stores what you send is set out in its privacy policy. You can enter any other provider with a compatible chat/completions endpoint; with a provider outside mainland China, your titles are sent abroad.</string>
+    <string name="ai_provider_note">The endpoint filled in by default is DeepSeek\'s; you can change it to any provider with a compatible chat/completions endpoint. The service is provided by that provider under its own terms and privacy policy; with a provider outside mainland China, your titles are sent abroad.</string>
     <string name="ai_save_provider">Save</string>
     <string name="ai_use_deepseek">Use the DeepSeek defaults</string>
     <string name="ai_key">API key</string>
@@ -222,7 +222,7 @@
     <string name="ai_turn_on_title">Turn on AI grouping?</string>
     <string name="ai_turn_on_network">When on, PassBy connects to the network once each time you tap Send, and at no other time.</string>
     <string name="ai_turn_on_sent">Only your entries\' titles and your folder names are sent. Accounts, passwords and notes are never sent.</string>
-    <string name="ai_turn_on_provider">The request goes from this phone straight to the model provider you enter, not through us. The provider handles it under its own privacy policy and may keep it; with a provider outside mainland China it is sent abroad. Anything you wrote into a title, such as an account name or a person\'s name, is sent with the title.</string>
+    <string name="ai_turn_on_provider">What you send goes from this phone straight to the provider you entered, not through us. The service is provided by that provider under its own terms and privacy policy; with a provider outside mainland China, the content is sent abroad. An account name or a person\'s name written into a title is sent along with it.</string>
     <string name="ai_turn_on_key">The API key is stored encrypted on this phone only.</string>
     <string name="ai_turn_on">Turn on</string>
     <string name="ai_turn_off_title">Turn off AI grouping?</string>
