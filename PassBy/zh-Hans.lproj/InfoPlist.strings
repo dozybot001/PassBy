@@ -1,1 +1,2 @@
 "NSFaceIDUsageDescription" = "使用 Face ID 打开你的密码本。";
+"NSLocalNetworkUsageDescription" = "只有在你和同一个 Wi-Fi 里的另一台设备同步时，PassBy 才使用本地网络。";

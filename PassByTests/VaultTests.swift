@@ -273,6 +273,7 @@ final class ScreenSnapshots: XCTestCase {
             ("11-privacy", AnyView(NavigationStack { PrivacyPolicyView() })),
             ("12-about", AnyView(NavigationStack { AboutPassByView() })),
             ("13-migration", AnyView(MigrationView())),
+            ("14-sync", AnyView(NavigationStack { SyncView() })),
         ]
         for style in [UIUserInterfaceStyle.light, .dark] {
             for (name, view) in screens {

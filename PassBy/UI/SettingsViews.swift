@@ -93,6 +93,11 @@ struct SettingsView: View {
                     Text("PassBy has no account, so a backup is yours to keep. Export an encrypted file and store it somewhere else. Your notebook is also part of this iPhone’s own backups: turn on Advanced Data Protection for iCloud Backup, or use an encrypted computer backup, so nobody else can read it there.")
                 }
                 Section {
+                    NavigationLink { SyncView() } label: { Label("Sync", systemImage: "arrow.triangle.2.circlepath") }
+                } footer: {
+                    Text("With another device on the same Wi-Fi. Nothing passes through our servers.")
+                }
+                Section {
                     NavigationLink { RecentlyDeletedView() } label: {
                         LabeledContent {
                             Text("\(session.recentlyDeleted.count)").monospacedDigit()
@@ -103,7 +108,7 @@ struct SettingsView: View {
                 }
                 Section {
                     Label("Kept on this iPhone", systemImage: "iphone")
-                    Label("No account, no network requests", systemImage: "wifi.slash")
+                    Label("No account; nothing passes through our servers", systemImage: "wifi.slash")
                     Label("Clipboard expires after 60 seconds", systemImage: "doc.on.clipboard")
                 } header: { Text("Privacy") } footer: {
                     Text("Copying makes a password temporarily available to the app you paste into. Copies stay on this iPhone and do not use Universal Clipboard.")

@@ -11,6 +11,7 @@
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <key>NSFaceIDUsageDescription</key><string>Use Face ID to open your password notebook.</string>
+    <key>NSLocalNetworkUsageDescription</key><string>PassBy uses the local network only when you sync with another of your devices on the same Wi-Fi.</string>
     <key>UIApplicationSceneManifest</key><dict><key>UIApplicationSupportsMultipleScenes</key><false/></dict>
     <key>UILaunchScreen</key><dict><key>UIColorName</key><string>Paper</string></dict>
     <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>

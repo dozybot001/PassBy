@@ -231,6 +231,35 @@ final class VaultSession: ObservableObject {
         write { $0.recentlyDeleted.removeAll { $0.id == id } }
     }
 
+    // MARK: Sync (docs/sync.md)
+
+    /// The notebook as it is sent to the other device; nil while it is locked.
+    func syncState() -> SyncState? {
+        gate.phase == .unlocked ? notebook?.syncState() : nil
+    }
+
+    /// Listening side: merges the guest's state into the notebook and saves it as one step. Returns
+    /// what to answer and what changed here, or nil when nothing could be saved.
+    func syncMerge(guest: SyncState, marker: String) -> (reply: (state: SyncState, summary: SyncSummary), mine: SyncSummary)? {
+        guard let before = syncState(),
+              let merged = try? SyncMerge.merge(host: before, guest: guest, marker: marker),
+              let theirs = try? SyncMerge.summary(before: guest, after: merged.state, conflicts: merged.conflicts),
+              let mine = try? SyncMerge.summary(before: before, after: merged.state, conflicts: merged.conflicts),
+              syncTake(merged.state, ifUnchangedFrom: before) == true else { return nil }
+        return ((merged.state, theirs), mine)
+    }
+
+    /// Takes a merged state. False when the notebook is no longer what was sent, so nothing was
+    /// taken; nil when it could not be saved.
+    func syncTake(_ state: SyncState, ifUnchangedFrom sent: SyncState) -> Bool? {
+        guard syncState() == sent else { return false }
+        var taken = true
+        let saved = write { notebook in
+            do { try notebook.takeSynced(state) } catch { taken = false }
+        }
+        return saved && taken ? true : nil
+    }
+
     @discardableResult
     func createFolder(name: String) -> UUID? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
