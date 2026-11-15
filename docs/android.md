@@ -13,7 +13,8 @@
 - 局域网同步（设计、协议和测试记录都在 `docs/sync.md`）。versionCode 5，提交 5e74812。权限多一项 `ACCESS_LOCAL_NETWORK`（Android 17 起的运行时权限，只在同步页申请），`release.sh` 的权限名单同步加上。
 - 安全组看过设计、代码和新权限，法务组说不卡发版；创始人 11-15：「可以，发 2.2.0」。
 - 标签 `android-v2.2.0`。`PassBy-2.2.0.apk`，SHA-256 `68ad11654ca3c6f1965be9981832704ccb64795240ea1a85a6eba73457a9a43a`，证书不变。
-- 地址：https://github.com/dozybot001/PassBy/releases/tag/android-v2.2.0 、https://gitee.com/dozybot/PassBy/releases/tag/android-v2.2.0 。
+- 地址：https://github.com/dozybot001/PassBy/releases/tag/android-v2.2.0 、https://gitee.com/dozybot/PassBy/releases/tag/android-v2.2.0 。不登录从两边各下载一次，SHA-256 和两边的 `SHA256SUMS` 一致，证书指纹一致，两边的标签都指向 5e74812。Gitee 的下载很慢（1.9 MB 用了 140 秒），第一次 95 秒超时没下完。
+- 网站素材里 4 张安卓 AI 分组截图按新文案重拍（`android-ai-{light,dark}-{zh,en}.png`）。
 - 没验证的：两台真实手机、真实 Wi-Fi；只在模拟器上两个方向跑通并抓包（`docs/sync.md` 第 9 节）。发布说明里写明了。
 
 ### 2.1.2 已发布（2026-11-15）
