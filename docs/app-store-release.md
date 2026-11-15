@@ -8,7 +8,8 @@ iPhone 2.0 没有单独送审，并进 2.1（本地密码本 + 局域网同步 +
 
 ### 已经验证的（11-16）
 
-- 80 项原生测试通过（模拟器 iPhone 18 Pro）。
+- 83 项原生测试（其中两项互通测试平时跳过），全部通过（模拟器 iPhone 18 Pro）。
+- 安全组 11-16 看过 iPhone 的联网和钥匙串代码：一处要改（同步主机的并发连接上限），已改并有测试；改完可以送审（记录在 `docs/sync.md` 第 9 节）。
 - AI 分组的设置和 API Key 在真实钥匙串里存、读、关闭后删除：`testSettingsAndKeyInTheRealKeychain`（模拟器，测试专用的 service，不碰应用自己存的）；两项都是「仅本设备、解锁时可读、不同步」。
 - 同步和参考实现互通，两个方向，真实的 60 万次密钥派生和真实网络栈：iPhone 作客人连 `scripts/sync-dev-host.mjs`，iPhone 作主机由 `scripts/sync-dev-guest.mjs` 连入（`testInteropAsGuestOfTheReferenceHost`、`testInteropAsHostOfTheReferenceGuest`，要在 xcodebuild 前加 `TEST_RUNNER_PASSBY_INTEROP_HOST=<ip:port>` / `TEST_RUNNER_PASSBY_INTEROP_LISTEN=<ip:port>` 才跑）。安卓和网页此前已对同一个参考实现跑通。
 
@@ -21,10 +22,11 @@ iPhone 2.0 没有单独送审，并进 2.1（本地密码本 + 局域网同步 +
 
 ### 送审前还要做的
 
-1. 法务组核对 4.3 / 3.3（在 4.2 / 3.2 上加【iPhone】部分；生成脚本和预览在会话草稿目录，定稿后上架当天发布，4.2 / 3.2 存档），以及下面的隐私标签、出口合规、审核备注。应用内政策的版本号跟线上，法务组定稿后改。
+1. 隐私政策 4.3、用户协议 3.3（在 4.2 / 3.2 上加【iPhone】部分）：法务组 11-16 核对过，改动已照做。**提交审核当天发布**，不等上架（审核员会打开隐私政策网址，4.2 写的是「iPhone 版发布时会更新」，容易按 5.1.1 被退）；生效日期写发布那天，4.2 / 3.2 存档；发布要创始人点头。应用内政策已是 "Version 4.3"。
+   - 法务组还定了：商店描述、更新说明、推广文本、关键词和截图里不出现别的手机平台的名字（审核指南 2.3.10），审核备注不受限；不在 Connect 里填自定义 EULA，适用 Apple 的标准协议，协议里写一句；描述第二段是创始人定的那句把「手机」换成了「iPhone」，送审前的汇报里点明。
 2. 归档、上传 Build 19（上传不等于提交）。
 3. App Store Connect 里：新建 2.1 版本，换描述、推广文本、关键词、网址、截图；隐私标签改成「不收集数据」；去掉审核登录信息；销售范围不含中国大陆（没有 App 备案号）。
-4. 创始人确认后提交审核。上架后把 App Store 地址报给产品组，首页和支持页改成 iPhone 版已发布，发布 4.3 / 3.3。
+4. 创始人确认后提交审核。上架后把 App Store 地址报给产品组，首页和支持页改成 iPhone 版已发布，（4.3 / 3.3 已在提交审核当天发布。）
 
 ### 商店资料
 
@@ -53,7 +55,7 @@ Sync: on the same Wi-Fi, sync your notebook with another phone running PassBy, o
 
 AI grouping (off by default): let a model provider you choose, with your own API key, suggest folders and tidier titles. Only titles and folder names are sent, straight from your iPhone to that provider, after you have seen exactly what will go out. Nothing changes until you apply the suggestions.
 
-Encrypted export and import: keep a backup of your own, or move your notebook to another phone, including PassBy for Android.
+Encrypted export and import: keep a backup of your own, or move your notebook to another phone.
 
 There is no account to recover a notebook from. Export a backup and keep the export code somewhere else. English and Simplified Chinese. No subscriptions, in-app purchases or ads. Requires iOS 17 or later.
 
@@ -63,7 +65,7 @@ PassBy is now a local notebook: no account, no iCloud sync, no recovery key. You
 
 New: Sync over your own Wi-Fi with another phone or with a computer's browser, directly between the two devices.
 New: AI grouping, off by default, using a model provider and API key of your own.
-New: encrypted export and import, shared with PassBy for Android.
+New: encrypted export and import.
 
 If you used an earlier version, PassBy moves the notebook on this iPhone into the new one after Face ID; the old file is left in place.
 
@@ -86,7 +88,7 @@ PassBy 是一个简单的密码本。每条记录四栏：标题、账户、密�
 
 AI 分组（默认关闭）：用你自己选的模型服务商和你自己的 API Key，给出分组和标题写法的建议。只发标题和文件夹名，从 iPhone 直接发给这家服务商，发之前能看到要发出去的全部内容；你点应用之后才改动。
 
-加密导出和导入：自己留一份备份，或者搬到另一台手机，和安卓版通用。
+加密导出和导入：自己留一份备份，或者搬到另一台手机。
 
 密码本没有账号可以找回，请导出一份备份，把导出码存在别处。支持简体中文和英文。没有订阅、内购和广告。需要 iOS 17 或更高版本。
 
@@ -96,7 +98,7 @@ PassBy 现在是一个本地密码本：没有账号，不再用 iCloud 同步�
 
 新增：在自己的 Wi-Fi 里和另一台手机或电脑浏览器直接同步。
 新增：AI 分组，默认关闭，用你自己的模型服务商和 API Key。
-新增：加密导出和导入，和安卓版通用。
+新增：加密导出和导入。
 
 用过旧版的：验证 Face ID 后，PassBy 会把这台 iPhone 上的密码本搬进新版，旧文件原样保留。
 

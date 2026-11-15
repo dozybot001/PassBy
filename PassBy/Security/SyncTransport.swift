@@ -246,6 +246,10 @@ final class SyncHost {
     private var lastRequest = Date()
     private var idleTimer: DispatchSourceTimer?
     private var finished = false
+    /// Connections being served now. Each may hold up to the largest body for the whole timeout, so
+    /// without a ceiling another device on the network could fill memory by opening many.
+    private var serving = 0
+    static let maxConnections = 4
     let address: SyncAddress
 
     /// Throws when the port cannot be opened on the address.
@@ -293,6 +297,17 @@ final class SyncHost {
     }
 
     private func serve(_ connection: NWConnection) {
+        guard serving < Self.maxConnections else { return connection.cancel() }
+        serving += 1
+        var counted = true
+        connection.stateUpdateHandler = { [weak self] state in
+            switch state {
+            case .cancelled, .failed:
+                if counted { counted = false; self?.serving -= 1 }
+                if case .failed = state { connection.cancel() }
+            default: break
+            }
+        }
         var received = Data()
         let deadline = DispatchWorkItem { connection.cancel() }
         queue.asyncAfter(deadline: .now() + SyncHTTP.timeout, execute: deadline)
@@ -307,7 +322,8 @@ final class SyncHost {
                     if complete || error != nil { connection.cancel() } else { read() }
                 case .complete(let message):
                     guard let reply = self.core.respond(to: message) else { return connection.cancel() }
-                    self.lastRequest = Date()
+                    // Only a request that got something counts as use: refusals must not keep the host open.
+                    if reply.status == "200 OK" { self.lastRequest = Date() }
                     let headers = [("Access-Control-Allow-Origin", SyncHTTP.origin), ("Access-Control-Allow-Methods", "POST"),
                         ("Access-Control-Allow-Headers", "content-type"), ("Cache-Control", "no-store"), ("Content-Type", "application/octet-stream")]
                     connection.send(content: SyncHTTP.message(start: "HTTP/1.1 \(reply.status)", headers: headers, body: reply.body),

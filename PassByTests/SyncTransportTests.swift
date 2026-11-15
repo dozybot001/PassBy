@@ -244,6 +244,43 @@ final class SyncTransportTests: XCTestCase {
         }
     }
 
+    /// Opens a connection to the loopback address and sends nothing.
+    private func idleSocket(_ port: UInt16) throws -> Int32 {
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        var address = sockaddr_in()
+        address.sin_family = sa_family_t(AF_INET)
+        address.sin_port = port.bigEndian
+        address.sin_addr.s_addr = inet_addr("127.0.0.1")
+        let connected = withUnsafePointer(to: &address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { connect(fd, $0, socklen_t(MemoryLayout<sockaddr_in>.size)) == 0 }
+        }
+        try XCTSkipUnless(connected, "could not connect")
+        var wait = timeval(tv_sec: 3, tv_usec: 0)
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &wait, socklen_t(MemoryLayout<timeval>.size))
+        return fd
+    }
+
+    func testOnlyAFewConnectionsAreServedAtOnce() async throws {
+        let address = SyncAddress(host: "127.0.0.1", port: try freePort())
+        let host = try SyncHost(code: code, address: address, iterations: iterations, exchange: { _ in nil }, onStopped: { _ in })
+        host.start()
+        defer { host.stop() }
+        try await Task.sleep(nanoseconds: 300_000_000)
+        let held = try (0..<SyncHost.maxConnections).map { _ in try idleSocket(address.port) }
+        defer { held.forEach { close($0) } }
+        try await Task.sleep(nanoseconds: 300_000_000)
+        // One more is closed at once, well before the timeout that the held ones are waiting out.
+        let extra = try idleSocket(address.port)
+        var byte: UInt8 = 0
+        XCTAssertEqual(recv(extra, &byte, 1, 0), 0)
+        close(extra)
+        // When one of the held connections goes away, its place is free again.
+        close(held[0])
+        try await Task.sleep(nanoseconds: 300_000_000)
+        let guest = SyncGuest(code: code, iterations: iterations) { path, body in try await SyncGuest.send(to: address, path: path, body: body) }
+        do { _ = try await guest.exchange(SyncState()) } catch { XCTAssertNotEqual(error as? SyncGuestError, .unreachable) }
+    }
+
     // The two tests below talk to the reference implementation running on the Mac (scripts/sync-dev-host.mjs
     // and scripts/sync-dev-guest.mjs) with the real key derivation. They are skipped unless the addresses
     // are given: TEST_RUNNER_PASSBY_INTEROP_HOST and TEST_RUNNER_PASSBY_INTEROP_LISTEN on the xcodebuild line.
