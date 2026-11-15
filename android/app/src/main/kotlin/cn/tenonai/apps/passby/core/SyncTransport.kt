@@ -6,6 +6,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketTimeoutException
@@ -79,6 +80,22 @@ data class SyncAddress(val host: String, val port: Int) {
     fun inet(): InetAddress = InetAddress.getByAddress(host.split('.').map { it.toInt().toByte() }.toByteArray())
 
     companion object {
+        /**
+         * This phone's address on the Wi-Fi or local network it is on, or null when it is on none.
+         * Mobile data and VPN interfaces are left out; Wi-Fi comes before anything else.
+         */
+        fun local(port: Int): SyncAddress? = try {
+            NetworkInterface.getNetworkInterfaces().toList()
+                .filter { it.isUp && !it.isLoopback && !it.isPointToPoint && LEFT_OUT.none { prefix -> it.name.startsWith(prefix) } }
+                .sortedBy { if (it.name.startsWith("wlan")) 0 else 1 }
+                .flatMap { it.inetAddresses.toList() }
+                .firstNotNullOfOrNull { parse("${it.hostAddress}:$port") }
+        } catch (e: IOException) {
+            null
+        }
+
+        private val LEFT_OUT = listOf("rmnet", "ccmni", "pdp", "tun", "ppp", "dummy")
+
         /** Reads `10.1.2.3:52814`. Names are not looked up, and only 10/8, 172.16/12 and 192.168/16 are accepted. */
         fun parse(text: String): SyncAddress? {
             val match = Regex("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3}):(\\d{1,5})$").find(text.trim()) ?: return null

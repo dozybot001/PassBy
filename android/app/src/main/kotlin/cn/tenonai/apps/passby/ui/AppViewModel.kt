@@ -20,6 +20,14 @@ import cn.tenonai.apps.passby.core.ExportedNotebook
 import cn.tenonai.apps.passby.core.Folder
 import cn.tenonai.apps.passby.core.ImportMerge
 import cn.tenonai.apps.passby.core.Notebook
+import cn.tenonai.apps.passby.core.SyncAddress
+import cn.tenonai.apps.passby.core.SyncCrypto
+import cn.tenonai.apps.passby.core.SyncException
+import cn.tenonai.apps.passby.core.SyncGuest
+import cn.tenonai.apps.passby.core.SyncGuestException
+import cn.tenonai.apps.passby.core.SyncHost
+import cn.tenonai.apps.passby.core.SyncMerge
+import cn.tenonai.apps.passby.core.SyncSummary
 import cn.tenonai.apps.passby.core.newId
 import cn.tenonai.apps.passby.data.NotebookState
 import cn.tenonai.apps.passby.system.AiClient
@@ -36,6 +44,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 sealed interface Screen {
@@ -61,7 +70,13 @@ sealed interface Screen {
 
     /** The model's suggestions, to tick and apply. */
     data object AiResult : Screen
+
+    /** Syncing with another device on the same local network. */
+    data object Sync : Screen
 }
+
+/** While this phone is listening: where the other device connects, and the code it must enter. */
+class SyncHosting(val address: SyncAddress, val code: String)
 
 /** One request as shown on the preview page: the body, and which entry each numbered title belongs to. */
 class AiDraft(val body: String, val titles: List<String>, val folders: List<String>, val entryIds: List<String>, val blankIds: List<String>, val leftOut: Int)
@@ -128,6 +143,30 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var aiError by mutableStateOf<String?>(null)
         private set
 
+    /** This phone's address on the local network, or null when it is on none. */
+    var syncAddress by mutableStateOf<SyncAddress?>(null)
+        private set
+
+    /** Not null while this phone is listening for another device. */
+    var syncHosting by mutableStateOf<SyncHosting?>(null)
+        private set
+
+    /** Why listening ended on its own, until the person starts again or leaves the page. */
+    var syncStopped by mutableStateOf<SyncHost.Stop?>(null)
+        private set
+
+    /** What the last sync changed on this phone. */
+    var syncSummary by mutableStateOf<SyncSummary?>(null)
+        private set
+    var syncWorking by mutableStateOf(false)
+        private set
+    var syncError by mutableStateOf<Int?>(null)
+        private set
+    var syncLastAddress by mutableStateOf(app.syncSettings.lastAddress)
+        private set
+    private var syncHost: SyncHost? = null
+    private var syncJob: Job? = null
+
     init {
         viewModelScope.launch { repository.load() }
     }
@@ -155,6 +194,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun onBackground() {
         leftAt = SystemClock.elapsedRealtime()
         flushDraft()
+        // Another device can connect only while the sync page is in front.
+        syncHostStop()
     }
 
     /** Asks the system to verify the person. Does nothing if a prompt is already showing. */
@@ -204,6 +245,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             flushDraft()
             editing = null
         }
+        if (stack.last() == Screen.Sync) syncLeave()
         stack.removeAt(stack.lastIndex)
         return true
     }
@@ -211,6 +253,151 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun close(screen: Screen) {
         val index = stack.lastIndexOf(screen)
         if (index > 0) stack.removeAt(index)
+    }
+
+    // ---- Sync ----
+
+    /** Looks up this phone's address again; called when the sync page appears. */
+    fun syncRefresh() {
+        viewModelScope.launch {
+            syncAddress = withContext(Dispatchers.IO) { SyncAddress.local(app.syncSettings.port()) }
+        }
+    }
+
+    /** Starts listening with a fresh pairing code. */
+    fun syncHostStart() {
+        if (syncHost != null || syncWorking) return
+        syncError = null
+        syncStopped = null
+        syncSummary = null
+        val marker = string(R.string.sync_conflict_marker)
+        viewModelScope.launch {
+            val local = withContext(Dispatchers.IO) { SyncAddress.local(app.syncSettings.port()) }
+            syncAddress = local
+            if (local == null) {
+                syncError = R.string.sync_no_network
+                return@launch
+            }
+            val code = SyncCrypto.newCode()
+            var host: SyncHost? = null
+            host = SyncHost(
+                code, local.inet(), local.port,
+                exchange = { guest ->
+                    // On the host's own thread. The merge and the write happen as one step.
+                    runBlocking {
+                        var reply: SyncHost.Reply? = null
+                        var mine: SyncSummary? = null
+                        val written = try {
+                            repository.sync { notebook, now ->
+                                val before = notebook.syncState()
+                                val merged = SyncMerge.merge(before, guest, marker)
+                                reply = SyncHost.Reply(merged.state, SyncMerge.summary(guest, merged.state, merged.conflicts))
+                                mine = SyncMerge.summary(before, merged.state, merged.conflicts)
+                                notebook.synced(merged.state, now)
+                            }
+                        } catch (e: SyncException) {
+                            false
+                        }
+                        if (written) viewModelScope.launch { syncSummary = mine }
+                        reply.takeIf { written }
+                    }
+                },
+                onStopped = { reason ->
+                    viewModelScope.launch {
+                        if (syncHost === host) {
+                            syncHost = null
+                            syncHosting = null
+                            if (reason != SyncHost.Stop.CLOSED) syncStopped = reason
+                        }
+                    }
+                },
+            )
+            val started = withContext(Dispatchers.IO) {
+                try {
+                    host.start()
+                    true
+                } catch (e: IOException) {
+                    false
+                }
+            }
+            if (!started) {
+                syncError = R.string.sync_start_failed
+                return@launch
+            }
+            syncHost = host
+            // The port differs from the usual one when that was taken.
+            syncHosting = SyncHosting(SyncAddress(local.host, host.port), code)
+            // The page was left while the port was being opened.
+            if (stack.last() != Screen.Sync) syncHostStop()
+        }
+    }
+
+    fun syncHostStop() {
+        val host = syncHost ?: return
+        syncHost = null
+        syncHosting = null
+        viewModelScope.launch(Dispatchers.IO) { host.stop() }
+    }
+
+    /** Connects to a phone that is listening, and takes the merged notebook. */
+    fun syncJoin(addressText: String, codeText: String) {
+        if (syncWorking || syncHost != null) return
+        syncSummary = null
+        val address = SyncAddress.parse(addressText)
+        val code = SyncCrypto.canonicalCode(codeText)
+        syncError = if (address == null) R.string.sync_bad_address else if (code == null) R.string.sync_bad_code else null
+        if (address == null || code == null) return
+        syncWorking = true
+        syncJob = viewModelScope.launch {
+            val failure: Int? = withContext(Dispatchers.IO) {
+                val sent = notebook()?.syncState() ?: return@withContext R.string.sync_error_failed
+                val guest = SyncGuest(address.inet(), address.port, code)
+                try {
+                    val (state, summary) = guest.exchange(sent) { ensureActive() }
+                    var applied = false
+                    // If the notebook changed while the other phone was merging, nothing is taken: this
+                    // phone's changes are still marked, and the next sync carries them.
+                    val written = repository.sync { notebook, now ->
+                        if (notebook.syncState() == sent) notebook.synced(state, now).also { applied = true } else null
+                    }
+                    when {
+                        !written -> R.string.save_failed
+                        !applied -> R.string.sync_error_changed
+                        else -> {
+                            syncSummary = summary
+                            null
+                        }
+                    }
+                } catch (e: SyncGuestException) {
+                    when (e.kind) {
+                        SyncGuestException.Kind.UNREACHABLE -> R.string.sync_error_unreachable
+                        SyncGuestException.Kind.WRONG_CODE -> R.string.sync_error_wrong_code
+                        SyncGuestException.Kind.STOPPED -> R.string.sync_error_stopped
+                        SyncGuestException.Kind.UNTRUSTED -> R.string.sync_error_untrusted
+                        SyncGuestException.Kind.FAILED -> R.string.sync_error_failed
+                    }
+                } finally {
+                    guest.close()
+                }
+            }
+            syncWorking = false
+            syncError = failure
+            if (failure == null) {
+                app.syncSettings.lastAddress = address.toString()
+                syncLastAddress = address.toString()
+            }
+        }
+    }
+
+    /** Leaving the sync page stops everything and forgets what was shown. */
+    private fun syncLeave() {
+        syncHostStop()
+        syncJob?.cancel()
+        syncJob = null
+        syncWorking = false
+        syncError = null
+        syncStopped = null
+        syncSummary = null
     }
 
     // ---- Copying ----

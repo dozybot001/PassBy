@@ -76,6 +76,12 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
             )
             SettingRow(title = stringResource(R.string.import_), icon = Icons.Download, onClick = { model.open(Screen.Import) })
             SettingRow(
+                title = stringResource(R.string.sync),
+                text = stringResource(R.string.sync_row_text),
+                icon = Icons.Refresh,
+                onClick = { model.open(Screen.Sync) },
+            )
+            SettingRow(
                 title = stringResource(R.string.recently_deleted),
                 text = stringResource(R.string.folder_count, notebook.deleted.size),
                 icon = Icons.Trash,

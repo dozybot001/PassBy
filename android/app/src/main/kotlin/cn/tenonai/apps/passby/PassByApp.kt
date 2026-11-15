@@ -5,6 +5,7 @@ import cn.tenonai.apps.passby.core.NotebookStore
 import cn.tenonai.apps.passby.data.NotebookRepository
 import cn.tenonai.apps.passby.system.AiSettings
 import cn.tenonai.apps.passby.system.SecretClipboard
+import cn.tenonai.apps.passby.system.SyncSettings
 import java.io.File
 
 class PassByApp : Application() {
@@ -15,4 +16,6 @@ class PassByApp : Application() {
 
     /** AI grouping's settings and API key, kept apart from the notebook and out of backups and exports. */
     val aiSettings: AiSettings by lazy { AiSettings(File(filesDir, "ai")) }
+
+    val syncSettings: SyncSettings by lazy { SyncSettings(this) }
 }

@@ -120,6 +120,7 @@ private fun Pages(model: AppViewModel, notebook: Notebook, activity: FragmentAct
         Screen.Ai -> AiScreen(model, notebook)
         Screen.AiPreview -> AiPreviewScreen(model)
         Screen.AiResult -> AiResultScreen(model, notebook)
+        Screen.Sync -> SyncScreen(model)
     }
 
     val context = LocalContext.current

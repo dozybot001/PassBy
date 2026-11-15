@@ -335,7 +335,7 @@ object SyncCrypto {
     fun canonicalCode(input: String): String? {
         val out = StringBuilder()
         for (ch in input) {
-            if (ch.isWhitespace() || ch == ' ' || ch == '﻿' || ch == '-' || ch in '‐'..'―') continue
+            if (ch.isWhitespace() || ch.code == 0x00A0 || ch.code == 0xFEFF || ch == '-' || ch.code in 0x2010..0x2015) continue
             val c = when (val upper = ch.uppercaseChar()) {
                 'I', 'L' -> '1'
                 'O' -> '0'
