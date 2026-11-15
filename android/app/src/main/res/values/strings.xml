@@ -202,7 +202,7 @@
     <string name="ai_on">On. Connects to the network when used</string>
     <string name="ai_intro">Lets an AI model you choose sort your passwords into folders by their titles, and suggest tidier titles. It is the only feature of PassBy that connects to the network, and it is off by default.</string>
     <string name="ai_only_titles">The AI gets titles and folder names only.</string>
-    <string name="ai_never_sent">Accounts, passwords and notes are never sent, and there is no way for them to be. Before each request you see everything that will be sent.</string>
+    <string name="ai_never_sent">The account, password and notes fields are never sent. Before each send, you can see everything that will go out.</string>
     <string name="ai_switch">Turn on AI grouping</string>
     <string name="ai_switch_text">When on, PassBy connects only when you tap Send. Turning it off deletes the API key and these settings.</string>
     <string name="ai_provider">Model provider</string>
@@ -210,7 +210,7 @@
     <string name="ai_model">Model name</string>
     <string name="ai_endpoint_error">The endpoint has to start with https://.</string>
     <string name="ai_host_changes">The provider\'s address has changed. Saving deletes the API key you entered, and you will need to enter one again.</string>
-    <string name="ai_provider_note">The default is DeepSeek, whose servers are in mainland China. You can enter another provider with a compatible chat/completions endpoint; with a provider outside mainland China, your titles are sent abroad.</string>
+    <string name="ai_provider_note">The default is DeepSeek, a service of the Chinese company DeepSeek; how it handles and stores what you send is set out in its privacy policy. You can enter any other provider with a compatible chat/completions endpoint; with a provider outside mainland China, your titles are sent abroad.</string>
     <string name="ai_save_provider">Save</string>
     <string name="ai_use_deepseek">Use the DeepSeek defaults</string>
     <string name="ai_key">API key</string>
