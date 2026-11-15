@@ -11,7 +11,7 @@
 ### 现在的状态
 
 - **2.0.0 已发布**（11-15）。标签 `android-v2.0.0` 指向 4d47b4c；GitHub 和 Gitee 的 Release 各有 `PassBy-2.0.0.apk` 和 `SHA256SUMS`，SHA-256 `32273a6c2dad207efef0ec6f77536eccb9a12a19d8e8eff70d0604488a8f598c`。安全组发布后的复核已做完。创始人的手机上装的就是这个包，里面是他的真实密码本。记录在 8.8、8.9 节。
-- **2.1.0（AI 分组）代码已写完，没有发布**。`main` 上 `android/` 就是 2.1.0（versionCode 2）。候选包在 `android/build/release/PassBy-2.1.0.apk`（不进 git）。**校验值以「PassBy · 开发」单独重跑一次 `release.sh` 的结果为准**：11-15 16:14 原安卓会话和「PassBy · 开发」同时各跑了一次 `release.sh`，两次构建共用同一个目录，原安卓会话读到的是 `eb7753a9…91070`，目录里最后留下的是 `618edb22…1fed0`，同一份 `android/` 不该有两个校验值，所以这两个都不要用。设计在 9.1，两端要一致的做法在 9.2，验证记录在 9.3。
+- **2.1.0（AI 分组）代码已写完，没有发布**。`main` 上 `android/` 就是 2.1.0（versionCode 2）。候选包在 `android/build/release/PassBy-2.1.0.apk`（不进 git），SHA-256 `618edb2240aa37459e546ce1968dedfa882df6afbe53b6a638f83bd65f51fed0`：11-15 两个会话同时各跑过一次 `release.sh`，结果不可信；之后「PassBy · 开发」单独跑了两次（提交 7453d2a 和 e8f0842，`android/` 相同），两次都是这个值，证书指纹不变。设计在 9.1，两端要一致的做法在 9.2，验证记录在 9.3。出包只在一个会话里跑，不要同时跑两次。
 - 79 项单元测试和 lint 通过。工作区里 `android/` 和本文件没有未提交的改动。
 
 ### 进行中、等别人回话的
