@@ -59,7 +59,18 @@ class NotebookRepository(
      * Applies [change] to the notebook and writes the result. Returns false and leaves the notebook
      * as it was when it cannot be written or is not open.
      */
-    suspend fun update(change: (notebook: Notebook, now: Long) -> Notebook): Boolean = mutex.withLock {
+    suspend fun update(change: (notebook: Notebook, now: Long) -> Notebook): Boolean =
+        commit { notebook, now -> change(notebook, now).marked(notebook, now) }
+
+    /**
+     * Writes the outcome of a sync. [change] returns the notebook with the merged state taken in
+     * ([Notebook.synced]), or null to leave everything as it is; the result is not stamped as a change
+     * made on this phone.
+     */
+    suspend fun sync(change: (notebook: Notebook, now: Long) -> Notebook?): Boolean =
+        commit { notebook, now -> change(notebook, now) ?: notebook }
+
+    private suspend fun commit(change: (notebook: Notebook, now: Long) -> Notebook): Boolean = mutex.withLock {
         val current = (mutableState.value as? NotebookState.Ready)?.notebook ?: return@withLock false
         val next = change(current, clock())
         if (next == current) return@withLock true

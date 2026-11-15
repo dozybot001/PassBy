@@ -31,6 +31,7 @@ object NotebookCodec {
             "gate" to JsonBool(notebook.gateEnabled),
             "noLockNoticeShown" to JsonBool(notebook.noLockNoticeShown),
         )
+        if (notebook.marks != SyncMarks()) root["sync"] = JsonObject(marksMembers(notebook.marks))
         notebook.draft?.let { root["draft"] = JsonObject(entryMembers(it)) }
         notebook.lastExportAt?.let { root["lastExportAt"] = JsonNumber(it.toString()) }
         notebook.changedAt?.let { root["changedAt"] = JsonNumber(it.toString()) }
@@ -78,7 +79,47 @@ object NotebookCodec {
             reminderDismissedAt = root["reminderDismissedAt"].long,
             gateEnabled = root["gate"].bool ?: true,
             noLockNoticeShown = root["noLockNoticeShown"].bool ?: false,
+            marks = marks(root["sync"]),
         )
+    }
+
+    private fun stamps(stamps: Map<String, Stamp>) = JsonObject(
+        stamps.entries.associateTo(LinkedHashMap<String, JsonValue>()) { (id, stamp) ->
+            id to JsonObject(linkedMapOf<String, JsonValue>("updatedAt" to JsonNumber(stamp.updatedAt.toString()), "dirty" to JsonBool(stamp.dirty)))
+        },
+    )
+
+    private fun marksMembers(marks: SyncMarks) = linkedMapOf<String, JsonValue>(
+        "entries" to stamps(marks.entries),
+        "folders" to stamps(marks.folders),
+        "tombstones" to JsonArray(
+            marks.tombstones.map {
+                JsonObject(
+                    linkedMapOf<String, JsonValue>(
+                        "id" to JsonString(it.id),
+                        "kind" to JsonString(it.kind.word),
+                        "deletedAt" to JsonNumber(it.deletedAt.toString()),
+                        "dirty" to JsonBool(it.dirty),
+                    ),
+                )
+            },
+        ),
+    )
+
+    /**
+     * A file written before sync existed has no marks, and a mark that cannot be read is skipped: the
+     * item then counts as changed at an unknown time, which a sync resolves without losing either side.
+     */
+    private fun marks(value: JsonValue?): SyncMarks {
+        fun stamps(value: JsonValue?): Map<String, Stamp> = (value as? JsonObject)?.members.orEmpty().mapNotNull { (id, stamp) ->
+            val updatedAt = stamp["updatedAt"].long ?: return@mapNotNull null
+            id to Stamp(updatedAt, stamp["dirty"].bool ?: true)
+        }.toMap()
+        val tombstones = value["tombstones"].items.orEmpty().mapNotNull {
+            val kind = Tombstone.Kind.entries.firstOrNull { k -> k.word == it["kind"].string } ?: return@mapNotNull null
+            Tombstone(it["id"].string ?: return@mapNotNull null, kind, it["deletedAt"].long ?: return@mapNotNull null, it["dirty"].bool ?: true)
+        }
+        return SyncMarks(stamps(value["entries"]), stamps(value["folders"]), tombstones)
     }
 
     private fun entryMembers(entry: Entry): LinkedHashMap<String, JsonValue> {

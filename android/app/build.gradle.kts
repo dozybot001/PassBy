@@ -49,6 +49,7 @@ android {
         unitTests.all {
             // The shared vectors are read where they are, not copied into android/.
             it.systemProperty("passby.vectors", rootProject.file("../docs/export-vectors.json").path)
+            it.systemProperty("passby.syncVectors", rootProject.file("../docs/sync-vectors.json").path)
             // One test reads the app's own sources, to check which files can open a network connection.
             it.systemProperty("passby.sources", file("src/main/kotlin").path)
             it.inputs.dir(file("src/main/kotlin"))

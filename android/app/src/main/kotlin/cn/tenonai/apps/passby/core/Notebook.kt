@@ -47,6 +47,8 @@ data class Notebook(
     val gateEnabled: Boolean = true,
     /** The one-time notice that this phone has no screen lock has been shown. */
     val noLockNoticeShown: Boolean = false,
+    /** Kept for LAN sync (docs/sync.md §4). Set by [marked] and [synced], not by the changes themselves. */
+    val marks: SyncMarks = SyncMarks(),
 ) {
     fun folder(id: String?): Folder? = folders.firstOrNull { it.id == id }
 
@@ -94,6 +96,69 @@ data class Notebook(
         draft = draft?.takeIf { it.folderId == id }?.copy(folderId = null) ?: draft,
         changedAt = now,
     )
+
+    /**
+     * Records what changed between [previous] and this notebook: changed and new entries and folders
+     * are stamped [now] and marked as changed, and those that are gone leave a tombstone. Moving an
+     * entry to Recently Deleted counts as deleting it; putting it back counts as a change.
+     */
+    fun marked(previous: Notebook, now: Long): Notebook {
+        if (folders == previous.folders && entries == previous.entries && marks == previous.marks &&
+            marks.entries.size == entries.size && marks.folders.size == folders.size
+        ) {
+            return this
+        }
+        val oldEntries = previous.entries.associateBy { it.id }
+        val oldFolders = previous.folders.associateBy { it.id }
+        val entryStamps = entries.associate {
+            it.id to if (oldEntries[it.id] == it) marks.entries[it.id] ?: Stamp.UNKNOWN else Stamp(now, true)
+        }
+        val folderStamps = folders.associate {
+            it.id to if (oldFolders[it.id] == it) marks.folders[it.id] ?: Stamp.UNKNOWN else Stamp(now, true)
+        }
+        fun live(kind: Tombstone.Kind) = if (kind == Tombstone.Kind.ENTRY) entryStamps else folderStamps
+        val kept = marks.tombstones.filter { it.id !in live(it.kind) && now - it.deletedAt < SyncMarks.TOMBSTONE_RETENTION_MS }
+        val gone = oldEntries.keys.filter { it !in entryStamps }.map { Tombstone(it, Tombstone.Kind.ENTRY, now, true) } +
+            oldFolders.keys.filter { it !in folderStamps }.map { Tombstone(it, Tombstone.Kind.FOLDER, now, true) }
+        val tombstones = kept + gone.filter { new -> kept.none { it.kind == new.kind && it.id == new.id } }
+        return copy(marks = SyncMarks(entryStamps, folderStamps, tombstones))
+    }
+
+    /** This notebook as it is sent to the other device. */
+    fun syncState(): SyncState = SyncState(
+        entries.map { SyncEntry(it, marks.entries[it.id] ?: Stamp.UNKNOWN) },
+        folders.map { SyncFolder(it, marks.folders[it.id] ?: Stamp.UNKNOWN) },
+        marks.tombstones,
+    )
+
+    /**
+     * Takes the merged [state] of a sync. Entries and folders keep their place in the list and new ones
+     * go to the end. An entry the other device deleted moves to Recently Deleted here instead of
+     * vanishing, so it can still be put back for 30 days.
+     */
+    fun synced(state: SyncState, now: Long, freshId: () -> String = ::newId): Notebook {
+        val incomingFolders = state.folders.associateBy { it.folder.id }
+        val incomingEntries = state.entries.associateBy { it.entry.id }
+        val nextFolders = folders.mapNotNull { incomingFolders[it.id]?.folder } +
+            state.folders.map { it.folder }.filter { new -> folders.none { it.id == new.id } }
+        val nextEntries = entries.mapNotNull { incomingEntries[it.id]?.entry } +
+            state.entries.map { it.entry }.filter { new -> entries.none { it.id == new.id } }
+        var nextDeleted = deleted
+        for (entry in entries) if (entry.id !in incomingEntries) nextDeleted = nextDeleted + deletedCopy(entry, now, nextDeleted, freshId)
+        val changed = nextFolders != folders || nextEntries != entries
+        return copy(
+            folders = nextFolders,
+            entries = nextEntries,
+            deleted = nextDeleted,
+            draft = draft?.let { if (it.folderId != null && it.folderId !in incomingFolders) it.copy(folderId = null) else it },
+            changedAt = if (changed) now else changedAt,
+            marks = SyncMarks(
+                state.entries.associate { it.entry.id to it.stamp.copy(dirty = false) },
+                state.folders.associate { it.folder.id to it.stamp.copy(dirty = false) },
+                state.tombstones.map { it.copy(dirty = false) },
+            ),
+        )
+    }
 
     fun exported(now: Long): Notebook = copy(lastExportAt = now, reminderDismissedAt = null)
 
