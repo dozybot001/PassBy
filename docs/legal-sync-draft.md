@@ -107,11 +107,11 @@ A password you copy on the page goes to your computer's clipboard, and the brows
 
 ### AI 分组
 
-前四段不动（iPhone 的流程如果和安卓一样）。最后一段换成：
+前四段不动，只在第三段「应用后可以撤销」后面加：【iPhone 上要在离开 AI 分组页之前撤销。】/【 On iPhone, undo is available until you leave the AI grouping page.】最后一段（API Key）整段换成（法务组 11-15 第三次答复）：
 
-中文：API Key 加密保存在这台手机上，不进系统备份和导出文件，也不随同步传到另一台设备；你关闭 AI 分组、换了服务商的地址或卸载 PassBy 时删除。【iPhone 上，API Key 存在 iOS 钥匙串里，只存在这台设备上。】
+中文：API Key：安卓上加密保存在这台手机上，不进系统备份和导出文件；你关闭 AI 分组、换了服务商的地址或卸载 PassBy 时删除。【iPhone 上存在 iOS 钥匙串里，只存在这台设备上，不随备份转到别的设备，不进导出文件；你关闭 AI 分组或换了服务商的地址时删除。卸载 PassBy 不会删掉钥匙串里的 API Key，卸载前请先在 App 里关闭 AI 分组。】API Key 不随同步传到另一台设备。
 
-English: Your API key is stored encrypted on this phone. It is left out of system backups and export files and is not sent to another device by Sync. It is deleted when you turn AI grouping off, change the provider's address, or uninstall PassBy.【 On iPhone, the key is kept in the iOS keychain, on this device only.】
+English: Your API key: on Android it is stored encrypted on this phone and is left out of system backups and export files; it is deleted when you turn AI grouping off, change the provider's address, or uninstall PassBy.【 On iPhone it is kept in the iOS keychain, on this device only; it does not move to another device with a backup and is not in export files. It is deleted when you turn AI grouping off or change the provider's address. Uninstalling PassBy does not remove the key from the keychain, so turn AI grouping off in the app before you uninstall.】 The key is never sent to another device by Sync.
 
 ### 解锁、剪贴板和截屏
 
@@ -263,5 +263,5 @@ English: a pairing code given to someone else, syncing on a network or with a de
 
 - 已按实际改定：网页清内存的四种情况；主机停止的四个条件和配对码一次性；端口号和上次地址（安卓不进备份，iPhone 进）。
 - 发布前要做：「离开窗口 5 分钟清掉」实际等一次，等不出来告诉法务组；「附近的设备」这个中文名在中文系统上看一眼，名称不同就照系统的改。
-- 等 iPhone 的 AI 分组移植完逐条回法务组：打开时说明、发送前预览、只发标题和文件夹名、逐项勾选；key 在钥匙串里、只存在这台设备上。
+- iPhone 的 AI 分组四点 11-15 已回法务组，属实。送审前要做（法务组要求，做不了的照实写进送审前的汇报）：在真机或模拟器上用真实钥匙串跑一次存、读、关闭后删除；对真实服务商发一次请求，看一眼实际发出的内容。
 - 同步内容里不含 API Key 和 AI 分组的配置（属实）。
