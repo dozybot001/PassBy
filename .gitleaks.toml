@@ -4,5 +4,6 @@ useDefault = true
 
 [allowlist]
 description = "Intentional test data"
-# Keys in the export-format test vectors are fixed test values (docs/export-format.md §6).
-paths = ['''^docs/export-vectors\.json$''']
+# Keys in the export-format and sync test vectors are fixed test values
+# (docs/export-format.md §6, docs/sync.md §5).
+paths = ['''^docs/export-vectors\.json$''', '''^docs/sync-vectors\.json$''']

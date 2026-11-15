@@ -14,6 +14,7 @@
 
 ```sh
 node scripts/export-format.mjs --check    # 导出格式的参考实现对照测试向量
+node scripts/sync-format.mjs --check      # 局域网同步的参考实现对照测试向量
 xcodebuild -project PassBy.xcodeproj -scheme PassBy \
   -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
   -derivedDataPath build CODE_SIGN_IDENTITY=- test
@@ -25,6 +26,7 @@ scripts/publish.sh                        # 发布介绍页和法律页面
 
 - 用户的密码本不能丢：不写会自动删除本机文件、密钥或云端副本的代码，删除要由用户明确操作。
 - 加密只用系统自带的实现（CryptoKit、WebCrypto、安卓平台库），不引入第三方加密库。
+- 改同步的协议或合并规则要同时改 `docs/sync.md`、`docs/sync-vectors.json`（由 `scripts/sync-format.mjs` 生成）和各端实现。
 - 改导出格式要同时改 `docs/export-format.md`、`docs/export-vectors.json` 和各端实现，并保证旧文件还能导入。
 - 密钥、签名文件和 `.env` 不入库；测试里只用虚构的账号和密码。
 - 界面文字中英文都要有；配色是黑白灰。

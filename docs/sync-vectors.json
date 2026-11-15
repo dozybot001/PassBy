@@ -1,0 +1,1037 @@
+{
+  "format": 1,
+  "generatedBy": "scripts/sync-format.mjs",
+  "codes": [
+    {
+      "typed": "ab3d-9kxm p2qw",
+      "code": "AB3D9KXMP2QW"
+    },
+    {
+      "typed": "AB3D9KXMP2QW",
+      "code": "AB3D9KXMP2QW"
+    },
+    {
+      "typed": "il0o-1111-2222",
+      "code": "110011112222"
+    },
+    {
+      "typed": "AB3D-9KXM-P2Q",
+      "code": null
+    },
+    {
+      "typed": "AB3D-9KXM-P2QU",
+      "code": null
+    }
+  ],
+  "crypto": {
+    "note": "Vectors use 100,000 iterations so tests stay fast; the apps use 600,000.",
+    "typed": "ab3d-9kxm p2qw",
+    "code": "AB3D9KXMP2QW",
+    "iterations": 100000,
+    "hostNonceHex": "bbd3b95701de9229108c36671434a9c2",
+    "guestNonceHex": "0192c5dff25e8b36a63be96fdaa6755d",
+    "guestToHostKeyHex": "8051cad9e3eac1c85109bff533f546d65588590456bb9e3e6bec57b8c404f8d2",
+    "hostToGuestKeyHex": "5da0345877db1da2e1f572b8b8f1059ed8be85748b99518578baeda0b2e557bb",
+    "exchanges": [
+      {
+        "counter": 0,
+        "requestPlaintext": "{\"v\":1,\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":true}],\"folders\":[],\"tombstones\":[]}",
+        "requestBodyBase64": "u9O5VwHekikQjDZnFDSpwgGSxd/yXos2pjvpb9qmdV0AAAAAAAAAANDZJPVgfl8YfJMf25apwKSBawLLX51c+oq0ylx4yR9xhH3BKY8up/csDNGKlucDqnCO92BuwvrQMHEB7KtFcvvB5WYeuAgAZM2UEYADF2Me89An8i81OWLiWGCYr7vnSOP2usUJCRtDCzgWdvMiCT0lN8lJPrwokmiIjQGoihUMtEJNDU6F/WJCUaFbsaobm8t46YOwPy3CzsXTlsy92wH2vN3NngXOnOB1ArTsv8FkIFtF8hui6faW0hAmaDXFzWIcHg==",
+        "responsePlaintext": "{\"v\":1,\"state\":{\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":false}],\"folders\":[],\"tombstones\":[]},\"summary\":{\"added\":0,\"updated\":0,\"removed\":0,\"conflicts\":0}}",
+        "responseBodyBase64": "AAAAAAAAAADQtI9tL0QHprSRM7iZbLvvmpvBabdAJwtZkIGVmaeJ5kuJxAhBJ3uQ7E66ok6bLdH31EwMQYuipxn2LTs3WJeXtIIQchk6cgS1Bi8W6z7gVHrhM0hDKKMU0nAwm0f4rDMCzqI+2QUXd31g8z5NHsmS6yJeJyHzEclI8AISUgDYNhg48pg5I4w/VoM8sm7SLDuO5mW7xKxLnZOtvN1ApI6H/FoCqbaa2X8eCp9HDRz9TwYegcOLDSdQ8T3aGidzMsHLNK/D9vOkAdZZQ9IrTYIYIEHWU0Kbbu8ruEyBHsEkLLubrjh57OjdfYMqUzmDH1NHIXGHQd89cuA+KcFKRnw3qKvF+PySLNd5jw=="
+      },
+      {
+        "counter": 1,
+        "requestPlaintext": "{\"v\":1,\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":true}],\"folders\":[],\"tombstones\":[]}",
+        "requestBodyBase64": "u9O5VwHekikQjDZnFDSpwgGSxd/yXos2pjvpb9qmdV0AAAAAAAAAAZdPc4jwvocFbYHMaM2hxFzWKI6oZYt5/7zBltkQBoONZ1FbjzlHAGykydMJ8HPNIpYQXvSyGN12stlxNa//eSDIXPH0KxVXfC//Go7dg4aANXlx4UulykHbgz3+vgQF8GT/zV7H/CX5q+QBamob162Uj91mttPY3RCCuhwLfNW90SWVwJNdxTF/6lQrtuxBTYOxo+mB+A5qcQiklvBejZLQSovBkSeEa4BIdtU0+2O1sdfxIewnuk+jxwg4gyRzI2oYpg==",
+        "responsePlaintext": "{\"v\":1,\"state\":{\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":false}],\"folders\":[],\"tombstones\":[]},\"summary\":{\"added\":0,\"updated\":0,\"removed\":0,\"conflicts\":0}}",
+        "responseBodyBase64": "AAAAAAAAAAG5uqP4IxsnkYjgyGNWIhdfD9JcmzNJ+NXeS7Ki8SFsHVOiZHu16a+WNcsrTe6CSFL+QHQ0kBdFtAoON/sxs27kmq5Nt6/FVWS5bfdzdxRdjl/oYyxczqf7x7UwspUKTM7Xj7U39QmoEXRxbF+PHlQwM1O0k0F4okp9j7l9OS4BIOFERzRRyQlVWOhcgEBo47EEocXaM5b/uSip4rOabooPrOfF+S2G7jkgs/7lrDt1KnLQB9a6i1mzezXQOIJoN0kpG34oOjHGHrkPePmPJK8hmStdyRhJKCeSoPW4IsIgXj0ZifE1CCI5q4eE9GgDwjKBno8v6OrCSYFjrSNOmUoxsDZh1Fl7FW/JZQ=="
+      }
+    ]
+  },
+  "merges": [
+    {
+      "name": "an empty guest receives everything and nothing is deleted",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000001"
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000001",
+            "name": "f01",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000001"
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000001",
+            "name": "f01",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "tombstones": []
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 2,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "only one side has an entry, a folder or a tombstone",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000009",
+            "kind": "entry",
+            "deletedAt": 2000,
+            "dirty": true
+          }
+        ]
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": true
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000002",
+            "name": "f02",
+            "updatedAt": 1000,
+            "dirty": true
+          }
+        ],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000002",
+            "name": "f02",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000009",
+            "kind": "entry",
+            "deletedAt": 2000,
+            "dirty": false
+          }
+        ]
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 1,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 1,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "one side edited: the edit is taken, whatever the clocks say",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "new",
+            "notes": "",
+            "updatedAt": 500,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 9000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "new",
+            "notes": "",
+            "updatedAt": 500,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 1,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "one side deleted: the deletion is taken",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "kind": "entry",
+            "deletedAt": 2000,
+            "dirty": true
+          }
+        ]
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "kind": "entry",
+            "deletedAt": 2000,
+            "dirty": false
+          }
+        ]
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 1,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "both edited differently: the later stays and the other becomes a conflict copy",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "host",
+            "notes": "",
+            "updatedAt": 3000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "guest",
+            "notes": "",
+            "updatedAt": 4000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [
+        "C0000000-0000-4000-8000-000000000001"
+      ],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "guest",
+            "notes": "",
+            "updatedAt": 4000,
+            "dirty": false
+          },
+          {
+            "id": "C0000000-0000-4000-8000-000000000001",
+            "title": "t01 (Conflict copy)",
+            "account": "",
+            "password": "host",
+            "notes": "",
+            "updatedAt": 3000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "conflicts": 1,
+      "guestSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 1
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 1,
+        "removed": 0,
+        "conflicts": 1
+      }
+    },
+    {
+      "name": "both edited at the same time: the host stays",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "host",
+            "updatedAt": 3000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "guest",
+            "updatedAt": 3000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [
+        "C0000000-0000-4000-8000-000000000002"
+      ],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "host",
+            "updatedAt": 3000,
+            "dirty": false
+          },
+          {
+            "id": "C0000000-0000-4000-8000-000000000002",
+            "title": "t01 (Conflict copy)",
+            "account": "",
+            "password": "p01",
+            "notes": "guest",
+            "updatedAt": 3000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "conflicts": 1,
+      "guestSummary": {
+        "added": 0,
+        "updated": 1,
+        "removed": 0,
+        "conflicts": 1
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 1
+      }
+    },
+    {
+      "name": "both made the same edit: one entry, no copy",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "same",
+            "notes": "",
+            "updatedAt": 3000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "same",
+            "notes": "",
+            "updatedAt": 4000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "same",
+            "notes": "",
+            "updatedAt": 4000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "an edit outlives a deletion made on the other side",
+      "host": {
+        "entries": [],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "kind": "entry",
+            "deletedAt": 9000,
+            "dirty": true
+          }
+        ]
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "kept",
+            "notes": "",
+            "updatedAt": 3000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "kept",
+            "notes": "",
+            "updatedAt": 3000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 1,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "neither is marked but they differ: the later wins",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "old",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "kind": "entry",
+            "deletedAt": 5000,
+            "dirty": false
+          }
+        ]
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "newer",
+            "notes": "",
+            "updatedAt": 2000,
+            "dirty": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 4000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "newer",
+            "notes": "",
+            "updatedAt": 2000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "kind": "entry",
+            "deletedAt": 5000,
+            "dirty": false
+          }
+        ]
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 1,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 1,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "folders: the later name wins without a copy, and a deleted folder leaves its entries unfiled",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000001"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000001",
+            "name": "host",
+            "updatedAt": 3000,
+            "dirty": true
+          },
+          {
+            "id": "F0000000-0000-4000-8000-000000000002",
+            "name": "f02",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000001"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000001",
+            "name": "guest",
+            "updatedAt": 4000,
+            "dirty": true
+          }
+        ],
+        "tombstones": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000002",
+            "kind": "folder",
+            "deletedAt": 2000,
+            "dirty": true
+          }
+        ]
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000001"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "title": "t02",
+            "account": "",
+            "password": "p02",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000001",
+            "name": "guest",
+            "updatedAt": 4000,
+            "dirty": false
+          }
+        ],
+        "tombstones": [
+          {
+            "id": "F0000000-0000-4000-8000-000000000002",
+            "kind": "folder",
+            "deletedAt": 2000,
+            "dirty": false
+          }
+        ]
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 1,
+        "removed": 0,
+        "conflicts": 0
+      }
+    },
+    {
+      "name": "identifiers are compared without regard to case",
+      "host": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-00000000000a",
+            "title": "t0a",
+            "account": "",
+            "password": "x",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": true
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "guest": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-00000000000a",
+            "title": "t0A",
+            "account": "",
+            "password": "p0A",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "marker": " (Conflict copy)",
+      "copyIds": [],
+      "result": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-00000000000A",
+            "title": "t0a",
+            "account": "",
+            "password": "x",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      },
+      "conflicts": 0,
+      "guestSummary": {
+        "added": 0,
+        "updated": 1,
+        "removed": 0,
+        "conflicts": 0
+      },
+      "hostSummary": {
+        "added": 0,
+        "updated": 0,
+        "removed": 0,
+        "conflicts": 0
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "duplicate entry identifiers",
+      "state": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      }
+    },
+    {
+      "name": "an entry points to a folder that is not there",
+      "state": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false,
+            "folderID": "F0000000-0000-4000-8000-000000000001"
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      }
+    },
+    {
+      "name": "an identifier that is both an entry and its tombstone",
+      "state": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1000,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "kind": "entry",
+            "deletedAt": 2000,
+            "dirty": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "a missing field",
+      "state": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t",
+            "updatedAt": 1,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      }
+    },
+    {
+      "name": "a time that is not a whole number",
+      "state": {
+        "entries": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "title": "t01",
+            "account": "",
+            "password": "p01",
+            "notes": "",
+            "updatedAt": 1.5,
+            "dirty": false
+          }
+        ],
+        "folders": [],
+        "tombstones": []
+      }
+    },
+    {
+      "name": "an unknown tombstone kind",
+      "state": {
+        "entries": [],
+        "folders": [],
+        "tombstones": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "kind": "note",
+            "deletedAt": 2000,
+            "dirty": true
+          }
+        ]
+      }
+    }
+  ]
+}

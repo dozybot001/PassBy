@@ -12,6 +12,7 @@ release="$(git rev-parse HEAD)"
 gitleaks git --no-banner --redact --log-level warn .
 python3 scripts/test_retention.py
 node scripts/export-format.mjs --check
+node scripts/sync-format.mjs --check
 # origin pushes to Gitee and GitHub. Only Gitee carries the release; GitHub is a mirror.
 git push origin main || echo 'A push reported an error; checking Gitee.' >&2
 gitee="$(git ls-remote https://gitee.com/dozybot/PassBy.git refs/heads/main | cut -f1)"
