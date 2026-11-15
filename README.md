@@ -8,9 +8,8 @@
 
 | | 版本 | 状态 |
 | --- | --- | --- |
-| 安卓 | 2.1 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
-| iPhone | 2.0 | 开发中，做好后在 App Store 提供 |
-| 网页 | | 只读的网页版开发中：在电脑上打开手机导出的文件，查看和复制 |
+| 安卓 | 2.1.2 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
+| iPhone | 2.1 | 开发中，做好后在 App Store 提供 |
 
 1.x 的 iPhone 版和网页版（Tenon 账号登录、iCloud 同步）已于 2026-11-15 停止提供，见[更新记录](CHANGELOG.md)。
 
