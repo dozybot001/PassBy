@@ -78,11 +78,13 @@
 
 PassBy 和榫卯 Tenon 的名称和标志（包括 `PassBy/Assets.xcassets/`、`android/app/src/main/res/`、`public/web/` 和 `public/apple-touch-icon.png` 里的图标）不在 MIT 许可证的授权范围内。你可以照原样提到它们，说明你在使用 PassBy 或基于它修改；但不要把它们用作你自己产品的名称或标志，也不要让人以为你的产品来自榫卯 Tenon AI 或得到它的认可。
 
+自己构建或修改后分发的版本，请换掉名称、图标和包名（iPhone 的 Bundle ID、安卓的 applicationId）：包名和签名是我们发布渠道的标识。
+
 Name and logos: The PassBy and Tenon AI names and logos, including the icons in `PassBy/Assets.xcassets/`, `android/app/src/main/res/`, `public/web/` and `public/apple-touch-icon.png`, are not licensed under the MIT License. You may refer to them as they are to say that you use PassBy or that your work is based on it, but do not use them as the name or logo of your own product, or in a way that suggests your product comes from or is endorsed by Tenon AI.
 
 ## 第三方声明
 
-现在的代码不包含第三方代码和字体。早期版本的网页用过 JetBrains Mono 字体，按 SIL Open Font License 1.1 授权。
+现在的代码和安装包不包含第三方代码和字体。早期版本（2026 年 10 月）的 iPhone 应用和网页用过 JetBrains Mono 字体，按 SIL Open Font License 1.1 授权；字体文件和许可全文（`public/web/fonts/OFL.txt`）留在仓库的历史里。
 
 ---
 
