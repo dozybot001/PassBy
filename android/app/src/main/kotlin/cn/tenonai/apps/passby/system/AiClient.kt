@@ -32,13 +32,38 @@ object AiClient {
     fun send(settings: AiSettings, approved: Approved): String {
         val config = settings.load() ?: throw Failure(Problem.OFF)
         val endpoint = AiGrouping.endpoint(config.endpoint) ?: throw Failure(Problem.ADDRESS)
-        // Read for this host only; a key saved for another host is not returned.
-        val key = settings.key(endpoint.host) ?: throw Failure(Problem.NO_KEY)
+        // Read for this host and port only; a key saved for another is not returned.
+        val key = settings.key(endpoint.authority)?.let { AiGrouping.apiKey(it) } ?: throw Failure(Problem.NO_KEY)
+        return guarded { post(endpoint, key, approved.body) }
+    }
 
+    /**
+     * Runs [block] so that nothing but a [Failure] comes out of it. An unexpected error carries no
+     * message onward: the text of such an error can hold a request header, and with it the API key.
+     */
+    internal inline fun <T> guarded(block: () -> T): T = try {
+        block()
+    } catch (e: Failure) {
+        throw e
+    } catch (e: SocketTimeoutException) {
+        throw Failure(Problem.TIMEOUT)
+    } catch (e: IOException) {
+        throw Failure(Problem.NETWORK)
+    } catch (e: RuntimeException) {
+        throw Failure(Problem.NETWORK)
+    }
+
+    private fun post(endpoint: AiGrouping.Endpoint, key: String, text: String): String {
         var connection: HttpsURLConnection? = null
         try {
+            val url = URL(endpoint.url)
+            // The address was checked with another parser; the two have to agree on where it leads.
+            val port = if (url.port == -1) 443 else url.port
+            if (!url.protocol.equals("https", ignoreCase = true) || url.host.lowercase() != endpoint.host || port != endpoint.port) {
+                throw Failure(Problem.ADDRESS)
+            }
             // An https address always yields an HTTPS connection; anything else stops here.
-            connection = URL(endpoint.url).openConnection() as? HttpsURLConnection ?: throw Failure(Problem.ADDRESS)
+            connection = url.openConnection() as? HttpsURLConnection ?: throw Failure(Problem.ADDRESS)
             connection.requestMethod = "POST"
             connection.instanceFollowRedirects = false
             connection.useCaches = false
@@ -50,7 +75,7 @@ object AiClient {
             connection.setRequestProperty("Authorization", "Bearer $key")
             // The default would name the phone's model and Android version.
             connection.setRequestProperty("User-Agent", "PassBy-Android/${BuildConfig.VERSION_NAME}")
-            val body = approved.body.toByteArray(Charsets.UTF_8)
+            val body = text.toByteArray(Charsets.UTF_8)
             connection.setFixedLengthStreamingMode(body.size)
             connection.outputStream.use { it.write(body) }
 
@@ -69,10 +94,6 @@ object AiClient {
                 }
             }
             return String(out.toByteArray(), Charsets.UTF_8)
-        } catch (e: SocketTimeoutException) {
-            throw Failure(Problem.TIMEOUT)
-        } catch (e: IOException) {
-            throw Failure(Problem.NETWORK)
         } finally {
             connection?.disconnect()
         }

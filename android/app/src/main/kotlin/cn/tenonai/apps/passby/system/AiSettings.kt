@@ -26,7 +26,8 @@ import javax.crypto.spec.GCMParameterSpec
  * notebook's files, and an export holds only entries and folders, so neither carries any of this.
  *
  * The API key is encrypted with a key that the Android Keystore holds and does not give out. It is
- * tied to the host it was saved for: a key saved for one provider is never read back for another.
+ * tied to the host and port it was saved for: a key saved for one provider is never read back for
+ * another.
  * Turning the feature off removes all of it.
  */
 class AiSettings(private val directory: File) {
@@ -53,8 +54,8 @@ class AiSettings(private val directory: File) {
     @Synchronized
     @Throws(IOException::class)
     fun save(config: Config) {
-        val host = AiGrouping.endpoint(config.endpoint)?.host
-        if (host == null || savedHost() != host) removeKey()
+        val authority = AiGrouping.endpoint(config.endpoint)?.authority
+        if (authority == null || savedHost() != authority) removeKey()
         if (!directory.isDirectory && !directory.mkdirs()) throw IOException("cannot create the settings directory")
         val root = JsonObject(linkedMapOf("endpoint" to JsonString(config.endpoint), "model" to JsonString(config.model)))
         settingsFile.writeText(Json.write(root))

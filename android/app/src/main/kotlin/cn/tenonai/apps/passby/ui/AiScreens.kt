@@ -76,7 +76,7 @@ fun AiScreen(model: AppViewModel, notebook: Notebook) {
     val parsed = AiGrouping.endpoint(endpoint)
     val changed = config != null && (endpoint.trim() != config.endpoint || modelName.trim() != config.model)
     val valid = parsed != null && modelName.isNotBlank()
-    val hostChanges = config != null && parsed != null && parsed.host != AiGrouping.endpoint(config.endpoint)?.host
+    val hostChanges = config != null && parsed != null && parsed.authority != AiGrouping.endpoint(config.endpoint)?.authority
 
     Page(title = stringResource(R.string.ai_grouping), onBack = { model.back() }) {
         Column(
@@ -159,12 +159,15 @@ fun AiScreen(model: AppViewModel, notebook: Notebook) {
                     }
                 } else {
                     SecretField(key, { key = it }, stringResource(R.string.ai_key), revealed) { revealed = !revealed }
+                    if (key.isNotBlank() && AiGrouping.apiKey(key) == null) {
+                        Text(stringResource(R.string.ai_key_invalid), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    }
                     SecondaryButton(
                         stringResource(R.string.ai_key_save),
                         onClick = {
                             if (model.aiSaveKey(key)) key = ""
                         },
-                        enabled = key.isNotBlank() && !changed,
+                        enabled = AiGrouping.apiKey(key) != null && !changed,
                         icon = Icons.Check,
                     )
                 }

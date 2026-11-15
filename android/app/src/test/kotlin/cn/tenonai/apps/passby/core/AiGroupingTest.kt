@@ -162,12 +162,24 @@ class AiGroupingTest {
 
     @Test
     fun onlyAnHttpsAddressIsAccepted() {
-        assertEquals(AiGrouping.Endpoint("https://api.deepseek.com/chat/completions", "api.deepseek.com"), AiGrouping.endpoint(" https://API.deepseek.com/chat/completions ".replace("API", "api")))
-        assertEquals("api.example.com", AiGrouping.endpoint("https://API.Example.com:8443/v1/chat/completions")?.host)
+        assertEquals(AiGrouping.Endpoint("https://api.deepseek.com/chat/completions", "api.deepseek.com", 443), AiGrouping.endpoint(" https://api.deepseek.com/chat/completions "))
+        val other = AiGrouping.endpoint("https://API.Example.com:8443/v1/chat/completions")!!
+        assertEquals("api.example.com", other.host)
+        // The same host on another port is another place as far as a saved key goes.
+        assertEquals("api.example.com:8443", other.authority)
+        assertEquals("api.example.com:443", AiGrouping.endpoint("https://api.example.com/v1")!!.authority)
         for (bad in listOf("", "api.deepseek.com", "http://api.deepseek.com/chat", "ftp://a.b/c", "https://", "https://user:pw@a.b/c", "https://a.b/c#x", "https://a b/c", "file:///etc/hosts")) {
             assertNull(bad, AiGrouping.endpoint(bad))
         }
         assertEquals(AiGrouping.DEEPSEEK_ENDPOINT, AiGrouping.endpoint(AiGrouping.DEEPSEEK_ENDPOINT)?.url)
+    }
+
+    @Test
+    fun anApiKeyHoldsOnlyVisibleAscii() {
+        assertEquals("sk-abc_123.XYZ~", AiGrouping.apiKey("  sk-abc_123.XYZ~\n"))
+        for (bad in listOf("", "   ", "sk-abc\ndef", "sk-abc def", "sk-abc\tdef", "sk-密钥", "sk-abc\u0000", "sk-abc\u00e9", "k".repeat(AiGrouping.MAX_KEY_LENGTH + 1))) {
+            assertNull(bad, AiGrouping.apiKey(bad))
+        }
     }
 
     /**

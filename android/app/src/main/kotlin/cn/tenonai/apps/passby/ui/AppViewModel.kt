@@ -28,6 +28,7 @@ import cn.tenonai.apps.passby.system.ExportCache
 import cn.tenonai.apps.passby.system.Gate
 import java.io.IOException
 import java.time.Instant
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -380,9 +381,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun aiSaveKey(apiKey: String): Boolean {
-        val host = aiConfig?.let { AiGrouping.endpoint(it.endpoint) }?.host ?: return false
+        val authority = aiConfig?.let { AiGrouping.endpoint(it.endpoint) }?.authority ?: return false
+        val key = AiGrouping.apiKey(apiKey) ?: return false
         return try {
-            app.aiSettings.saveKey(apiKey.trim(), host)
+            app.aiSettings.saveKey(key, authority)
             aiHasKey = true
             true
         } catch (e: Exception) {
@@ -444,6 +446,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     AiClient.Problem.TOO_LARGE -> string(R.string.ai_error_answer)
                 }
             } catch (e: AiGrouping.UnusableAnswer) {
+                aiError = string(R.string.ai_error_answer)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: RuntimeException) {
+                // Nothing unexpected may end the app here, and its text is not shown or kept.
                 aiError = string(R.string.ai_error_answer)
             }
             aiWorking = false

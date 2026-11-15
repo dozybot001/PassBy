@@ -205,8 +205,27 @@ object AiGrouping {
         return notebook.copy(folders = folders, entries = entries, changedAt = now)
     }
 
-    /** Where requests go. Only an https address with a host and nothing hidden in it is accepted. */
-    data class Endpoint(val url: String, val host: String)
+    /**
+     * Where requests go. Only an https address with a host and nothing hidden in it is accepted.
+     * [authority] is the host and port, which is what an API key is saved for.
+     */
+    data class Endpoint(val url: String, val host: String, val port: Int) {
+        val authority: String get() = "$host:$port"
+    }
+
+    /** An API key longer than this is refused. */
+    const val MAX_KEY_LENGTH = 512
+
+    /**
+     * An API key as it may be saved and sent: visible ASCII only, with the space around it removed.
+     * Anything else, such as a line break or text pasted along with the key, cannot go into a request
+     * header, so it is refused here rather than failing when the request is made.
+     */
+    fun apiKey(text: String): String? {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty() || trimmed.length > MAX_KEY_LENGTH) return null
+        return trimmed.takeIf { key -> key.all { it.code in 0x21..0x7E } }
+    }
 
     fun endpoint(text: String): Endpoint? {
         val trimmed = text.trim()
@@ -219,6 +238,6 @@ object AiGrouping {
         if (!"https".equals(uri.scheme, ignoreCase = true)) return null
         if (uri.rawUserInfo != null || uri.rawFragment != null) return null
         if (uri.port != -1 && uri.port !in 1..65535) return null
-        return Endpoint(trimmed, host.lowercase())
+        return Endpoint(trimmed, host.lowercase(), if (uri.port == -1) 443 else uri.port)
     }
 }

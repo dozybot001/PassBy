@@ -264,4 +264,5 @@
     <string name="ai_edit_title">Edit title</string>
     <string name="ai_apply">Apply %1$d</string>
     <string name="ai_applied">Applied %1$d suggestions</string>
+    <string name="ai_key_invalid">An API key can hold only letters, digits and symbols, with no spaces, line breaks or other characters. Check that nothing else was copied with it.</string>
 </resources>
