@@ -43,7 +43,10 @@ enum ExportFormat {
     // MARK: What the person types
 
     /// The 20-character export code, or nil when the input is not one.
-    static func canonicalCode(_ input: String) -> String? {
+    static func canonicalCode(_ input: String) -> String? { canonical(input, length: 20) }
+
+    /// A code of `length` characters in the export alphabet, or nil. Sync's pairing code is read the same way.
+    static func canonical(_ input: String, length: Int) -> String? {
         var out = ""
         for scalar in input.unicodeScalars {
             if spaces.contains(scalar.value) || dashes.contains(scalar.value) { continue }
@@ -53,7 +56,7 @@ enum ExportFormat {
             guard alphabet.contains(character) else { return nil }
             out.append(character)
         }
-        return out.count == 20 ? out : nil
+        return out.count == length ? out : nil
     }
 
     private static func trimmed(_ input: String) -> String {
@@ -80,6 +83,12 @@ enum ExportFormat {
     }
 
     /// A new export code, shown as four groups of five.
+    /// `length` random characters of the export alphabet, without separators.
+    static func newCode(length: Int) -> String {
+        var generator = SystemRandomNumberGenerator()
+        return String((0..<length).map { _ in alphabet[Int.random(in: 0..<alphabet.count, using: &generator)] })
+    }
+
     static func newCode() -> String {
         var generator = SystemRandomNumberGenerator()
         let characters = (0..<20).map { _ in alphabet[Int.random(in: 0..<alphabet.count, using: &generator)] }
@@ -101,7 +110,8 @@ enum ExportFormat {
         let check: Data
     }
 
-    static func deriveKeys(secret: Data, salt: Data, iterations: Int) throws -> Keys {
+    /// PBKDF2-HMAC-SHA256 to 32 bytes, or nil when the system refuses the parameters.
+    static func pbkdf2(secret: Data, salt: Data, iterations: Int) -> Data? {
         var master = [UInt8](repeating: 0, count: 32)
         let status = secret.withUnsafeBytes { password in
             salt.withUnsafeBytes { saltBytes in
@@ -111,7 +121,11 @@ enum ExportFormat {
                     CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256), UInt32(iterations), &master, master.count)
             }
         }
-        guard status == kCCSuccess else { throw ExportError.wrongCode }
+        return status == kCCSuccess ? Data(master) : nil
+    }
+
+    static func deriveKeys(secret: Data, salt: Data, iterations: Int) throws -> Keys {
+        guard let master = pbkdf2(secret: secret, salt: salt, iterations: iterations) else { throw ExportError.wrongCode }
         let input = SymmetricKey(data: master)
         let encrypt = HKDF<SHA256>.deriveKey(inputKeyMaterial: input,
             info: Data("PassBy export v1 encrypt".utf8), outputByteCount: 32)

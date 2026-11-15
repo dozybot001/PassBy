@@ -92,6 +92,8 @@ struct Notebook: Codable, Equatable {
     /// Folder names of 1.x notebooks already carried into this file. The old
     /// encrypted files and keys stay where they are and are never deleted.
     var migratedLegacy: [String] = []
+    /// Kept for LAN sync (docs/sync.md 4). Absent in files saved before sync existed.
+    var sync: SyncMarks?
 
     /// Replaces the entries and folders, keeping what left in Recently Deleted.
     mutating func update(_ next: Vault, now: Date = Date()) {
@@ -101,6 +103,8 @@ struct Notebook: Codable, Equatable {
         recentlyDeleted.removeAll { removedIDs.contains($0.id) }
         recentlyDeleted += removed.map { DeletedEntry(entry: $0, deletedAt: now) }
         if next != vault { changedSinceExport = true }
+        // Every change to entries and folders passes through here, so this is where sync learns of it.
+        sync = (sync ?? SyncMarks()).marked(from: vault, to: next, now: Int64(now.timeIntervalSince1970 * 1000))
         vault = next
         pruneDeleted(now: now)
     }
