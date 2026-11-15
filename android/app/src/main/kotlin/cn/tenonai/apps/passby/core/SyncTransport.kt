@@ -230,20 +230,23 @@ class SyncHost(
         if (request.headers["host"] != "${bind.hostAddress}:$port") throw IOException("wrong host")
         val (method, path) = parts
         if (method == "POST" && "content-length" !in request.headers) throw IOException("no length")
-        lastRequest = clock()
         val out = connection.getOutputStream()
-        fun answer(status: String, body: ByteArray = ByteArray(0)) = SyncHttp.write(
-            out,
-            "HTTP/1.1 $status",
-            listOf(
-                "Access-Control-Allow-Origin" to SyncHttp.ORIGIN,
-                "Access-Control-Allow-Methods" to "POST",
-                "Access-Control-Allow-Headers" to "content-type",
-                "Cache-Control" to "no-store",
-                "Content-Type" to "application/octet-stream",
-            ),
-            body,
-        )
+        fun answer(status: String, body: ByteArray = ByteArray(0)) {
+            // Only a request that got something counts as use: refusals must not keep the host open.
+            if (status == "200 OK") lastRequest = clock()
+            SyncHttp.write(
+                out,
+                "HTTP/1.1 $status",
+                listOf(
+                    "Access-Control-Allow-Origin" to SyncHttp.ORIGIN,
+                    "Access-Control-Allow-Methods" to "POST",
+                    "Access-Control-Allow-Headers" to "content-type",
+                    "Cache-Control" to "no-store",
+                    "Content-Type" to "application/octet-stream",
+                ),
+                body,
+            )
+        }
         val origin = request.headers["origin"]
         when {
             stopped -> answer("410 Gone")

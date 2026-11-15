@@ -224,6 +224,19 @@ class SyncTransportTest {
     }
 
     @Test
+    fun refusedRequestsDoNotKeepAnIdleHostOpen() {
+        val h = startHost()
+        val host = "Host: 127.0.0.1:${h.port}\r\n"
+        now += SyncHost.IDLE_MS - 1
+        // Another website's page is answered, with a refusal. That is not use.
+        assertTrue(raw(h.port, "POST /passby-sync/v1/begin HTTP/1.1\r\n${host}Origin: https://example.com\r\nContent-Length: 0\r\n\r\n").startsWith("HTTP/1.1 403"))
+        assertEquals(null, stop)
+        now += 1
+        assertTrue(stoppedLatch.await(5, TimeUnit.SECONDS))
+        assertEquals(SyncHost.Stop.IDLE, stop)
+    }
+
+    @Test
     fun onlyAFewUnusedNoncesAreKeptAndEachExpiresAfterAMinute() {
         val h = startHost()
         val old = Manual(h.port)
