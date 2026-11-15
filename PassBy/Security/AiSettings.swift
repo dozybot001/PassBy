@@ -11,7 +11,10 @@ protocol AiSecretStore {
 /// Generic passwords of this app only: readable while the iPhone is unlocked, never synced through
 /// iCloud Keychain, and never restored onto another device from a backup.
 struct AiKeychain: AiSecretStore {
-    private let service = "cn.tenonai.passby.ai"
+    private let service: String
+
+    /// Tests pass a service of their own, so that they never touch the items the app saved.
+    init(service: String = "cn.tenonai.passby.ai") { self.service = service }
 
     private func query(_ name: String) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,

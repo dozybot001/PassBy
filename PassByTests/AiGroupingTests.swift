@@ -1,3 +1,4 @@
+import Security
 import XCTest
 @testable import PassBy
 
@@ -369,6 +370,47 @@ final class AiGroupingTests: XCTestCase {
     }
 
     // MARK: Settings and the key
+
+    /// The real Keychain, under a service only this test uses: save, read back, check how the items are
+    /// kept, turn off, and find nothing left.
+    func testSettingsAndKeyInTheRealKeychain() throws {
+        let service = "cn.tenonai.passby.ai.test"
+        let settings = AiSettings(store: AiKeychain(service: service))
+        settings.turnOff()
+        defer { settings.turnOff() }
+        XCTAssertNil(settings.load())
+
+        let config = AiSettings.Config(endpoint: "https://api.example.com/v1/chat/completions", model: "example-model")
+        XCTAssertTrue(settings.save(config))
+        XCTAssertTrue(settings.saveKey("example-key-not-real", host: "api.example.com:443"))
+        let again = AiSettings(store: AiKeychain(service: service))
+        XCTAssertEqual(again.load(), config)
+        XCTAssertEqual(again.key(host: "api.example.com:443"), "example-key-not-real")
+        XCTAssertNil(again.key(host: "api.example.org:443"))
+
+        for name in ["settings", "key"] {
+            let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                        kSecAttrService as String: service,
+                                        kSecAttrAccount as String: name,
+                                        kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
+                                        kSecReturnAttributes as String: true,
+                                        kSecMatchLimit as String: kSecMatchLimitAll]
+            var result: CFTypeRef?
+            XCTAssertEqual(SecItemCopyMatching(query as CFDictionary, &result), errSecSuccess)
+            let items = try XCTUnwrap(result as? [[String: Any]])
+            XCTAssertEqual(items.count, 1)
+            XCTAssertEqual(items[0][kSecAttrAccessible as String] as? String, kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String)
+            XCTAssertEqual((items[0][kSecAttrSynchronizable as String] as? NSNumber)?.boolValue ?? false, false)
+        }
+
+        settings.turnOff()
+        XCTAssertNil(settings.load())
+        XCTAssertFalse(settings.hasKey)
+        let left: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                   kSecAttrService as String: service,
+                                   kSecAttrSynchronizable as String: kSecAttrSynchronizableAny]
+        XCTAssertEqual(SecItemCopyMatching(left as CFDictionary, nil), errSecItemNotFound)
+    }
 
     /// Stands in for the Keychain.
     private final class MemoryStore: AiSecretStore, @unchecked Sendable {
