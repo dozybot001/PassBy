@@ -204,7 +204,7 @@
     <string name="ai_only_titles">The AI gets titles and folder names only.</string>
     <string name="ai_never_sent">The account, password and notes fields are never sent. Before each send, you can see everything that will go out.</string>
     <string name="ai_switch">Turn on AI grouping</string>
-    <string name="ai_switch_text">When on, PassBy connects only when you tap Send. Turning it off deletes the API key and these settings.</string>
+    <string name="ai_switch_text">When on, PassBy sends to the provider only when you tap Send. Turning it off deletes the API key and these settings.</string>
     <string name="ai_provider">Model provider</string>
     <string name="ai_endpoint">Endpoint</string>
     <string name="ai_model">Model name</string>
@@ -226,7 +226,7 @@
     <string name="ai_turn_on_key">The API key is stored encrypted on this phone only.</string>
     <string name="ai_turn_on">Turn on</string>
     <string name="ai_turn_off_title">Turn off AI grouping?</string>
-    <string name="ai_turn_off_text">This deletes the API key and provider settings saved on this phone. Your notebook is not affected. Once off, PassBy no longer connects to the network.</string>
+    <string name="ai_turn_off_text">This deletes the API key and provider settings saved on this phone. Your notebook is not affected. Once off, PassBy no longer connects to the provider.</string>
     <string name="ai_turn_off">Turn off</string>
     <string name="ai_preview_title">Check what will be sent</string>
     <string name="ai_preview_to">The text below will be sent to the provider you set up (%1$s).</string>
