@@ -200,7 +200,7 @@
     <string name="ai_grouping">AI grouping</string>
     <string name="ai_off">Off</string>
     <string name="ai_on">On. Connects to the network when used</string>
-    <string name="ai_intro">Lets an AI model you choose sort your passwords into folders by their titles, and suggest tidier titles. It is the only feature of PassBy that connects to the network, and it is off by default.</string>
+    <string name="ai_intro">Lets an AI model you choose sort your passwords into folders by their titles, and suggest tidier titles. This feature connects to the model provider you choose and is off by default.</string>
     <string name="ai_only_titles">The AI gets titles and folder names only.</string>
     <string name="ai_never_sent">The account, password and notes fields are never sent. Before each send, you can see everything that will go out.</string>
     <string name="ai_switch">Turn on AI grouping</string>
@@ -220,7 +220,7 @@
     <string name="ai_start">Start grouping</string>
     <string name="ai_start_note">The next page shows what will be sent. Nothing is sent yet.</string>
     <string name="ai_turn_on_title">Turn on AI grouping?</string>
-    <string name="ai_turn_on_network">When on, PassBy connects to the network once each time you tap Send, and at no other time.</string>
+    <string name="ai_turn_on_network">Once this is on, PassBy sends one request to the provider each time you tap Send, and at no other time.</string>
     <string name="ai_turn_on_sent">Only your entries\' titles and your folder names are sent. Accounts, passwords and notes are never sent.</string>
     <string name="ai_turn_on_provider">What you send goes from this phone straight to the provider you entered, not through us. The service is provided by that provider under its own terms and privacy policy; with a provider outside mainland China, the content is sent abroad. An account name or a person\'s name written into a title is sent along with it.</string>
     <string name="ai_turn_on_key">The API key is stored encrypted on this phone only.</string>
