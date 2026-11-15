@@ -10,6 +10,7 @@ h2{font-size:20px;line-height:1.4;margin:0 0 16px;overflow-wrap:anywhere}
 p{margin:0 0 16px}
 .note,.hint{color:var(--muted)}
 .hint{font-size:14px;margin:6px 0 0}
+form+.hint{margin-top:28px}
 .error{font-weight:600}
 a{color:inherit;text-underline-offset:4px}
 :focus-visible{outline:2px solid currentColor;outline-offset:3px}

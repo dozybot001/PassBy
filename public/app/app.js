@@ -7,7 +7,7 @@ import { Session, canonicalCode, privateAddress } from '/app/sync.js';
 const zh = (navigator.language || '').toLowerCase().startsWith('zh');
 document.documentElement.lang = zh ? 'zh-Hans' : 'en';
 const T = zh ? {
-  title: '在电脑上用 PassBy',
+  title: '在电脑上用 PassBy', privacy: '隐私政策', terms: '用户协议',
   intro: '这个页面连到你手机上的 PassBy，在同一个 Wi-Fi 里同步。内容加密后只在这台电脑和你的手机之间传，不经过我们的服务器；页面不把密码本存在电脑上，关掉就没有了。',
   steps: ['手机和电脑连同一个 Wi-Fi。', '在手机的 PassBy 里打开「设置 › 同步」，点「让别的设备连过来」。', '把手机上显示的地址和配对码填在下面。浏览器问是否允许访问本地网络时，选允许。'],
   address: '地址', code: '配对码', connect: '连接', connecting: '正在连接…',
@@ -34,7 +34,7 @@ const T = zh ? {
   lost: '和手机的连接断了，页面里的内容已清除。请重新连接。',
   conflicts: n => `有 ${n} 条两边都改过，两份都留下了：标题带「冲突副本」的是另一份。`,
 } : {
-  title: 'PassBy on a computer',
+  title: 'PassBy on a computer', privacy: 'Privacy policy', terms: 'Terms of Service',
   intro: 'This page connects to PassBy on your phone and syncs over the same Wi-Fi. What is sent is encrypted and goes only between this computer and your phone, never through our servers. The page keeps no copy of your notebook on the computer; closing it clears everything.',
   steps: ['Put your phone and computer on the same Wi-Fi.', 'In PassBy on your phone, open Settings › Sync and tap "Let another device connect".', 'Enter the address and pairing code your phone shows. When the browser asks to access your local network, allow it.'],
   address: 'Address', code: 'Pairing code', connect: 'Connect', connecting: 'Connecting…',
@@ -236,7 +236,8 @@ async function renderConnect(message = '') {
   el('div', { class: 'actions' }, button), status);
   const support = el('p', { class: 'note' });
   main.replaceChildren(el('h1', { text: T.title }), el('p', { class: 'note narrow', text: T.intro }),
-    el('ol', { class: 'narrow' }, ...T.steps.map(text => el('li', { text }))), support, form);
+    el('ol', { class: 'narrow' }, ...T.steps.map(text => el('li', { text }))), support, form,
+    el('p', { class: 'hint narrow' }, el('a', { href: '/privacy/', text: T.privacy }), ' · ', el('a', { href: '/terms/', text: T.terms })));
   (address.value ? code : address).focus();
   const state = await localNetworkState();
   if (state === 'unsupported') support.textContent = T.browser;
