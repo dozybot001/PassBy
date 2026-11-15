@@ -252,6 +252,19 @@ object SyncCodec {
         return SyncMerge.validate(SyncState(entries, folders, tombstones))
     }
 
+    /** What both sides send at counter 0, before any notebook content (docs/sync.md §6.2). */
+    val HELLO: ByteArray get() = """{"v":1,"hello":true}""".toByteArray(Charsets.UTF_8)
+
+    /** True when the opened plaintext is the greeting and nothing else. */
+    fun isHello(bytes: ByteArray): Boolean {
+        val root = try {
+            parse(bytes) as? JsonObject
+        } catch (e: SyncException) {
+            null
+        } ?: return false
+        return root.members.size == 2 && root["v"].long == VERSION.toLong() && root["hello"].bool == true
+    }
+
     /** What the guest sends. */
     fun request(state: SyncState): ByteArray {
         val root = linkedMapOf<String, JsonValue>("v" to number(VERSION.toLong()))

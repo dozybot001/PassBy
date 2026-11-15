@@ -20,6 +20,7 @@ import java.security.SecureRandom
 internal object SyncHttp {
     const val MAX_BODY = 8 * 1024 * 1024
     const val MAX_HEAD = 8192
+    const val MAX_HEADERS = 32
     const val TIMEOUT_MS = 15_000
     const val BEGIN = "/passby-sync/v1/begin"
     const val EXCHANGE = "/passby-sync/v1/exchange"
@@ -42,13 +43,14 @@ internal object SyncHttp {
         }
         val lines = String(head.toByteArray(), Charsets.ISO_8859_1).dropLast(4).split("\r\n")
         val headers = HashMap<String, String>()
+        if (lines.size - 1 > MAX_HEADERS) throw IOException("too many headers")
         for (line in lines.drop(1)) {
             val colon = line.indexOf(':')
             if (colon <= 0) throw IOException("bad header")
             val name = line.substring(0, colon).lowercase()
             if (headers.put(name, line.substring(colon + 1).trim()) != null && name == "content-length") throw IOException("two lengths")
         }
-        if ("transfer-encoding" in headers) throw IOException("unsupported encoding")
+        if ("transfer-encoding" in headers || "expect" in headers) throw IOException("unsupported encoding")
         val text = headers["content-length"] ?: "0"
         if (text.isEmpty() || text.length > 8 || !text.all { it in '0'..'9' }) throw IOException("bad length")
         val length = text.toInt()
@@ -114,6 +116,9 @@ data class SyncAddress(val host: String, val port: Int) {
  * stops for good when [stop] is called, after [MAX_FAILURES] frames that did not open, or after
  * [IDLE_MS] without a request.
  *
+ * A pairing code is good for one session: once a guest's greeting has opened, no other device can
+ * start one, and the page must be reopened for a new code.
+ *
  * [exchange] is given the guest's state once a frame has opened and been read; it merges, writes the
  * notebook and returns what to answer, or null when the notebook could not be written.
  */
@@ -135,7 +140,9 @@ class SyncHost(
 
     private val code = code.toByteArray(Charsets.US_ASCII)
     private val pending = LinkedHashMap<String, Long>()
-    private val sessions = ArrayList<Session>()
+
+    /** The one session this code is good for, once its greeting has opened. */
+    private var session: Session? = null
     private var failures = 0
     private var lastRequest = 0L
     private var server: ServerSocket? = null
@@ -173,8 +180,8 @@ class SyncHost(
             if (stopped) return
             stopped = true
             code.fill(0)
-            sessions.forEach { it.keys.wipe() }
-            sessions.clear()
+            session?.keys?.wipe()
+            session = null
             pending.clear()
         }
         try {
@@ -196,13 +203,15 @@ class SyncHost(
                 if (!stopped) stop(Stop.FAILED)
                 return
             }
+            // Whatever one request does, including running out of memory on a large body, ends that
+            // connection only: the app keeps running and the next connection is served.
             try {
                 connection.use {
                     it.soTimeout = SyncHttp.TIMEOUT_MS
                     handle(it)
                 }
-            } catch (e: IOException) {
-                // A connection that breaks or misbehaves is dropped; the next one is served.
+            } catch (e: Throwable) {
+                // Dropped.
             }
             if (failures >= MAX_FAILURES) stop(Stop.WRONG_CODE)
         }
@@ -212,6 +221,10 @@ class SyncHost(
         val request = SyncHttp.read(connection.getInputStream())
         val parts = request.start.split(' ')
         if (parts.size != 3 || !parts[2].startsWith("HTTP/1.")) throw IOException("bad request line")
+        // A page that reached this phone under another name (DNS rebinding) is not answered at all.
+        if (request.headers["host"] != "${bind.hostAddress}:$port") throw IOException("wrong host")
+        val (method, path) = parts
+        if (method == "POST" && "content-length" !in request.headers) throw IOException("no length")
         lastRequest = clock()
         val out = connection.getOutputStream()
         fun answer(status: String, body: ByteArray = ByteArray(0)) = SyncHttp.write(
@@ -226,11 +239,16 @@ class SyncHost(
             ),
             body,
         )
-        val (method, path) = parts
+        val origin = request.headers["origin"]
         when {
             stopped -> answer("410 Gone")
+            // Another website's page. Not counted against the code.
+            origin != null && origin != SyncHttp.ORIGIN -> answer("403 Forbidden")
             method == "OPTIONS" -> answer("204 No Content")
-            method == "POST" && path == SyncHttp.BEGIN && request.body.isEmpty() -> answer("200 OK", begin())
+            method == "POST" && path == SyncHttp.BEGIN && request.body.isEmpty() -> {
+                val nonce = begin()
+                if (nonce == null) answer("403 Forbidden") else answer("200 OK", nonce)
+            }
             method == "POST" && path == SyncHttp.EXCHANGE -> {
                 val body = try {
                     answerTo(request.body)
@@ -249,11 +267,12 @@ class SyncHost(
 
     private fun key(nonce: ByteArray) = nonce.joinToString("") { "%02x".format(it) }
 
-    private fun begin(): ByteArray {
+    /** A fresh host nonce, or null: the code has been used by a session, or too many nonces are waiting. */
+    private fun begin(): ByteArray? {
+        if (session != null) return null
         val now = clock()
         pending.values.removeAll { now - it >= NONCE_MS }
-        // Someone asking for nonces without using them pushes out the oldest, not the newest.
-        while (pending.size >= MAX_PENDING) pending.remove(pending.keys.first())
+        if (pending.size >= MAX_PENDING) return null
         val nonce = ByteArray(SyncCrypto.NONCE_LENGTH).also { random.nextBytes(it) }
         pending[key(nonce)] = now
         return nonce
@@ -264,43 +283,54 @@ class SyncHost(
         fun refused(): Nothing = throw SyncException(SyncException.Kind.REFUSED)
         val request = SyncCrypto.readRequest(body)
         if (request.counter < 0) refused()
-        var session = sessions.firstOrNull { it.hostNonce.contentEquals(request.hostNonce) && it.guestNonce.contentEquals(request.guestNonce) }
-        val plain: ByteArray
-        if (session == null) {
+        val current = session
+        val keys: SyncCrypto.Keys
+        val reply: ByteArray
+        if (current == null) {
             // A host nonce starts one session, within a minute of being handed out.
             val issued = pending.remove(key(request.hostNonce)) ?: refused()
             if (clock() - issued >= NONCE_MS) refused()
-            val keys = SyncCrypto.deriveKeys(String(code, Charsets.US_ASCII), request.hostNonce, request.guestNonce, iterations) {
+            keys = SyncCrypto.deriveKeys(String(code, Charsets.US_ASCII), request.hostNonce, request.guestNonce, iterations) {
                 if (stopped) throw IOException("stopped")
             }
-            plain = try {
+            val plain = try {
                 SyncCrypto.open(keys.guestToHost, request.hostNonce, request.guestNonce, SyncCrypto.GUEST_TO_HOST, request.counter, request.sealed)
             } catch (e: SyncException) {
                 keys.wipe()
                 throw e
             }
-            session = Session(request.hostNonce, request.guestNonce, keys, request.counter)
+            // The first frame is the greeting and carries nothing; the state comes after the guest has
+            // seen this host answer it.
+            if (request.counter != 0L || !SyncCodec.isHello(plain)) {
+                keys.wipe()
+                return null
+            }
             synchronized(this) {
                 if (stopped) {
                     keys.wipe()
                     return null
                 }
-                if (sessions.size >= MAX_SESSIONS) sessions.removeAt(0).keys.wipe()
-                sessions += session
+                // From here on the code belongs to this session: no more nonces are handed out.
+                session = Session(request.hostNonce, request.guestNonce, keys, 0)
+                pending.clear()
             }
+            reply = SyncCodec.HELLO
         } else {
-            if (request.counter <= session.counter) refused()
-            plain = SyncCrypto.open(session.keys.guestToHost, request.hostNonce, request.guestNonce, SyncCrypto.GUEST_TO_HOST, request.counter, request.sealed)
-            session.counter = request.counter
+            if (!current.hostNonce.contentEquals(request.hostNonce) || !current.guestNonce.contentEquals(request.guestNonce)) refused()
+            if (request.counter <= current.counter) refused()
+            keys = current.keys
+            val plain = SyncCrypto.open(keys.guestToHost, request.hostNonce, request.guestNonce, SyncCrypto.GUEST_TO_HOST, request.counter, request.sealed)
+            current.counter = request.counter
+            val merged = try {
+                exchange(SyncCodec.readRequest(plain))
+            } catch (e: SyncException) {
+                null
+            } ?: return null
+            reply = SyncCodec.response(merged.state, merged.summary)
         }
-        val reply = try {
-            exchange(SyncCodec.readRequest(plain))
-        } catch (e: SyncException) {
-            null
-        } ?: return null
         return SyncCrypto.responseBody(
             request.counter,
-            SyncCrypto.seal(session.keys.hostToGuest, request.hostNonce, request.guestNonce, SyncCrypto.HOST_TO_GUEST, request.counter, SyncCodec.response(reply.state, reply.summary)),
+            SyncCrypto.seal(keys.hostToGuest, request.hostNonce, request.guestNonce, SyncCrypto.HOST_TO_GUEST, request.counter, reply),
         )
     }
 
@@ -308,8 +338,7 @@ class SyncHost(
         const val MAX_FAILURES = 5
         const val IDLE_MS = 10 * 60 * 1000L
         const val NONCE_MS = 60 * 1000L
-        private const val MAX_PENDING = 8
-        private const val MAX_SESSIONS = 4
+        const val MAX_PENDING = 4
     }
 }
 
@@ -345,24 +374,41 @@ class SyncGuest(
     private val guestNonce = ByteArray(SyncCrypto.NONCE_LENGTH).also { random.nextBytes(it) }
     private var keys: SyncCrypto.Keys? = null
     private var counter = 0L
+    private var greeted = false
 
-    /** Sends this device's state and returns the merged state with what changed here. [check] may cancel by throwing. */
+    /**
+     * Sends this device's state and returns the merged state with what changed here. [check] may
+     * cancel by throwing. Nothing of the notebook is sent before the other side has shown, by
+     * answering the greeting, that it holds the code too.
+     */
     fun exchange(state: SyncState, check: (() -> Unit)? = null): Pair<SyncState, SyncSummary> {
         val nonce = hostNonce ?: post(SyncHttp.BEGIN, ByteArray(0)).also {
             if (it.size != SyncCrypto.NONCE_LENGTH) throw SyncGuestException(SyncGuestException.Kind.UNTRUSTED)
             hostNonce = it
         }
         val keys = keys ?: SyncCrypto.deriveKeys(String(code, Charsets.US_ASCII), nonce, guestNonce, iterations, check).also { keys = it }
+        if (!greeted) {
+            if (!SyncCodec.isHello(send(nonce, keys, SyncCodec.HELLO))) throw SyncGuestException(SyncGuestException.Kind.UNTRUSTED)
+            greeted = true
+        }
+        return try {
+            SyncCodec.readResponse(send(nonce, keys, SyncCodec.request(state)))
+        } catch (e: SyncException) {
+            throw SyncGuestException(SyncGuestException.Kind.UNTRUSTED)
+        }
+    }
+
+    /** Seals and posts one frame, and opens the answer. */
+    private fun send(nonce: ByteArray, keys: SyncCrypto.Keys, plain: ByteArray): ByteArray {
         val sent = counter++
-        val body = SyncCrypto.requestBody(
-            nonce, guestNonce, sent,
-            SyncCrypto.seal(keys.guestToHost, nonce, guestNonce, SyncCrypto.GUEST_TO_HOST, sent, SyncCodec.request(state)),
+        val answer = post(
+            SyncHttp.EXCHANGE,
+            SyncCrypto.requestBody(nonce, guestNonce, sent, SyncCrypto.seal(keys.guestToHost, nonce, guestNonce, SyncCrypto.GUEST_TO_HOST, sent, plain)),
         )
-        val answer = post(SyncHttp.EXCHANGE, body)
         try {
             val (answered, sealed) = SyncCrypto.readResponse(answer)
             if (answered != sent) throw SyncGuestException(SyncGuestException.Kind.UNTRUSTED)
-            return SyncCodec.readResponse(SyncCrypto.open(keys.hostToGuest, nonce, guestNonce, SyncCrypto.HOST_TO_GUEST, sent, sealed))
+            return SyncCrypto.open(keys.hostToGuest, nonce, guestNonce, SyncCrypto.HOST_TO_GUEST, sent, sealed)
         } catch (e: SyncException) {
             throw SyncGuestException(SyncGuestException.Kind.UNTRUSTED)
         }

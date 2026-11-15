@@ -39,7 +39,7 @@ class SyncTest {
     @Test
     fun theFileHasTheExpectedVectors() {
         assertEquals(5, vectors["codes"].items!!.size)
-        assertEquals(2, vectors["crypto"]["exchanges"].items!!.size)
+        assertEquals(3, vectors["crypto"]["exchanges"].items!!.size)
         assertEquals(11, vectors["merges"].items!!.size)
         assertEquals(6, vectors["invalid"].items!!.size)
     }
@@ -78,9 +78,18 @@ class SyncTest {
             assertEquals(counter, responseCounter)
             val answer = SyncCrypto.open(keys.hostToGuest, hostNonce, guestNonce, SyncCrypto.HOST_TO_GUEST, counter, sealed)
             assertEquals(x["responsePlaintext"].string, String(answer, Charsets.UTF_8))
-            // The JSON inside reads as a state and a summary.
-            assertEquals(1, SyncCodec.readRequest(plain).entries.size)
-            assertEquals(SyncSummary(0, 0, 0, 0), SyncCodec.readResponse(answer).second)
+            if (x["hello"].bool == true) {
+                // Counter 0 is the greeting, and this side writes it byte for byte the same.
+                assertEquals(0L, counter)
+                assertTrue(SyncCodec.isHello(plain) && SyncCodec.isHello(answer))
+                assertArrayEquals(plain, SyncCodec.HELLO)
+                assertFalse(SyncCodec.isHello(SyncCodec.request(SyncState())))
+            } else {
+                // The JSON inside reads as a state and a summary.
+                assertEquals(1, SyncCodec.readRequest(plain).entries.size)
+                assertEquals(SyncSummary(0, 0, 0, 0), SyncCodec.readResponse(answer).second)
+                assertFalse(SyncCodec.isHello(plain))
+            }
             // A frame must not open under the other direction, another counter or the other key.
             refused { SyncCrypto.open(keys.guestToHost, hostNonce, guestNonce, SyncCrypto.HOST_TO_GUEST, counter, request.sealed) }
             refused { SyncCrypto.open(keys.guestToHost, hostNonce, guestNonce, SyncCrypto.GUEST_TO_HOST, counter + 1, request.sealed) }

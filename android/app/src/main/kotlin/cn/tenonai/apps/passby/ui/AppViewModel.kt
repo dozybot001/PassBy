@@ -350,24 +350,29 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         syncWorking = true
         syncJob = viewModelScope.launch {
             val failure: Int? = withContext(Dispatchers.IO) {
-                val sent = notebook()?.syncState() ?: return@withContext R.string.sync_error_failed
                 val guest = SyncGuest(address.inet(), address.port, code)
                 try {
-                    val (state, summary) = guest.exchange(sent) { ensureActive() }
-                    var applied = false
-                    // If the notebook changed while the other phone was merging, nothing is taken: this
-                    // phone's changes are still marked, and the next sync carries them.
-                    val written = repository.sync { notebook, now ->
-                        if (notebook.syncState() == sent) notebook.synced(state, now).also { applied = true } else null
-                    }
-                    when {
-                        !written -> R.string.save_failed
-                        !applied -> R.string.sync_error_changed
-                        else -> {
+                    // If the notebook changes while the other phone is merging, nothing is taken and
+                    // the exchange is made again in the same session: the code is good for one session.
+                    var outcome: Int? = R.string.sync_error_changed
+                    for (attempt in 1..3) {
+                        val sent = notebook()?.syncState() ?: return@withContext R.string.sync_error_failed
+                        val (state, summary) = guest.exchange(sent) { ensureActive() }
+                        var applied = false
+                        val written = repository.sync { notebook, now ->
+                            if (notebook.syncState() == sent) notebook.synced(state, now).also { applied = true } else null
+                        }
+                        if (!written) {
+                            outcome = R.string.save_failed
+                            break
+                        }
+                        if (applied) {
                             syncSummary = summary
-                            null
+                            outcome = null
+                            break
                         }
                     }
+                    outcome
                 } catch (e: SyncGuestException) {
                     when (e.kind) {
                         SyncGuestException.Kind.UNREACHABLE -> R.string.sync_error_unreachable
