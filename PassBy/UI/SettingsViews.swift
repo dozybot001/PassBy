@@ -73,7 +73,7 @@ struct SettingsView: View {
             List {
                 Section {
                     Toggle(isOn: Binding(get: { session.gateEnabled }, set: { value in Task { await session.setGate(value) } })) {
-                        Label(LB("Ask for Face ID to open"), systemImage: Biometry.current.symbol)
+                        Label(Biometry.current == .none ? L("Ask for the passcode to open") : LB("Ask for Face ID to open"), systemImage: Biometry.current.symbol)
                     }.tint(Palette.control)
                     if !session.deviceHasLock {
                         Label("This iPhone has no passcode", systemImage: "exclamationmark.triangle")

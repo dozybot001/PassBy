@@ -216,3 +216,77 @@ final class VaultTests: XCTestCase {
         XCTAssertThrowsError(try RecoveryKey.parse(String(wrong)))
     }
 }
+
+#if targetEnvironment(simulator)
+import SwiftUI
+
+/// Renders every screen with a fictional notebook and writes PNGs, when the
+/// folder named by SNAPSHOT_DIR exists. Not a pass/fail test of appearance:
+/// it lets a person, or a review, look at each page without tapping through.
+@MainActor
+final class ScreenSnapshots: XCTestCase {
+    func testRenderEveryScreen() async throws {
+        let folder = ProcessInfo.processInfo.environment["SNAPSHOT_DIR"] ?? "/tmp/passby-snapshots"
+        guard FileManager.default.fileExists(atPath: folder) else { throw XCTSkip("no snapshot folder") }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = NotebookStore(directory: root)
+        let work = VaultFolder(name: "工作")
+        let mail = VaultEntry(title: "个人邮箱", account: "alex@example.com", password: "example-only-1", notes: "虚构数据\n第二行")
+        var notebook = Notebook()
+        notebook.update(Vault(folders: [work], entries: [mail,
+            VaultEntry(title: "公司邮箱", account: "alex@example.org", password: "example-only-2", folderID: work.id),
+            VaultEntry(title: "路由器", password: "example-only-3"),
+            VaultEntry(title: "旧账号", account: "old@example.com", password: "example-only-4")]))
+        var next = notebook.vault
+        next.entries.removeLast()
+        notebook.update(next)
+        try store.save(notebook)
+        let suite = "passby-snapshots-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(false, forKey: "gateEnabled")
+        defaults.set(true, forKey: "noLockNoticeShown")
+        let session = VaultSession(store: store, defaults: defaults)
+        await session.unlock()
+        XCTAssertEqual(session.phase, .unlocked)
+        XCTAssertEqual(session.vault.entries.count, 3)
+
+        let locked = VaultSession(store: store, defaults: try XCTUnwrap(UserDefaults(suiteName: suite + "-locked")))
+        let screens: [(String, AnyView)] = [
+            ("01-lock", AnyView(LockView().environmentObject(locked))),
+            ("02-list", AnyView(LibraryView())),
+            ("03-detail", AnyView(NavigationStack { EntryDetailView(id: mail.id) })),
+            ("04-editor", AnyView(EntryEditorView(entry: mail, isNew: false))),
+            ("05-generator", AnyView(PasswordGeneratorView(copyOnly: true) { _ in true })),
+            ("06-folders", AnyView(FoldersView())),
+            ("07-settings", AnyView(SettingsView())),
+            ("08-export", AnyView(ExportView())),
+            ("09-import", AnyView(ImportView())),
+            ("10-deleted", AnyView(NavigationStack { RecentlyDeletedView() })),
+            ("11-privacy", AnyView(NavigationStack { PrivacyPolicyView() })),
+            ("12-about", AnyView(NavigationStack { AboutPassByView() })),
+            ("13-migration", AnyView(MigrationView())),
+        ]
+        for style in [UIUserInterfaceStyle.light, .dark] {
+            for (name, view) in screens {
+                let controller = UIHostingController(rootView: ZStack { Palette.paper.ignoresSafeArea(); view }
+                    .environmentObject(session).tint(Palette.accent).foregroundStyle(Palette.ink))
+                let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+                let window = UIWindow(windowScene: scene)
+                window.frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+                window.overrideUserInterfaceStyle = style
+                window.rootViewController = controller
+                window.makeKeyAndVisible()
+                try await Task.sleep(for: .milliseconds(600))
+                let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+                let suffix = style == .dark ? "-dark" : ""
+                try XCTUnwrap(image.pngData()).write(to: URL(fileURLWithPath: folder).appendingPathComponent(name + suffix + ".png"))
+                window.isHidden = true
+            }
+        }
+    }
+}
+#endif
