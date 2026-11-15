@@ -111,25 +111,28 @@ fun LibraryScreen(model: AppViewModel, notebook: Notebook) {
         val now = remember(notebook) { System.currentTimeMillis() }
         if (notebook.shouldRemindToExport(now)) ExportReminder(model, neverExported = notebook.lastExportAt == null)
 
-        if (model.searching) {
-            SearchField(model)
-        } else {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = PagePadding),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item {
-                    CountChip(stringResource(R.string.filter_all), notebook.entries.size, model.filter == "") { model.filter = "" }
-                }
-                item {
-                    CountChip(
-                        stringResource(R.string.filter_unfiled),
-                        notebook.entries.count { it.folderId == null },
-                        model.filter == AppViewModel.UNFILED,
-                    ) { model.filter = AppViewModel.UNFILED }
-                }
-                items(notebook.folders, key = { it.id }) { folder ->
-                    CountChip(folder.name, notebook.entries.count { it.folderId == folder.id }, model.filter == folder.id) { model.filter = folder.id }
+        // The search field and the row of chips take the same height, so the list does not move when one replaces the other.
+        Box(Modifier.fillMaxWidth().heightIn(min = 56.dp), contentAlignment = Alignment.CenterStart) {
+            if (model.searching) {
+                SearchField(model)
+            } else {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = PagePadding),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    item {
+                        CountChip(stringResource(R.string.filter_all), notebook.entries.size, model.filter == "") { model.filter = "" }
+                    }
+                    item {
+                        CountChip(
+                            stringResource(R.string.filter_unfiled),
+                            notebook.entries.count { it.folderId == null },
+                            model.filter == AppViewModel.UNFILED,
+                        ) { model.filter = AppViewModel.UNFILED }
+                    }
+                    items(notebook.folders, key = { it.id }) { folder ->
+                        CountChip(folder.name, notebook.entries.count { it.folderId == folder.id }, model.filter == folder.id) { model.filter = folder.id }
+                    }
                 }
             }
         }
