@@ -9,8 +9,8 @@
 | | 版本 | 状态 |
 | --- | --- | --- |
 | 安卓 | 2.2.0 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
-| iPhone | 2.1 | 开发中，做好后在 App Store 提供 |
-| 网页 | — | 局域网同步用的网页在 <https://passby.tenonai.cn/app/>（电脑上的 Chrome、Edge）。它要连一部带「同步」的手机；带同步的安卓版和 iPhone 版已做完，还没发布，设计见 [docs/sync.md](docs/sync.md) |
+| iPhone | 2.1 | 已提交 App Store 审核（2026-11-16），通过后在 App Store 提供 |
+| 网页 | — | <https://passby.tenonai.cn/app/>（电脑上的 Chrome、Edge）。它不登录、不存密码本，要连同一个 Wi-Fi 里一部打开了「同步」的手机，设计见 [docs/sync.md](docs/sync.md) |
 
 1.x 的 iPhone 版和网页版（Tenon 账号登录、iCloud 同步）已于 2026-11-15 停止提供，见[更新记录](CHANGELOG.md)。
 
