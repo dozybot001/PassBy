@@ -85,9 +85,22 @@ web="""HOSTS {
         Referrer-Policy "no-referrer"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), clipboard-read=()"
+    }
+    # The sync page (/app/) holds a whole notebook in memory, so it gets its own, stricter policy:
+    # only this site's scripts and styles, and connections to plain http only, which the page then
+    # narrows to the one phone the person entered (docs/sync.md 7). Every other page keeps the
+    # policy it had. The two blocks never both apply.
+    @app path /app /app/*
+    header @app {
+        Content-Security-Policy "APP_CSP"
+        Cross-Origin-Opener-Policy "same-origin"
+        Cross-Origin-Resource-Policy "same-origin"
+    }
+    @pages not path /app /app/*
+    header @pages {
         Content-Security-Policy "frame-ancestors 'none'"
         Cross-Origin-Opener-Policy "same-origin-allow-popups"
-        Permissions-Policy "camera=(), microphone=(), geolocation=(), clipboard-read=()"
     }
     @api path /api/* /passby/api/*
     handle @api {
@@ -108,7 +121,9 @@ web="""HOSTS {
         file_server
     }
 }
-""".replace('GONE',gone).replace('HOSTS',', '.join(hosts)).replace('DIRECTORY',sys.argv[3])
+""".replace('GONE',gone).replace('HOSTS',', '.join(hosts)).replace('DIRECTORY',sys.argv[3]).replace('APP_CSP',
+    "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src http:; "
+    "base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'")
 for host in moved:
     web+=f"""{host} {{
     import access_log
@@ -191,7 +206,15 @@ for name, digest in json.loads((root / 'manifest.json').read_text())['files'].it
         assert response.headers.get('Strict-Transport-Security') == hsts
         assert response.headers.get('X-Frame-Options') == 'DENY'
         assert 'no-store' in response.headers.get('Cache-Control', '')
-        assert "frame-ancestors 'none'" in response.headers.get('Content-Security-Policy', '')
+        assert response.headers.get('Content-Security-Policy') == "frame-ancestors 'none'"
+    if path.startswith('app/'):
+        policy = response.headers.get('Content-Security-Policy', '')
+        assert "default-src 'none'" in policy and "script-src 'self'" in policy and "connect-src http:;" in policy, policy
+        assert "require-trusted-types-for 'script'" in policy and "frame-ancestors 'none'" in policy, policy
+        assert response.headers.get('Cross-Origin-Opener-Policy') == 'same-origin'
+        assert response.headers.get('Cross-Origin-Resource-Policy') == 'same-origin'
+        assert response.headers.get('Referrer-Policy') == 'no-referrer'
+        assert 'no-store' in response.headers.get('Cache-Control', '')
 try:
     urllib.request.urlopen(f'https://{hosts[0]}/release-check-missing',timeout=20)
     raise AssertionError('A missing page must return 404')

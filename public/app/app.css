@@ -1,0 +1,50 @@
+:root{color-scheme:light dark;--page:#fafafa;--text:#141414;--muted:#737373;--surface:#efefef;--rule:#dedede;--ink:#141414;--on-ink:#fafafa;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+@media(prefers-color-scheme:dark){:root{--page:#080808;--text:#f6f6f6;--muted:#9a9a9a;--surface:#171717;--rule:#2a2a2a;--ink:#f6f6f6;--on-ink:#080808}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font-size:16px;line-height:1.6}
+header{max-width:1040px;margin:auto;padding:24px 28px 0;display:flex;align-items:center;gap:16px}
+header .brand{margin-right:auto;font-size:24px;font-weight:650;text-decoration:none;letter-spacing:-.7px;color:inherit}
+main{max-width:1040px;margin:auto;padding:24px 28px 56px}
+h1{font-size:28px;line-height:1.3;letter-spacing:-.6px;margin:24px 0 12px}
+h2{font-size:20px;line-height:1.4;margin:0 0 16px;overflow-wrap:anywhere}
+p{margin:0 0 16px}
+.note,.hint{color:var(--muted)}
+.hint{font-size:14px;margin:6px 0 0}
+.error{font-weight:600}
+a{color:inherit;text-underline-offset:4px}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+ol{margin:0 0 20px;padding-left:22px;color:var(--muted)}
+li{margin:0 0 6px}
+
+.narrow{max-width:520px}
+label{display:block;font-size:14px;color:var(--muted);margin:16px 0 6px}
+input,textarea,select{width:100%;font:inherit;color:inherit;background:var(--page);border:1px solid var(--rule);border-radius:12px;padding:12px 14px}
+textarea{min-height:96px;resize:vertical}
+input.mono,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+input:focus,textarea:focus,select:focus{outline:2px solid currentColor;outline-offset:1px}
+
+button{font:inherit;color:inherit;background:var(--surface);border:0;border-radius:999px;padding:10px 18px;cursor:pointer}
+button.primary{background:var(--ink);color:var(--on-ink);font-weight:600}
+button.quiet{background:none;padding:8px 10px;text-decoration:underline;text-underline-offset:4px}
+button:disabled{opacity:.45;cursor:default}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+
+.status{margin:0 0 16px;padding:12px 16px;border-radius:14px;background:var(--surface)}
+.columns{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:32px;align-items:start}
+@media(max-width:760px){.columns{grid-template-columns:1fr}header,main{padding-left:20px;padding-right:20px}}
+.toolbar{display:flex;gap:10px;margin-bottom:12px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chips button{padding:6px 14px;font-size:14px}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.list{list-style:none;margin:0;padding:0;color:inherit}
+.list li{margin:0}
+.list button{display:block;width:100%;text-align:left;background:none;border-radius:14px;padding:10px 14px}
+.list button[aria-current="true"],.list button:hover{background:var(--surface)}
+.list .title{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list .account{display:block;font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.field{border-bottom:1px solid var(--rule);padding:12px 0}
+.field .name{font-size:14px;color:var(--muted)}
+.field .row{display:flex;gap:10px;align-items:center}
+.field .value{flex:1;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.field button{padding:6px 14px;font-size:14px;flex:none}
