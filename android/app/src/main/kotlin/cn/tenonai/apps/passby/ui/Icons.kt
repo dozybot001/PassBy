@@ -458,6 +458,26 @@ object Icons {
         }
     }
 
+    /** A four-pointed star with a small one beside it, for AI grouping. */
+    val Sparkle: ImageVector by lazy {
+        icon {
+            line {
+                moveTo(10f, 4f)
+                curveTo(10.6f, 8.5f, 12.5f, 10.4f, 17f, 11f)
+                curveTo(12.5f, 11.6f, 10.6f, 13.5f, 10f, 18f)
+                curveTo(9.4f, 13.5f, 7.5f, 11.6f, 3f, 11f)
+                curveTo(7.5f, 10.4f, 9.4f, 8.5f, 10f, 4f)
+                close()
+                moveTo(18f, 14.5f)
+                curveTo(18.3f, 16.6f, 18.9f, 17.2f, 21f, 17.5f)
+                curveTo(18.9f, 17.8f, 18.3f, 18.4f, 18f, 20.5f)
+                curveTo(17.7f, 18.4f, 17.1f, 17.8f, 15f, 17.5f)
+                curveTo(17.1f, 17.2f, 17.7f, 16.6f, 18f, 14.5f)
+                close()
+            }
+        }
+    }
+
     val Lock: ImageVector by lazy {
         icon {
             line {

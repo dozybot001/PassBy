@@ -501,7 +501,7 @@ fun ImportScreen(model: AppViewModel, notebook: Notebook) {
 // ---- Shared pieces ----
 
 @Composable
-private fun Working(text: String) {
+fun Working(text: String) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -534,7 +534,7 @@ private fun Choice(title: String, text: String?, selected: Boolean, onSelect: ()
  * passphrase in Chinese can be typed.
  */
 @Composable
-private fun SecretField(value: String, onChange: (String) -> Unit, label: String, revealed: Boolean, onToggle: () -> Unit) {
+fun SecretField(value: String, onChange: (String) -> Unit, label: String, revealed: Boolean, onToggle: () -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = onChange,

@@ -14,8 +14,8 @@ android {
         applicationId = "cn.tenonai.apps.passby"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "2.0.0"
+        versionCode = 2
+        versionName = "2.1.0"
     }
 
     androidResources {
@@ -49,6 +49,9 @@ android {
         unitTests.all {
             // The shared vectors are read where they are, not copied into android/.
             it.systemProperty("passby.vectors", rootProject.file("../docs/export-vectors.json").path)
+            // One test reads the app's own sources, to check which files can open a network connection.
+            it.systemProperty("passby.sources", file("src/main/kotlin").path)
+            it.inputs.dir(file("src/main/kotlin"))
         }
     }
 }
@@ -72,9 +75,9 @@ dependencies {
 }
 
 /**
- * The app must not be able to open a network connection. This fails the build if the manifest that
- * goes into the package, after every library's manifest is merged in, asks for a permission outside
- * the short list below.
+ * The app asks for as little as it can. This fails the build if the manifest that goes into the
+ * package, after every library's manifest is merged in, asks for a permission outside the short list
+ * below.
  */
 abstract class CheckPermissions : DefaultTask() {
     @get:InputFile
@@ -102,6 +105,9 @@ androidComponents {
             mergedManifest.set(variant.artifacts.get(SingleArtifact.MERGED_MANIFEST))
             // Both come from androidx.biometric and only allow asking the system to verify the person.
             allowed.addAll("android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT")
+            // For AI grouping only, which is off until the person turns it on. One file opens connections
+            // (system/AiClient.kt); a unit test checks that no other can.
+            allowed.add("android.permission.INTERNET")
             // Declared by androidx.core for receivers the app registers for itself; it is the app's own
             // signature-level permission and grants nothing outside the app.
             allowed.add(variant.applicationId.map { "$it.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" })

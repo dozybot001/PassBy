@@ -83,6 +83,14 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
             )
             HorizontalDivider(Modifier.padding(horizontal = PagePadding), color = palette.rule)
 
+            SettingRow(
+                title = stringResource(R.string.ai_grouping),
+                text = stringResource(if (model.aiConfig == null) R.string.ai_off else R.string.ai_on),
+                icon = Icons.Sparkle,
+                onClick = { model.open(Screen.Ai) },
+            )
+            HorizontalDivider(Modifier.padding(horizontal = PagePadding), color = palette.rule)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 // Android 13 and later keep a language per app in system settings.
                 SettingRow(

@@ -75,7 +75,9 @@ fun App(model: AppViewModel, activity: FragmentActivity) {
     LaunchedEffect(Unit) {
         // A newer notice replaces the one on screen.
         model.notices.collectLatest { notice ->
-            val result = snackbar.showSnackbar(notice.text, notice.actionLabel, duration = SnackbarDuration.Short)
+            // A notice that offers something to do stays long enough to be read and tapped.
+            val duration = if (notice.actionLabel != null) SnackbarDuration.Long else SnackbarDuration.Short
+            val result = snackbar.showSnackbar(notice.text, notice.actionLabel, duration = duration)
             if (result == SnackbarResult.ActionPerformed) notice.action?.invoke()
         }
     }
@@ -115,6 +117,9 @@ private fun Pages(model: AppViewModel, notebook: Notebook, activity: FragmentAct
         Screen.Licenses -> LicensesScreen(model)
         Screen.Export -> ExportScreen(model, notebook)
         Screen.Import -> ImportScreen(model, notebook)
+        Screen.Ai -> AiScreen(model, notebook)
+        Screen.AiPreview -> AiPreviewScreen(model)
+        Screen.AiResult -> AiResultScreen(model, notebook)
     }
 
     val context = LocalContext.current

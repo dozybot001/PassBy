@@ -56,11 +56,11 @@ printf '%s\n' "$BADGING" | grep -q "versionName='$VERSION'" || fail "版本号�
 if printf '%s\n' "$BADGING" | grep -q 'application-debuggable'; then fail "这个包可以调试"; fi
 
 # 3. Its permissions are exactly the ones on the list, the same list the build checks
-#    (CheckPermissions in app/build.gradle.kts). Anything else, a network permission above all, stops here.
+#    (CheckPermissions in app/build.gradle.kts). INTERNET is there for AI grouping only. Anything else stops here.
 OWN_PERMISSION="$PACKAGE.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
 PERMISSIONS="$("$BUILD_TOOLS/aapt2" dump permissions "$PENDING")" || fail "读不出包的权限"
 USED="$(printf '%s\n' "$PERMISSIONS" | sed -n "s/^uses-permission: name='\([^']*\)'.*$/\1/p" | sort)"
-WANTED="$(printf '%s\n' android.permission.USE_BIOMETRIC android.permission.USE_FINGERPRINT "$OWN_PERMISSION" | sort)"
+WANTED="$(printf '%s\n' android.permission.INTERNET android.permission.USE_BIOMETRIC android.permission.USE_FINGERPRINT "$OWN_PERMISSION" | sort)"
 [ "$USED" = "$WANTED" ] || fail "这个包申请的权限和名单不一样：$(printf '%s' "$USED" | tr '\n' ' ')"
 DECLARED="$(printf '%s\n' "$PERMISSIONS" | sed -n 's/^permission: //p' | sort)"
 [ "$DECLARED" = "$OWN_PERMISSION" ] || fail "这个包声明的权限和名单不一样：$(printf '%s' "$DECLARED" | tr '\n' ' ')"

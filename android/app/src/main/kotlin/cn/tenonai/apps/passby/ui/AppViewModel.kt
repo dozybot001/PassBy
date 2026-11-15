@@ -11,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import cn.tenonai.apps.passby.PassByApp
 import cn.tenonai.apps.passby.R
+import cn.tenonai.apps.passby.core.AiGrouping
 import cn.tenonai.apps.passby.core.Entry
 import cn.tenonai.apps.passby.core.ExportException
 import cn.tenonai.apps.passby.core.ExportFile
@@ -21,8 +22,11 @@ import cn.tenonai.apps.passby.core.ImportMerge
 import cn.tenonai.apps.passby.core.Notebook
 import cn.tenonai.apps.passby.core.newId
 import cn.tenonai.apps.passby.data.NotebookState
+import cn.tenonai.apps.passby.system.AiClient
+import cn.tenonai.apps.passby.system.AiSettings
 import cn.tenonai.apps.passby.system.ExportCache
 import cn.tenonai.apps.passby.system.Gate
+import java.io.IOException
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,7 +51,22 @@ sealed interface Screen {
     data object Licenses : Screen
     data object Export : Screen
     data object Import : Screen
+
+    /** Turning AI grouping on and off, and where it sends. */
+    data object Ai : Screen
+
+    /** What is about to be sent, shown before anything is sent. */
+    data object AiPreview : Screen
+
+    /** The model's suggestions, to tick and apply. */
+    data object AiResult : Screen
 }
+
+/** One request as shown on the preview page: the body, and which entry each numbered title belongs to. */
+class AiDraft(val body: String, val titles: List<String>, val folders: List<String>, val entryIds: List<String>, val blankIds: List<String>, val leftOut: Int)
+
+/** One entry the model has a suggestion for. [title] and [folder] are null where nothing would change. */
+class AiRow(val entryId: String, val oldTitle: String, val title: String?, val oldFolder: String?, val folder: String?, val unclear: Boolean)
 
 /** A short notice at the bottom of the screen, with at most one action. */
 class Notice(val text: String, val actionLabel: String? = null, val action: (() -> Unit)? = null)
@@ -86,6 +105,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var editingIsNew by mutableStateOf(false)
         private set
     private var draftJob: Job? = null
+
+    /** Null while AI grouping is off. */
+    var aiConfig by mutableStateOf(app.aiSettings.load())
+        private set
+    var aiHasKey by mutableStateOf(app.aiSettings.hasKey)
+        private set
+    var aiDraft by mutableStateOf<AiDraft?>(null)
+        private set
+    var aiRows by mutableStateOf<List<AiRow>>(emptyList())
+        private set
+    var aiWorking by mutableStateOf(false)
+        private set
+    var aiError by mutableStateOf<String?>(null)
+        private set
 
     init {
         viewModelScope.launch { repository.load() }
@@ -321,6 +354,139 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             outcome.notebook
         }
         return if (saved) result else null
+    }
+
+    // ---- AI grouping ----
+
+    /** Turns AI grouping on with the given address and model, or changes them. A key for another host is removed. */
+    fun aiSave(config: AiSettings.Config): Boolean = try {
+        app.aiSettings.save(config)
+        aiConfig = config
+        aiHasKey = app.aiSettings.hasKey
+        true
+    } catch (e: IOException) {
+        notices.tryEmit(Notice(string(R.string.save_failed)))
+        false
+    }
+
+    /** Turns AI grouping off and removes the API key and settings from this phone. */
+    fun aiTurnOff() {
+        app.aiSettings.turnOff()
+        aiConfig = null
+        aiHasKey = false
+        aiDraft = null
+        aiRows = emptyList()
+        aiError = null
+    }
+
+    fun aiSaveKey(apiKey: String): Boolean {
+        val host = aiConfig?.let { AiGrouping.endpoint(it.endpoint) }?.host ?: return false
+        return try {
+            app.aiSettings.saveKey(apiKey.trim(), host)
+            aiHasKey = true
+            true
+        } catch (e: Exception) {
+            notices.tryEmit(Notice(string(R.string.save_failed)))
+            false
+        }
+    }
+
+    fun aiRemoveKey() {
+        app.aiSettings.removeKey()
+        aiHasKey = false
+    }
+
+    /**
+     * Builds the request from titles and folder names and opens the page that shows it. Nothing is
+     * sent here. Entries without a title are not sent; they go to the folder for unclear titles.
+     */
+    fun aiPrepare() {
+        val notebook = notebook() ?: return
+        val config = aiConfig ?: return
+        val titled = notebook.entries.filter { it.title.isNotBlank() }
+        val sent = titled.take(AiGrouping.MAX_TITLES)
+        val titles = sent.map { it.title }
+        val folders = notebook.folders.map { it.name }
+        aiDraft = AiDraft(
+            body = AiGrouping.request(titles, folders, config.model),
+            titles = titles,
+            folders = folders,
+            entryIds = sent.map { it.id },
+            blankIds = notebook.entries.filter { it.title.isBlank() }.map { it.id },
+            leftOut = titled.size - sent.size,
+        )
+        aiError = null
+        open(Screen.AiPreview)
+    }
+
+    /** Sends the request the preview page is showing, as it is shown, and opens the suggestions. */
+    fun aiSend() {
+        val draft = aiDraft ?: return
+        if (aiWorking) return
+        aiWorking = true
+        aiError = null
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) { AiClient.send(app.aiSettings, AiClient.Approved(draft.body)) }
+                val suggestions = withContext(Dispatchers.Default) { AiGrouping.parse(response, draft.titles.size) }
+                aiRows = rows(draft, suggestions)
+                close(Screen.AiPreview)
+                open(Screen.AiResult)
+            } catch (e: AiClient.Failure) {
+                aiHasKey = app.aiSettings.hasKey
+                aiError = when (e.problem) {
+                    AiClient.Problem.OFF, AiClient.Problem.ADDRESS -> string(R.string.ai_error_address)
+                    AiClient.Problem.NO_KEY -> string(R.string.ai_error_no_key)
+                    AiClient.Problem.NETWORK -> string(R.string.ai_error_network)
+                    AiClient.Problem.TIMEOUT -> string(R.string.ai_error_timeout)
+                    AiClient.Problem.REDIRECT -> string(R.string.ai_error_redirect, e.status ?: 0)
+                    AiClient.Problem.STATUS -> string(if (e.status == 401 || e.status == 403) R.string.ai_error_key_refused else R.string.ai_error_status, e.status ?: 0)
+                    AiClient.Problem.TOO_LARGE -> string(R.string.ai_error_answer)
+                }
+            } catch (e: AiGrouping.UnusableAnswer) {
+                aiError = string(R.string.ai_error_answer)
+            }
+            aiWorking = false
+        }
+    }
+
+    private fun rows(draft: AiDraft, suggestions: List<AiGrouping.Suggestion>): List<AiRow> {
+        val notebook = notebook() ?: return emptyList()
+        val byId = notebook.entries.associateBy { it.id }
+        val unclearName = string(R.string.ai_unclear_folder)
+        val out = ArrayList<AiRow>()
+        for (suggestion in suggestions) {
+            val entry = byId[draft.entryIds[suggestion.index - 1]] ?: continue
+            val oldFolder = notebook.folder(entry.folderId)?.name
+            val folder = (if (suggestion.unclear) unclearName else suggestion.folder)?.takeIf { it != oldFolder }
+            val title = (if (suggestion.unclear) null else suggestion.title)?.takeIf { it != entry.title }
+            if (folder != null || title != null) out.add(AiRow(entry.id, entry.title, title, oldFolder, folder, suggestion.unclear))
+        }
+        for (id in draft.blankIds) {
+            val entry = byId[id] ?: continue
+            val oldFolder = notebook.folder(entry.folderId)?.name
+            if (oldFolder != unclearName) out.add(AiRow(entry.id, entry.title, null, oldFolder, unclearName, unclear = true))
+        }
+        return out
+    }
+
+    /** Applies the ticked suggestions in one save. Entries are renamed and moved; none is removed. */
+    fun aiApply(picked: Set<String>) {
+        val changes = aiRows.filter { it.entryId in picked }.map { AiGrouping.Change(it.entryId, it.title, it.folder) }
+        var applied: AiGrouping.Applied? = null
+        change(then = {
+            aiRows = emptyList()
+            aiDraft = null
+            close(Screen.AiResult)
+            val done = applied
+            if (done != null && done.before.isNotEmpty()) {
+                notices.tryEmit(
+                    Notice(string(R.string.ai_applied, done.before.size), string(R.string.undo)) {
+                        change { notebook, now -> AiGrouping.undo(notebook, done, now) }
+                    },
+                )
+            }
+        }) { notebook, now -> AiGrouping.apply(notebook, changes, now).also { applied = it }.notebook }
     }
 
     fun startOver() {
