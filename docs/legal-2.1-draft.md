@@ -22,31 +22,33 @@ English: The Android app stays offline by default. It includes no advertising, a
 
 ### 3. 新增一节，放在「联网」后
 
+法务组 11-15 更正过一次：原稿写「DeepSeek 服务器在中国境内」，不能用。`api.deepseek.com` 解析到亚马逊 CloudFront，入口后面的服务器在哪我们证明不了，只能指向 DeepSeek 自己的隐私政策。下面是更正后的全文，另按做出来的实际补了预览、勾选后应用并可撤销、一次最多 500 个标题、IP 地址和应用版本号、换地址时删 key。页面上「它的隐私政策」链到 https://cdn.deepseek.com/policies/zh-CN/deepseek-privacy-policy.html，英文页用它的英文版。
+
 中文：
 
 ## AI 分组
-AI 分组默认关闭。打开时，你填入模型服务商的接口地址、模型名称和你自己的 API Key；默认填好的服务商是 DeepSeek，服务器在中国境内。
+AI 分组默认关闭。打开时，你填入模型服务商的接口地址、模型名称和你自己的 API Key。默认填好的服务商是 DeepSeek，由杭州深度求索人工智能基础技术研究有限公司提供；它怎样处理和存放你发去的内容，以它的隐私政策为准。
 
-你开始一次分组时，PassBy 从你的手机直接向这家服务商发出请求，内容是：条目的标题、你现有文件夹的名称，以及说明要做什么的提示词。账户、密码和备注不会发送。请求不经过我们的服务器，我们收不到其中的任何内容。发送前，你能看到将要发送的标题。
+你开始一次分组时，PassBy 先给你看将要发送的内容，你点「发送」后，才从你的手机直接向这家服务商发出一次请求。请求里有：条目的标题（一次最多 500 个，没有标题的条目不发送）、你现有文件夹的名称、一段固定的说明文字，以及应用的名称和版本号。账户、密码和备注这三栏不会发送。请求不经过我们的服务器，我们收不到其中的任何内容；和访问任何网络服务一样，服务商会看到你的 IP 地址。
 
-模型返回的是建议：条目分到哪个文件夹，哪些标题不清楚、需要你补充（放进「待明确」），以及标题的规范写法。建议先给你预览，你逐项确认后才改动，不会删除条目。
+模型返回的是建议：条目分到哪个文件夹，哪些标题不清楚、需要你补充（放进「待明确」文件夹），以及标题的规范写法。你勾选要采用的建议并点「应用」后才改动，应用后可以撤销；不会删除条目。
 
 发出去的内容由你选的服务商按它的隐私政策处理，它可能会保存；你选境外的服务商时，这些内容会发往境外。标题里如果写了账号、姓名之类的信息，会随标题一起发出。
 
-API Key 加密保存在这台手机上，不进系统备份和导出文件；你关闭 AI 分组或卸载 PassBy 时删除。
+API Key 加密保存在这台手机上，不进系统备份和导出文件；你关闭 AI 分组、换了服务商的地址或卸载 PassBy 时删除。
 
 English:
 
 ## AI grouping
-AI grouping is off by default. When you turn it on, you enter a model provider's endpoint, a model name and your own API key. The provider filled in by default is DeepSeek, whose servers are in mainland China.
+AI grouping is off by default. When you turn it on, you enter a model provider's endpoint, a model name and your own API key. The provider filled in by default is DeepSeek, a service of Hangzhou DeepSeek Artificial Intelligence Basic Technology Research Co., Ltd.; how it handles and stores what you send is set out in its privacy policy.
 
-When you start a grouping, PassBy sends a request from your phone straight to that provider. It contains your entries' titles, the names of your existing folders, and a prompt describing the task. Accounts, passwords and notes are never sent. The request does not pass through our servers, and we receive none of it. Before sending, you can see the titles that will be sent.
+When you start a grouping, PassBy first shows you what will be sent. Only after you tap Send does it make one request from your phone straight to that provider. The request contains your entries' titles (up to 500 at a time; entries without a title are not sent), the names of your existing folders, a fixed piece of instruction text, and the app's name and version. The account, password and notes fields are never sent. The request does not pass through our servers, and we receive none of it; as with any online service, the provider sees your IP address.
 
-What comes back is a set of suggestions: which folder each entry goes in, which titles are unclear and need your attention (placed under "To clarify"), and tidier wording for titles. You preview the suggestions and confirm them one by one before anything changes; no entry is deleted.
+What comes back is a set of suggestions: which folder each entry goes in, which titles are unclear and need your attention (placed in the "To clarify" folder), and tidier wording for titles. Nothing changes until you tick the suggestions you want and tap Apply, and you can undo it afterwards; no entry is deleted.
 
 What you send is handled by the provider you chose under its own privacy policy, and it may keep it. If you choose a provider outside mainland China, this content is sent abroad. Anything you wrote into a title, such as an account name or a person's name, is sent along with the title.
 
-Your API key is stored encrypted on this phone and is left out of system backups and export files. It is deleted when you turn AI grouping off or uninstall PassBy.
+Your API key is stored encrypted on this phone and is left out of system backups and export files. It is deleted when you turn AI grouping off, change the provider's address, or uninstall PassBy.
 
 ## 二、用户协议（同一天，小版本）
 
