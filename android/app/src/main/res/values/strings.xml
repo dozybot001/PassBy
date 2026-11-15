@@ -126,7 +126,7 @@
     <string name="publisher_name">Tenon AI</string>
     <string name="brand_description">PassBy, by Tenon AI</string>
     <string name="about_what">PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.</string>
-    <string name="about_how">No account, and nothing goes through our servers. The notebook is kept by your phone and follows the phone\'s own backup and transfer to a new phone. The app stays offline by default; it connects to the network only when you turn on one feature, AI grouping.</string>
+    <string name="about_how">No account, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone\'s own backups and device transfers. The app stays offline by default, with two exceptions: when you turn on AI grouping it connects to the model provider you choose, and when you use Sync it connects directly to your other device on the same Wi-Fi.</string>
     <string name="licenses">Open-source licenses</string>
     <string name="licenses_intro">PassBy includes the open-source software below. All of it is licensed under the Apache License, Version 2.0, which follows in full.</string>
     <string name="licenses_components" translatable="false">AndroidX and Jetpack Compose — The Android Open Source Project\nKotlin standard library, kotlinx.coroutines, kotlinx.serialization — JetBrains s.r.o. and Kotlin contributors\nJetBrains Annotations — JetBrains s.r.o.\nJSpecify — The JSpecify Authors\nGuava ListenableFuture — The Guava Authors</string>
