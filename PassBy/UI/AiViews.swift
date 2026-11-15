@@ -330,7 +330,7 @@ struct AiView: View {
                     .disabled(AiGrouping.apiKey(key) == nil || changed)
             }
         } header: { Text("API key") } footer: {
-            Text("The API key is one you get from the provider yourself; its charges are between you and the provider. It is kept in this iPhone’s keychain, does not move to another device with a backup, is left out of export files, and is not shown again once saved.")
+            Text("The API key is one you get from the provider yourself; its charges are between you and the provider. It is kept in this iPhone’s keychain, does not move to another device with a backup, is left out of export files, and is not shown again once saved. Uninstalling PassBy does not remove it; turn AI grouping off first.")
         }
     }
 }

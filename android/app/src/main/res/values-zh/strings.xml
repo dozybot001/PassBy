@@ -197,7 +197,7 @@
     <string name="ai_grouping">AI 分组</string>
     <string name="ai_off">已关闭</string>
     <string name="ai_on">已打开，使用时会联网</string>
-    <string name="ai_intro">让你选的 AI 模型按标题把密码分到文件夹里，并给标题提出更规范的写法。这个功能会连到你选的模型服务商，默认关闭。</string>
+    <string name="ai_intro">让你选的 AI 模型按标题把密码分到文件夹里，并给标题提出更规范的写法。只有你点「发送」时才会发给你选的服务商，默认关闭。</string>
     <string name="ai_only_titles">AI 只拿到标题和文件夹名。</string>
     <string name="ai_never_sent">账户、密码、备注这三栏不会发送。每次发送前，你都能看到要发出去的全部内容。</string>
     <string name="ai_switch">打开 AI 分组</string>

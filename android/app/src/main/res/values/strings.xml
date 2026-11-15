@@ -200,7 +200,7 @@
     <string name="ai_grouping">AI grouping</string>
     <string name="ai_off">Off</string>
     <string name="ai_on">On. Connects to the network when used</string>
-    <string name="ai_intro">Lets an AI model you choose sort your passwords into folders by their titles, and suggest tidier titles. This feature connects to the model provider you choose and is off by default.</string>
+    <string name="ai_intro">Lets an AI model you choose sort your passwords into folders by their titles, and suggest tidier titles. It sends to the provider you choose only when you tap Send, and it is off by default.</string>
     <string name="ai_only_titles">The AI gets titles and folder names only.</string>
     <string name="ai_never_sent">The account, password and notes fields are never sent. Before each send, you can see everything that will go out.</string>
     <string name="ai_switch">Turn on AI grouping</string>
