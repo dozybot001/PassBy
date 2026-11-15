@@ -1,18 +1,116 @@
-# PassBy 1.0 发布记录
+# PassBy iPhone 发布记录
 
 本机构建产物（`build/`，不进 Git）：每次上传成功并写进本记录后，删当次的归档、上传日志；新版本上架后，删上上个版本的归档。创始人 11-13 回 Q100「删」，同意这个做法；当天删了 1.2 以前的 8 个归档和 47 个旧日志、截图、一次性脚本，共约 74 MB，留 1.2（16）、1.3（17）的归档和 `store-screenshots`。
 
-## 2.0 的提交清单（未送审）
+## 2.1 的提交清单（未送审，2026-11-16 备好）
 
-1.3 在 2026-11-15 停止销售，商店资料没有再动。提交 2.0 时一起处理：
+iPhone 2.0 没有单独送审，并进 2.1（本地密码本 + 局域网同步 + AI 分组），版本 2.1、Build 19。1.3 在 2026-11-15 停止销售，商店资料还是旧的。创始人 11-16：「准备送审」；**提交审核前在本会话再请他确认一次**（规范 4.8）。下面的文案取代本文件后面 1.x 的「商店英文文案」「商店中文文案」「审核说明」。
 
-- **商店里的网址和描述**（产品组 11-15 转达，创始人：「发现产品关于页还有部分 tenon.asia。目前已经统一切换为 tenonai.cn」）：现在的介绍里还写着 passby.tenon.asia。描述、支持网址、营销网址、隐私政策网址都用 passby.tenonai.cn；描述按 2.0 的说法重写（没有账号、不经过我们的服务器、密码本由手机保管），不再提 Tenon 登录、iCloud 同步和网页版。
-- **法律文本**：送审前找法务组要隐私政策 4.2、用户协议 3.2 的合并稿（加上 iPhone），并把出口合规和隐私标签的答案发它看。
-- **隐私标签**：2.0 不联网、不收集数据，按「不收集数据」答；iPhone 做 AI 分组（iPhone 2.1）时要重新判断。
-- **出口合规**：只用系统自带的加密，`ITSAppUsesNonExemptEncryption` 保持 `NO`。
-- **App 备案**：创始人 11-15 定「之后上架国区统一办 app 备案」。上 App Store 中国区之前要先有备案号（规范 17.9）；2.0 提交时销售范围先不含中国大陆，或等备案号。
-- **重新上架**：提交前在本会话请创始人确认一次（规范 4.8）。审核账号不再需要，备注里说明 2.0 没有登录。
-- **没验证的**（照实写进送审前的汇报，不作为请创始人验收的前提）：导出和导入的系统文件面板、真机上的 Face ID、文件保护、换机备份、抓包确认不联网。
+### 已经验证的（11-16）
+
+- 80 项原生测试通过（模拟器 iPhone 18 Pro）。
+- AI 分组的设置和 API Key 在真实钥匙串里存、读、关闭后删除：`testSettingsAndKeyInTheRealKeychain`（模拟器，测试专用的 service，不碰应用自己存的）；两项都是「仅本设备、解锁时可读、不同步」。
+- 同步和参考实现互通，两个方向，真实的 60 万次密钥派生和真实网络栈：iPhone 作客人连 `scripts/sync-dev-host.mjs`，iPhone 作主机由 `scripts/sync-dev-guest.mjs` 连入（`testInteropAsGuestOfTheReferenceHost`、`testInteropAsHostOfTheReferenceGuest`，要在 xcodebuild 前加 `TEST_RUNNER_PASSBY_INTEROP_HOST=<ip:port>` / `TEST_RUNNER_PASSBY_INTEROP_LISTEN=<ip:port>` 才跑）。安卓和网页此前已对同一个参考实现跑通。
+
+### 没验证的（照实写进送审前的汇报，不请创始人验收）
+
+- 真机：Face ID、文件保护、系统的「本地网络」弹窗、换机备份；两台真实设备之间的同步。
+- 界面上点一遍同步和 AI 分组：这台 Mac 的 xcode-select 指向命令行工具，模拟器点按工具用不了（要创始人的密码才能改），只有渲染的页面截图和上面两类测试。
+- AI 分组对真实服务商发请求：要创始人自己的 key，在他自己的手机上做；不作为送审的前提。
+- 导出、导入的系统文件面板。
+
+### 送审前还要做的
+
+1. 法务组核对 4.3 / 3.3（在 4.2 / 3.2 上加【iPhone】部分；生成脚本和预览在会话草稿目录，定稿后上架当天发布，4.2 / 3.2 存档），以及下面的隐私标签、出口合规、审核备注。应用内政策的版本号跟线上，法务组定稿后改。
+2. 归档、上传 Build 19（上传不等于提交）。
+3. App Store Connect 里：新建 2.1 版本，换描述、推广文本、关键词、网址、截图；隐私标签改成「不收集数据」；去掉审核登录信息；销售范围不含中国大陆（没有 App 备案号）。
+4. 创始人确认后提交审核。上架后把 App Store 地址报给产品组，首页和支持页改成 iPhone 版已发布，发布 4.3 / 3.3。
+
+### 商店资料
+
+- 网址：支持 `https://passby.tenonai.cn/support/`，营销 `https://passby.tenonai.cn/`，隐私政策 `https://passby.tenonai.cn/privacy/`。
+- 截图（1320×2868，`build/store-screenshots/2.1/{en,zh-Hans}/`）：列表、详情、生成器、同步、深色列表。由 `ScreenSnapshots` 在 iPhone 18 Pro Max 模拟器上渲染，只有虚构数据，没有状态栏。
+- 隐私标签：「不收集数据」（法务组 11-15 的理由见 `docs/legal-sync-draft.md` 第五节）。`PrivacyInfo.xcprivacy` 已是不收集、不跟踪。
+- 出口合规：`ITSAppUsesNonExemptEncryption = NO`，只用系统自带的标准算法。
+- 价格：免费。无内购、订阅、广告。
+
+英文
+
+- 副标题：`A simple password notebook`
+- 推广文本：`No account, no servers of ours. Your notebook stays on your iPhone, and syncs straight to your other device over your own Wi-Fi when you ask it to.`
+- 关键词：`password,notebook,offline,local,sync,wifi,generator,accounts,notes,folders,export,backup`
+- 描述：
+
+PassBy is a simple password notebook. Each entry has four fields: title, account, password and notes. Sort entries into folders and find them with search.
+
+No account, and your notebook never passes through our servers. Your iPhone keeps your notebook, and it moves with your iPhone's own backups and device transfers. The app stays offline by default, with two exceptions: when you turn on AI grouping it connects to the model provider you choose, and when you use Sync it connects directly to your other device on the same Wi-Fi.
+
+Tap a row to copy its password; copies stay on this iPhone and expire after 60 seconds. Generate random passwords from 8 to 4096 characters.
+
+One lock: PassBy asks for Face ID, Touch ID or your device passcode when it starts and after you have been away for five minutes. You can turn the lock off in Settings.
+
+Sync: on the same Wi-Fi, sync your notebook with another phone running PassBy, or with the sync page in Chrome or Edge on a computer. One device shows an address and a pairing code; you enter them on the other. The devices connect directly and what they exchange is encrypted with a key derived from the code.
+
+AI grouping (off by default): let a model provider you choose, with your own API key, suggest folders and tidier titles. Only titles and folder names are sent, straight from your iPhone to that provider, after you have seen exactly what will go out. Nothing changes until you apply the suggestions.
+
+Encrypted export and import: keep a backup of your own, or move your notebook to another phone, including PassBy for Android.
+
+There is no account to recover a notebook from. Export a backup and keep the export code somewhere else. English and Simplified Chinese. No subscriptions, in-app purchases or ads. Requires iOS 17 or later.
+
+- 本版更新：
+
+PassBy is now a local notebook: no account, no iCloud sync, no recovery key. Your notebook is kept on your iPhone and travels with its backups.
+
+New: Sync over your own Wi-Fi with another phone or with a computer's browser, directly between the two devices.
+New: AI grouping, off by default, using a model provider and API key of your own.
+New: encrypted export and import, shared with PassBy for Android.
+
+If you used an earlier version, PassBy moves the notebook on this iPhone into the new one after Face ID; the old file is left in place.
+
+中文
+
+- 副标题：`一个简单的密码本`
+- 推广文本：`没有账号，不经过我们的服务器。密码本由 iPhone 保管；需要时，在自己的 Wi-Fi 里和另一台设备直接同步。`
+- 关键词：`密码本,密码,账户,离线,本地,同步,局域网,随机密码,生成器,文件夹,导出,备份`
+- 描述：
+
+PassBy 是一个简单的密码本。每条记录四栏：标题、账户、密码、备注；可以分文件夹，可以搜索。
+
+没有账号，不经过我们的服务器；密码本由 iPhone 保管，跟着 iPhone 自己的备份和换机走。App 默认不联网，只在两种时候例外：你打开「AI 分组」时连你选的模型服务商，你用「同步」时在同一个 Wi-Fi 里连你的另一台设备。
+
+点一行就复制密码，复制的内容只留在这台 iPhone 上，60 秒后失效。可以生成 8 到 4096 位的随机密码。
+
+一道门：启动时、离开满 5 分钟后，用 Face ID、触控 ID 或设备密码验证一次；可以在设置里关闭。
+
+同步：在同一个 Wi-Fi 里，和另一台装了 PassBy 的手机，或电脑上 Chrome、Edge 里的同步网页同步。一台设备显示地址和配对码，在另一台上输入；两台设备直接相连，内容用配对码派生的密钥加密。
+
+AI 分组（默认关闭）：用你自己选的模型服务商和你自己的 API Key，给出分组和标题写法的建议。只发标题和文件夹名，从 iPhone 直接发给这家服务商，发之前能看到要发出去的全部内容；你点应用之后才改动。
+
+加密导出和导入：自己留一份备份，或者搬到另一台手机，和安卓版通用。
+
+密码本没有账号可以找回，请导出一份备份，把导出码存在别处。支持简体中文和英文。没有订阅、内购和广告。需要 iOS 17 或更高版本。
+
+- 本版更新：
+
+PassBy 现在是一个本地密码本：没有账号，不再用 iCloud 同步，也没有恢复密钥。密码本存在 iPhone 上，跟着系统备份走。
+
+新增：在自己的 Wi-Fi 里和另一台手机或电脑浏览器直接同步。
+新增：AI 分组，默认关闭，用你自己的模型服务商和 API Key。
+新增：加密导出和导入，和安卓版通用。
+
+用过旧版的：验证 Face ID 后，PassBy 会把这台 iPhone 上的密码本搬进新版，旧文件原样保留。
+
+### 审核备注（英文）
+
+PassBy 2.1 is a local password notebook. There is no account and no sign-in, so no demo account is needed. We operate no server for the app: it does not connect to us.
+
+1. Launch the app and add an entry with New password. Tap a row to copy its password; use the generator, folders and search as usual.
+2. Lock: the app asks for Face ID, Touch ID or the device passcode at launch and after five minutes away. It can be turned off in Settings. On a device with no passcode the app opens and shows a one-time notice.
+3. Settings › Export and Import write and read an encrypted .passby file.
+4. Settings › Sync works only between two devices on the same local network, started by the user. One device listens and shows its address and a 12-character pairing code; the other enters them. The devices connect directly over the local network; nothing passes through any server. iOS asks for Local Network permission the first time (NSLocalNetworkUsageDescription). Bonjour is not used. To try it with one iPhone, open https://passby.tenonai.cn/app/ in Chrome or Edge on a computer on the same Wi-Fi and enter the address and code shown on the iPhone.
+5. Settings › AI grouping is off by default and optional. The user enters a model provider's address, a model name and their own API key. Before anything is sent, the app shows the exact request; only entry titles and folder names are sent, directly from the iPhone to the provider the user chose, after the user taps Send. Accounts, passwords and notes are never sent. We do not provide the AI service or a key, and we receive nothing. To see the preview without a real key, turn the feature on and enter any text as the API key; the preview page then shows the full request before anything is sent. Sending needs a real key from a provider.
+6. Data: the app collects no data. Encryption uses only Apple's system frameworks (CryptoKit, CommonCrypto) with standard algorithms.
+7. People who installed an earlier version: after Face ID the app reads the notebook that version left on the device and moves it into the new local file; the old file is left in place. iCloud and Tenon sign-in are no longer used.
 
 ## 待定：中国大陆是否先免费（创始人决定）
 

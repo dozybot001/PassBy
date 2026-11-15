@@ -282,7 +282,7 @@ final class ScreenSnapshots: XCTestCase {
                     .environmentObject(session).tint(Palette.accent).foregroundStyle(Palette.ink))
                 let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
                 let window = UIWindow(windowScene: scene)
-                window.frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+                window.frame = scene.screen.bounds
                 window.overrideUserInterfaceStyle = style
                 window.rootViewController = controller
                 window.makeKeyAndVisible()
