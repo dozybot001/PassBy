@@ -1,140 +1,89 @@
 # PassBy
 
-一个简单的密码本。iPhone 端为原生 SwiftUI 应用。开发者：Zeng Deyang。
+一个简单的密码本。没有账号，App 不联网，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。
 
-## 访问
+由长沙榫卯人工智能科技有限公司（榫卯 Tenon AI）提供，免费，源代码以 MIT 许可证公开。
 
-- iPhone：[App Store](https://apps.apple.com/app/id6817881529)，iOS 17 及以上，免费（2026-11-14 起）。
-- 网页：<https://passby.tenonai.cn/>，用于打开已在 iPhone 上创建的密码本。
+## 现状
 
-## 快速开始
+| | 版本 | 状态 |
+| --- | --- | --- |
+| 安卓 | 2.0 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
+| iPhone | 2.0 | 开发中，做好后在 App Store 提供 |
+| 网页 | | 只读的网页版开发中：在电脑上打开手机导出的文件，查看和复制 |
 
-1. 在 iPhone 上安装 PassBy，用 Tenon 账号登录并创建密码本，把恢复密钥保存在 PassBy 之外。
-2. 在电脑浏览器打开网页版，登录同一个 Tenon 账号，连接同一个 Apple 账号，用恢复密钥授权这台浏览器。
+1.x 的 iPhone 版和网页版（Tenon 账号登录、iCloud 同步）已于 2026-11-15 停止提供，见[更新记录](CHANGELOG.md)。
 
-开发与测试见下文「工程」。
+## 安装安卓版
+
+1. 在 Releases 里下载 `PassBy-<版本>.apk`，需要 Android 8.0 或更高。
+2. 安装前可以核对：每个版本的说明里有安装包的 SHA-256；安装包由长沙榫卯人工智能科技有限公司签名，签名证书的 SHA-256 指纹登记在 [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256)，也公布在[支持页](https://passby.tenonai.cn/support/)上。
+3. 以后更新时，系统如果提示签名不一致，不要安装。
+
+## 能做什么
+
+- 条目有标题、账户、密码、备注四栏，可以放进文件夹，可以搜索。
+- 点一行就复制密码，复制的内容 60 秒后清除。
+- 密码生成器：8 到 4096 位，可选大小写字母、数字、符号。
+- 一道门：打开时验证一次，离开满 5 分钟再验证；用指纹或人脸，没有就用锁屏密码；可以关。
+- 删除的条目在「最近删除」里留 30 天。
+- 加密导出和导入：导出成一个 `.passby` 文件，用来自己留备份、换手机，或者在 iPhone 和安卓之间搬。
+- 中文和英文，深色和浅色。
+
+不做的：账号、云同步、自动填充、广告、统计。
+
+## 密码本放在哪里，靠什么保护
+
+- 密码本是手机上 App 自己目录里的一个文件，由系统的文件加密保护，手机锁着时读不出来。PassBy 不另加自己的密钥，所以它的安全取决于手机的锁屏密码。没有设锁屏的手机，这层保护不起作用，App 会提示一次。
+- 它跟着系统的备份和换机走。备份由 Apple、Google 或你的电脑保存，不经过我们；备份本身有没有加密，取决于你的设置，详见[隐私政策](https://passby.tenonai.cn/privacy/)。
+- 导出文件用 AES-256-GCM 加密，密钥由导出码或你设的口令经 PBKDF2-HMAC-SHA256（60 万次）派生。导出码和口令都不保存，丢了就打不开文件。格式见 [docs/export-format.md](docs/export-format.md)，各端共用同一份[测试向量](docs/export-vectors.json)。
+- 加密只用系统自带的实现，不带第三方加密库。
+- 没有请第三方做过安全审计。解锁了的手机、你粘贴进去的应用、拿到导出文件和导出码的人，都能读到密码。
+
+发现安全问题请看 [SECURITY.md](SECURITY.md)。
 
 ## 文档
 
-- [网页版与发布](docs/web-app.md)
+- [2.0 的设计和决定](docs/local-notebook.md)
+- [导出文件格式](docs/export-format.md)
+- [安卓版](docs/android.md)
 - [隐私与数据清单](docs/privacy.md)
 - [App Store 发布记录](docs/app-store-release.md)
 - [更新记录](CHANGELOG.md)
 - 线上：[隐私政策](https://passby.tenonai.cn/privacy/)、[用户协议](https://passby.tenonai.cn/terms/)、[支持](https://passby.tenonai.cn/support/)
 
+文档是开发过程中写下的记录，里面有当时的讨论和决定，以代码和上面的线上页面为准。
+
+## 开发
+
+- iPhone：打开 [PassBy.xcodeproj](PassBy.xcodeproj)，最低 iOS 17。
+
+  ```sh
+  xcodebuild -project PassBy.xcodeproj -scheme PassBy \
+    -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
+    -derivedDataPath build CODE_SIGN_IDENTITY=- test
+  ```
+
+- 安卓：见 [docs/android.md](docs/android.md)。
+- 导出格式的参考实现：`node scripts/export-format.mjs --check`。
+- 网站（`public/`）是静态文件，没有构建步骤。
+
+给 agent 的项目说明在 [AGENTS.md](AGENTS.md)。
+
 ## 许可证
 
-版权所有 © 2026 Zeng Deyang，保留所有权利。本仓库不开源。
+[MIT](LICENSE)。Copyright (c) 2026 Changsha Tenon Artificial Intelligence Technology Co., Ltd.
 
-## 首版范围
+## 名称和标志
 
-- 条目包含标题、账户、密码、备注，支持文件夹、搜索、编辑和删除。
-- Tenon 是唯一账号服务；网页和新建 iPhone 密码本使用 Tenon OIDC 登录，Apple 私有存储授权独立处理。已有本机密码本保持 Face ID / Touch ID 访问。
-- 每次离开前台立即遮挡并锁定，回来必须重新通过 Face ID（iPhone SE 为 Touch ID）。
-- 新建密码本须输入恢复密钥中随机一组确认已保存；设置中再次通过生物识别后可查看恢复密钥。
-- 删除的密码（含网页或其他设备删除）在本机加密状态的「最近删除」保留 30 天，可恢复；不同步，不改变云端格式。
-- 密码默认隐藏；复制仅保留在本机剪贴板，60 秒后由系统过期。
-- 首页和密码栏均可打开生成器；默认 16 位，滑块选择 8–24 位，可手动输入至 4096 位，可选大小写字母、数字、符号。
-- 「使用此密码」先保存加密草稿，再填入并复制；切回应用解锁后，点击“新建密码”恢复草稿，不自动弹出编辑页。
-- 黑白灰配色，主次操作统一为系统胶囊；iOS 26 起使用原生 Liquid Glass 按钮。
-- 中英文本地化随系统语言；设置页提供“语言 / Language”入口，可在 iOS 设置中单独选择应用语言。支持深色模式和动态字号。
-- 支持网页版（Tenon 登录 + Apple 数据授权 + 恢复密钥）；不提供 AutoFill、自有密码服务器或统计 SDK。
+PassBy 和榫卯 Tenon 的名称和标志（包括 `PassBy/Assets.xcassets/`、`android/app/src/main/res/`、`public/web/` 和 `public/apple-touch-icon.png` 里的图标）不在 MIT 许可证的授权范围内。你可以照原样提到它们，说明你在使用 PassBy 或基于它修改；但不要把它们用作你自己产品的名称或标志，也不要让人以为你的产品来自榫卯 Tenon AI 或得到它的认可。
 
-## 安全与同步
+Name and logos: The PassBy and Tenon AI names and logos, including the icons in `PassBy/Assets.xcassets/`, `android/app/src/main/res/`, `public/web/` and `public/apple-touch-icon.png`, are not licensed under the MIT License. You may refer to them as they are to say that you use PassBy or that your work is based on it, but do not use them as the name or logo of your own product, or in a way that suggests your product comes from or is endorsed by Tenon AI.
 
-CryptoKit AES-256-GCM 加密整个密码本，包括文件夹名称。云端只保存密文资产与格式版本。
-本机密钥放在 Keychain，使用 `biometryCurrentSet` 与
-`kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly`，不进行 Keychain 云同步。
-本机加密文件使用完整文件保护并排除系统备份。
+## 第三方声明
 
-恢复密钥包含随机生成的 256 位解密密钥与输入校验码。用户需要在应用之外保存它。
-新设备在同一 iCloud 账户下，输入恢复密钥并通过 Face ID 后才能读取密码本。
-更改 Face ID、移除设备密码或重新安装可能导致本机密钥丢失；恢复需要 iCloud 密文和恢复密钥。
-开发者无法恢复丢失的密钥。
+现在的代码不包含第三方代码和字体。早期版本的网页用过 JetBrains Mono 字体，按 SIL Open Font License 1.1 授权。
 
-同步在解锁且前台时进行，编辑先保存本机，离线修改随后重试。
-App 冷启动需确认系统 iCloud 身份；身份无法确认时保持锁定。
-每个 iCloud 身份使用独立的本机缓存和 Keychain 条目；账户变化立即锁定。
-CloudKit change tag 防止覆盖旧版本；三方合并保留独立修改，密码冲突另存副本。
-草稿只留在加密的本机状态中，不进入云端密码本。
+---
 
-UIKit 的独立不透明窗口在 `sceneWillResignActive` 同步遮挡界面，保护应用切换器快照。
-录屏或屏幕镜像期间拒绝解锁。iOS 不提供普遍禁止用户截图的公开 API，因此不承诺防截图。
-解锁设备、接收粘贴的应用以及恢复密钥持有人仍属于安全边界；没有「绝对安全」保证。
-Swift 字符串与系统内存副本不能保证逐字节清零，此版本未经第三方安全审计。
-
-## 工程
-
-打开 [PassBy.xcodeproj](PassBy.xcodeproj)。最低 iOS 17，首发 iPhone。
-
-```sh
-xcodebuild -project PassBy.xcodeproj -scheme PassBy \
-  -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
-  -derivedDataPath build CODE_SIGN_IDENTITY=- test
-```
-
-模拟器必须进行临时签名以包含 CloudKit entitlement；禁用签名会导致 CloudKit 启动失败。
-模拟器可验证加密、合并、恢复码、生成器与会话逻辑；真实 Face ID、设备锁屏下的文件保护和
-多设备 iCloud 同步必须在真机验证。
-
-App ID：`cn.tenonai.apps.passby`。CloudKit 容器：`iCloud.cn.tenonai.apps.passby`。
-`Notebook` 记录包含 `format`（Int64）与 `ciphertext`（Asset），位于用户私有数据库。
-不上传恢复密钥、账户名、密码、标题或备注的明文。
-
-## 发布前仍需验证
-
-- 生产 CloudKit schema 已部署；仍需验证生产签名版本的实际同步。
-- 真机 Face ID 成功、失败、取消、锁定、更改登记、后台与系统中断。
-- 两台设备同步、离线编辑、同时修改、账户切换与恢复流程。
-- 草稿生成密码、切换注册应用粘贴、返回解锁并保存的完整旅程。
-- UI 的小屏、大字号、深色模式、VoiceOver 与中文/英文。
-- 2026-10-05 15:07 SGT 免费首发重新提交：版本 1.0（Build 13），Apple 显示“等待审核”，替换已取消的 Build 11；$0.00、174 个海外地区，审核通过后手动发布。中英文资料、截图、隐私披露及普通权限审核账号继续沿用，审核说明已更新为 30 天登录。用户已确认重开只需 Face ID，设置保留 Tenon 登录。跨设备恢复等真实设备质量验证仍须继续，不以提交审核作为通过安全审计的证据。
-
-历史记录（2026-10-05，Build 12）：中央授权页已补齐手机续期权限说明，修复“暂不支持这项授权”。Build 12 增加未登录时的锁屏页 Tenon 入口，不改变已有密码本的 Face ID 访问；当时已归档并更新安装，13:59 SGT 上传仍因 Xcode Apple 认证失效而失败。后续 Build 13 已完成登录验证、上传并替换审核包。
-
-发布记录与当前进度见 [上架准备](docs/app-store-release.md)。
-
-当前首版已提交 App Store 审核；自动测试与商店提交不等同于第三方安全审计。
-
-2026-10-01：21 项单元测试通过；真机签名构建成功，首个开发版本已安装并启动到
-iPhone 17 Pro Max。密码生成器中文预览已检查，首次真机解锁与同步仍待验证。
-
-2026-10-01：build 2 显式使用正式 CloudKit 环境，与网页版统一。旧版加密本地缓存
-通过 Face ID 与恢复密钥在设备内恢复，或在设置确认“启用网页访问”；不自动覆盖已有云端密码本。
-品牌图标统一通过 `swift scripts/generate-brand.swift` 生成，应用内标志、App Store 图标与网页共用图形。
-
-2026-10-29：定位收敛为极简密码本，Build 14 源码加入 Touch ID、恢复密钥查看与确认、本机最近删除；原生 46 项、网页 17 项测试通过。计划 US$0.99 买断，门禁见 [上架准备](docs/app-store-release.md)。
-
-2026-10-31：1.1 已发布并改为 US$0.99 买断；1.1.1（Build 15）含新登录方式，已提交审核，过审后自动发布。2026-11-02 确认 1.1.1 已上架。详见[发布记录](docs/app-store-release.md)。
-
-## Tenon 产品规范对齐（2026-10-03）
-
-- 手机设置和网页设置均提供独立“关于 PassBy”，包含原字标、实际版本、产品能力、出品方与官网。原生版本读 Bundle；网页发布时从对应 Git 提交的工程版本和发布 SHA 注入元数据。
-- iOS 继续使用系统应用语言；网页中英切换保留当前编辑、文件夹名称、生成器配置与恢复密钥输入。正在保存时暂停语言切换，结束后恢复。
-- 登录、恢复、同步、保存、删除及复制的等待操作提供按钮内进度，并防止重复提交。保持黑白灰、原生胶囊和列表按钮各自既有样式。
-- 只保留 Tenon 产品登录。CloudKit 是独立存储授权，Face ID 与密码本恢复密钥保持原职责；没有更改现有会话期限或业务数据。
-- 按用户明确决定保留纯 PassBy 应用与软件内图标；完整字标继续携带 Tenon 标识，保持原产品字体。
-
-### 网页设置与共用弹窗控件
-
-- 圈 i 紧邻直接对应的标题，图形按标题字号在 14–22px 之间调整，独立点击区域至少 32px；标题末尾与 i 一起换行。设置里的自动锁定、撤销浏览器授权、删除账号各自提供说明；操作按钮与提示按钮分开，点击 i 不执行业务动作。生成器的长度、密码字段及首次授权的恢复密钥说明也放在对应标签旁，操作状态和错误仍直接显示。
-- Tenon 会话读取、Apple 连接及密码本预检查共用“正在打开密码本”进度界面，不提前显示授权选项或密钥表单；需要用户操作、首次授权及错误恢复时再显示对应界面，授权行为和权限范围不变。
-- 提示采用顶层 Popover、12px 圆角及规范阴影；支持点击、桌面悬停、键盘聚焦和 Escape，避免被滚动正文裁切。
-- 语言与文件夹菜单自绘入口和选项面板，支持方向键、Home/End、Enter 和 Escape。生成器和 Apple 存储授权选项采用 switch 语义的胶囊开关。
-- 网页共用弹窗集中定义 600×680px 外框，按可用视窗缩小；标题和操作栏固定，仅正文内部滚动。表单底栏提交按钮显式关联正文表单。
-
-## 浏览器首次授权与 30 天会话
-
-网页与新版 iPhone（原生协议 v3）Tenon 产品会话统一在登录或续期验证成功后有效 30 天。回调和续期必须验证当时中央令牌的签名、签发者、受众、有效性、用户身份、角色与已验证邮箱；通过验证后建立独立产品会话，不再用中央 OIDC 令牌的短期到期时间压缩它。网页 Cookie、本地到期时间、iPhone 仅本机钥匙串凭据与显示采用相同 30 天期限；网页不静默续期。手机安全轮换续期凭据仍在 30 天未续期后到期。关闭应用不会退出账号，离线不会延长原到期时间，已有本机密码本仍可使用 Face ID。产品会话以摘要和身份快照持久保存在服务私有 SQLite，正常重启和部署保留原绝对到期时间。普通请求只验证本地会话，不轮询中央账号服务或滑动续期。
-
-原生采用唯一协议 v3：登录 start 和 refresh 均声明 `session_version=3`，服务与 iPhone 仅接受 v3，不提供降级路径。旧 iPhone Build 11/12 及旧钥匙串凭据需要新包和重新登录；已有本机密码本仍由 Face ID 独立访问。
-
-2026-10-05 已按新静态站→v3 认证服务→新版 iPhone 包的顺序发布，30 天登录版本的网页和 BFF 正式源提交为 `4c5a1719a101538bc26dab469fedd281d537804a`。Build 13 已安装并由用户确认重开保留 Tenon 登录、只需 Face ID；14:50 SGT 上传 Apple，15:07 SGT 替换旧 Build 11 并重新提交，当前等待审核。首次切换 SQLite 无法恢复旧内存会话，需要最后一次重新登录；后续部署保留原到期时间，退出与续期撤销也会持久化。回滚到旧内存版会再次丢失登录，常规代码回滚不得自动恢复旧数据库备份。登录事务仍为 10 分钟，手机 PKCE 兑换票据仍为一次性 60 秒；剪贴板、Face ID 与密码本自动锁定期限保持各自职责。详见 [发布记录](docs/app-store-release.md)。
-
-网页版首次用恢复密钥解密后，在 IndexedDB 保存不可导出的 AES-GCM CryptoKey，按 Tenon `(issuer, sub)` 与 Apple `userRecordName` 隔离。之后获得有效的 Tenon 会话与 Apple 存储授权时可自动打开；离开窗口、退出或到期清除内存密码本。设置提供撤销本浏览器授权。密钥原文、恢复字符串、密码本明文及 Tenon 令牌均不写入浏览器持久存储，也不上传解密密钥。
-
-这是可信浏览器授权，不是硬件密钥保护：具有该浏览器配置或同源脚本权限的代码仍可能使用不可导出的密钥，Tenon 校验是应用层门禁。适用于个人电脑，不能把它描述为与 iPhone Face ID 等价的保护。Apple 存储身份字段依据官方 CloudKit UserIdentity 文档： https://developer.apple.com/documentation/cloudkitjs/cloudkit.useridentity/userrecordname 。
-
-### 官网偏好衔接
-
-网页接收并保存 Tenon 官网传来的 `theme=dark|light`、`lang=en|zh`，未指定时保留网页选择并跟随设备默认设置。此处只传递显示偏好，不共享身份或密码本权限；iPhone 仍使用原生系统语言与外观。
+榫卯 Tenon AI · [tenonai.cn](https://tenonai.cn/)

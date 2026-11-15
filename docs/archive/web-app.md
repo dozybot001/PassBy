@@ -184,7 +184,7 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 - **Tenon issuer**：服务端依次尝试 `TENON_ISSUERS` 的 discovery，用第一个应答、且 issuer 与地址一致的那个；结果缓存 10 分钟，换取令牌失败时提前重查。切换期间默认值同时列着新旧两个 issuer，Tenon 11-13 11:38 切换后两个会话槽自动改用新 issuer；当天 12 点后旧 issuer 已从默认值删去，现在只接受 `https://account.tenonai.cn/api/auth` 签发的令牌，删除凭证和 `execute` 的来源也只认 account.tenonai.cn。身份统一记在原 issuer 名下（`ISSUER`，只是记录用的名字，不是地址），因为 Tenon 切换不改 `sub`，所以会话、删除回执、浏览器授权的绑定，以及旧版 iPhone 对 issuer 的检查都不受影响。产品删除接口按当前 issuer 拼地址。发现文档、令牌、UserInfo、JWKS 和撤销请求都由 openid-client 6.8.8 以 `redirect: 'manual'` 发出，只发往发现文档给出的地址；产品删除用 `redirect: 'error'`。所以 account.tenon.asia 的 308 不会带着客户端密钥或 refresh token 跳转（安全组切换条件 1，Tenon-AI 提交 456647d）。
 - **主机**：网页会话槽接受 `passby.tenon.asia` 和 `passby.tenonai.cn`，原生会话槽接受 `tenon.asia` 和 `passby.tenonai.cn`。回调按请求主机生成，回调主机必须和发起登录的主机一致，Origin 也要和请求主机一致。需要登记的回调：网页 `https://passby.tenonai.cn/api/auth/callback`，iPhone `https://passby.tenonai.cn/passby/api/auth/ios/callback`。
-- **Caddy**：[release-site.sh](../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone（该路径的网关错误返回维护页，App 只看状态码）。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。
+- **Caddy**：[release-site.sh](../../scripts/release-site.sh) 的 `web_hosts` 决定 passby.caddy 服务哪些主机，第一个是规范主机，旧 `/passby/` 页面跳到它。新主机同时提供 `/passby/api/*` 给 iPhone（该路径的网关错误返回维护页，App 只看状态码）。两个发布脚本对每个主机都检查健康、HSTS 和会话接口。
 - **网页**：中央登录和删除链接接受两个账号域名。Tenon 账号、隐私说明和官网链接 11-13 起指向 account.tenonai.cn、tenonai.cn（b035919）；法律文本里的账号链接 11-17 随域名一起改。
 - **iPhone（1.3 起）**：先用旧地址；`passby.tenonai.cn/passby/api/health` 应答后改用新地址，最多每 10 分钟查一次，同一次启动内不退回。隐私、条款、支持链接跟着换主机。删除链接接受两个账号域名。旧版 App 只认 account.tenon.asia，所以服务端给原生会话槽返回旧主机的删除链接，靠 Tenon 的跳转走到新地址。PassBy 没有 Associated Domains、webcredentials 或 Passkey，不需要 apple-app-site-association。
 
@@ -228,10 +228,10 @@ drops from 34pt to 28pt on phones too narrow for the 34pt lockup beside its butt
 
 网页版设置的删除入口先调用同源 `POST /api/auth/tenon/delete/start`，iPhone 使用自己的产品 Bearer 会话调用 `/passby/api/auth/tenon/delete/start`。两者从服务器取得受控来源，进入中央删除页选择「仅删除 PassBy」或「删除整个 Tenon 账号」，不通过 GET 或浏览器传入的 sub 删除。
 
-[服务端执行器](../server/product-deletion.mjs) 只接受中央短期 operationId/grant，使用既有 confidential 客户端 Basic 向中央 claim。SQLite 在同事务移除此用户在两个部署入口的所有产品会话、标记原生续期摘要撤销、递增身份代次并保存回执。迟到的回调、兑换及刷新不能恢复已删除身份；同一操作重试不删除后来主动新登录的身份。中央 completed 而本地回执缺失时拒绝删除。Apple 私有密码本、设备恢复密钥、本机钥匙串和浏览器授权均保留，此流程不具备密码本的解密或擦除能力。
+[服务端执行器](../../server/product-deletion.mjs) 只接受中央短期 operationId/grant，使用既有 confidential 客户端 Basic 向中央 claim。SQLite 在同事务移除此用户在两个部署入口的所有产品会话、标记原生续期摘要撤销、递增身份代次并保存回执。迟到的回调、兑换及刷新不能恢复已删除身份；同一操作重试不删除后来主动新登录的身份。中央 completed 而本地回执缺失时拒绝删除。Apple 私有密码本、设备恢复密钥、本机钥匙串和浏览器授权均保留，此流程不具备密码本的解密或擦除能力。
 
 邮件/中央登录会话仍独立。iPhone 从删除页面返回时检查一次 PassBy 会话；被撤销时清理本机产品登录并锁定密码本，不进行日常中央轮询。浏览器回到已登记入口重新读取本地登录状态。失败和未完成状态由中央呈现，不伪造成功。
 
 持久化扩展采用现有 schema1 的附加回执/代次表，旧代码回滚不恢复数据库；正式发布在新候选通过检查后、切流前停止旧 writer，关闭首次升级中旧回调写入窗口。新版 iPhone 源码须重新分发才能获得新的删除入口，网页/服务端发布不更新 App Store 二进制。
 
-验收：[后端](../server/test/product-deletion.test.mjs)、[网页](../scripts/test-web.mjs)、[原生](../PassByTests/SessionGateTests.swift) 使用隔离身份验证范围、近期请求的代次保护、重启/重复提交、真实请求与错误恢复，不删除生产账号。
+验收：[后端](../../server/test/product-deletion.test.mjs)、[网页](../../scripts/test-web.mjs)、[原生](../../PassByTests/SessionGateTests.swift) 使用隔离身份验证范围、近期请求的代次保护、重启/重复提交、真实请求与错误恢复，不删除生产账号。
