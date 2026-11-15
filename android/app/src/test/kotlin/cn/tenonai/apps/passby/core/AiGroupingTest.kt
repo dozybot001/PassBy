@@ -183,19 +183,20 @@ class AiGroupingTest {
     }
 
     /**
-     * The app may open a network connection in one place only. Every other source file is checked for
-     * the classes that could open one.
+     * The app may open a network connection in two places only: AiClient.kt, to the model provider the
+     * person entered, and SyncTransport.kt, to another device on the local network (docs/sync.md).
+     * Every other source file is checked for the classes that could open one.
      */
     @Test
-    fun onlyOneFileCanOpenAConnection() {
+    fun onlyTwoFilesCanOpenAConnection() {
         val sources = File(System.getProperty("passby.sources")!!)
         val connecting = Regex("""\b(URLConnection|HttpURLConnection|HttpsURLConnection|Socket|SocketChannel|DatagramSocket|ServerSocket|SSLSocket|openConnection|openStream|InetAddress|WebView|DownloadManager|ConnectivityManager)\b|\bURL\(""")
         val offenders = sources.walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
             .filter { connecting.containsMatchIn(it.readText()) }
             .map { it.name }
-            .toList()
-        assertEquals(listOf("AiClient.kt"), offenders)
+            .toSet()
+        assertEquals(setOf("AiClient.kt", "SyncTransport.kt"), offenders)
     }
 
     @Test
