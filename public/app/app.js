@@ -112,7 +112,9 @@ function pin(origin) {
 async function post(path, body) {
   const response = await fetch(pinned + path, {
     method: 'POST', body, mode: 'cors', credentials: 'omit', cache: 'no-store', redirect: 'error',
-    referrerPolicy: 'no-referrer', targetAddressSpace: 'local', signal: AbortSignal.timeout(20000),
+    referrerPolicy: 'no-referrer', targetAddressSpace: 'local',
+    // The first request is the one the browser may hold while it asks to access the local network.
+    signal: AbortSignal.timeout(path.endsWith('/begin') ? 90000 : 20000),
   });
   return { status: response.status, body: new Uint8Array(await response.arrayBuffer()) };
 }
