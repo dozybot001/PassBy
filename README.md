@@ -34,8 +34,8 @@
 
 ## 密码本放在哪里，靠什么保护
 
-- 密码本是手机上 App 自己目录里的一个文件，由系统的文件加密保护，手机锁着时读不出来。PassBy 不另加自己的密钥，所以它的安全取决于手机的锁屏密码。没有设锁屏的手机，这层保护不起作用，App 会提示一次。
-- 它跟着系统的备份和换机走。备份由 Apple、Google 或你的电脑保存，不经过我们；备份本身有没有加密，取决于你的设置，详见[隐私政策](https://passby.tenonai.cn/privacy/)。
+- 密码本是手机上 App 自己目录里的一个文件，由系统的文件加密保护：iPhone 锁着时读不出来，安卓手机在开机后第一次解锁之前读不出来。PassBy 不另加自己的密钥，所以它的安全取决于手机的锁屏密码。没有设锁屏的手机，这层保护不起作用，App 会提示一次。
+- 它跟着系统的备份和换机走。备份由提供备份的服务（Apple、Google 或手机厂商）或你的电脑保存，不经过我们；备份本身有没有加密，取决于你的设置，详见[隐私政策](https://passby.tenonai.cn/privacy/)。
 - 导出文件用 AES-256-GCM 加密，密钥由导出码或你设的口令经 PBKDF2-HMAC-SHA256（60 万次）派生。导出码和口令都不保存，丢了就打不开文件。格式见 [docs/export-format.md](docs/export-format.md)，各端共用同一份[测试向量](docs/export-vectors.json)。
 - 加密只用系统自带的实现，不带第三方加密库。
 - 没有请第三方做过安全审计。解锁了的手机、你粘贴进去的应用、拿到导出文件和导出码的人，都能读到密码。
@@ -84,7 +84,7 @@ Name and logos: The PassBy and Tenon AI names and logos, including the icons in 
 
 ## 第三方声明
 
-现在的代码和安装包不包含第三方代码和字体。早期版本（2026 年 10 月）的 iPhone 应用和网页用过 JetBrains Mono 字体，按 SIL Open Font License 1.1 授权；字体文件和许可全文（`public/web/fonts/OFL.txt`）留在仓库的历史里。
+仓库现在的代码不包含第三方代码和字体。历史提交里带有 JetBrains Mono 字体（Copyright 2020 The JetBrains Mono Project Authors），按 SIL Open Font License 1.1 授权，许可原文见 [docs/third-party/JetBrainsMono-OFL.txt](docs/third-party/JetBrainsMono-OFL.txt)。安卓安装包里带的开源库和它们的许可证，见应用里的「开源许可」页。
 
 ---
 
