@@ -239,7 +239,9 @@
     <string name="ai_preview_hide_request">Hide the full request</string>
     <string name="ai_preview_request_note">This is the request exactly as it will be sent. It starts with a fixed instruction, followed by the titles and folder names above. The API key goes in a request header and is not shown here.</string>
     <string name="ai_send">Send</string>
-    <string name="ai_working">Waiting for the AI to answer…</string>
+    <string name="ai_working_waiting">Sent. Waiting for the model to start answering… (%1$d s)</string>
+    <string name="ai_working_receiving">The model is answering: %1$d of %2$d suggestions received (%3$d s)</string>
+    <string name="ai_stop_waiting">Stop waiting</string>
     <string name="ai_nothing_to_send">Nothing to send</string>
     <string name="ai_error_address">The endpoint is not right. Go back and check it. Nothing was sent.</string>
     <string name="ai_error_no_key">There is no usable API key. Go back and enter it again. Nothing was sent.</string>

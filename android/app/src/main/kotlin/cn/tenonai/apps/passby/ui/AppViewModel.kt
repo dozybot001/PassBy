@@ -118,6 +118,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var aiWorking by mutableStateOf(false)
         private set
+
+    /** While waiting for the model: suggestions received so far, and seconds since Send. */
+    var aiReceived by mutableStateOf(0)
+        private set
+    var aiSeconds by mutableStateOf(0)
+        private set
+    private var aiCall: AiClient.Call? = null
     var aiError by mutableStateOf<String?>(null)
         private set
 
@@ -427,16 +434,33 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (aiWorking) return
         aiWorking = true
         aiError = null
+        aiReceived = 0
+        aiSeconds = 0
+        val call = AiClient.Call()
+        aiCall = call
+        // The page shows time passing, so a slow model does not look like a frozen app.
+        val clock = viewModelScope.launch {
+            while (true) {
+                delay(1000)
+                aiSeconds += 1
+            }
+        }
         viewModelScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) { AiClient.send(app.aiSettings, AiClient.Approved(draft.body)) }
-                val suggestions = withContext(Dispatchers.Default) { AiGrouping.parse(response, draft.titles.size) }
+                val content = withContext(Dispatchers.IO) {
+                    AiClient.send(app.aiSettings, AiClient.Approved(draft.body), call) { _, items ->
+                        // Only the latest count matters; a state write is safe from this thread.
+                        aiReceived = minOf(items, draft.titles.size)
+                    }
+                }
+                val suggestions = withContext(Dispatchers.Default) { AiGrouping.parseContent(content, draft.titles.size) }
                 aiRows = rows(draft, suggestions)
                 close(Screen.AiPreview)
                 open(Screen.AiResult)
             } catch (e: AiClient.Failure) {
                 aiHasKey = app.aiSettings.hasKey
                 aiError = when (e.problem) {
+                    AiClient.Problem.CANCELLED -> null
                     AiClient.Problem.OFF, AiClient.Problem.ADDRESS -> string(R.string.ai_error_address)
                     AiClient.Problem.NO_KEY -> string(R.string.ai_error_no_key)
                     AiClient.Problem.NETWORK -> string(R.string.ai_error_network)
@@ -453,8 +477,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 // Nothing unexpected may end the app here, and its text is not shown or kept.
                 aiError = string(R.string.ai_error_answer)
             }
+            clock.cancel()
+            aiCall = null
             aiWorking = false
         }
+    }
+
+    /** Stops waiting for the model. Nothing has been changed, so there is nothing to undo. */
+    fun aiCancel() {
+        aiCall?.cancel()
     }
 
     private fun rows(draft: AiDraft, suggestions: List<AiGrouping.Suggestion>): List<AiRow> {

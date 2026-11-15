@@ -44,7 +44,7 @@ class AiGroupingTest {
         val root = Json.parse(AiGrouping.request(listOf("a \"b\"", "c"), listOf("F"), "m"))
         assertEquals(setOf("model", "messages", "temperature", "stream"), (root as JsonObject).members.keys)
         assertEquals("m", root["model"].string)
-        assertEquals(false, root["stream"].bool)
+        assertEquals(true, root["stream"].bool)
         val messages = root["messages"].items!!
         assertEquals(2, messages.size)
         assertEquals("system", messages[0]["role"].string)
@@ -196,5 +196,50 @@ class AiGroupingTest {
             .map { it.name }
             .toList()
         assertEquals(listOf("AiClient.kt"), offenders)
+    }
+
+    @Test
+    fun `a streamed answer is put together from its events and counted as it arrives`() {
+        val reader = AiGrouping.StreamReader()
+        fun event(text: String) = "data: " + Json.write(
+            JsonObject(linkedMapOf("choices" to JsonArray(listOf(JsonObject(linkedMapOf("delta" to JsonObject(linkedMapOf("content" to JsonString(text))))))))),
+        )
+        reader.line(": keep-alive")
+        reader.line("")
+        reader.line("data: {\"choices\":[{\"delta\":{\"role\":\"assistant\"}}]}")
+        assertEquals(0, reader.received)
+        reader.line(event("{\"items\":[{\"n\":1,\"folder\":\"Work\","))
+        assertEquals(1, reader.items)
+        reader.line(event("\"title\":\"Mail\",\"unclear\":false},{\"n\": 2,\"unclear\":true}]}"))
+        assertEquals(2, reader.items)
+        assertFalse(reader.done)
+        reader.line("data: not json")
+        reader.line("data: [DONE]")
+        assertTrue(reader.done)
+        reader.line(event("ignored after the end"))
+        val suggestions = AiGrouping.parseContent(reader.content(), 2)
+        assertEquals(listOf("Work", null), suggestions.map { it.folder })
+        assertEquals(listOf(false, true), suggestions.map { it.unclear })
+    }
+
+    @Test
+    fun `a provider that ignores stream and answers with one document is still read`() {
+        val reader = AiGrouping.StreamReader()
+        val whole = "{\"choices\":[{\"message\":{\"content\":\"{\\\"items\\\":[{\\\"n\\\":1,\\\"folder\\\":\\\"Home\\\"}]}\"}}]}"
+        // Line breaks between members, as a pretty-printing server sends them.
+        whole.replace("{\"choices\":", "{\n\"choices\":\n").lines().forEach { reader.line(it) }
+        assertEquals("Home", AiGrouping.parseContent(reader.content(), 1).single().folder)
+    }
+
+    @Test
+    fun `an empty or oversized stream is refused`() {
+        assertThrows(AiGrouping.UnusableAnswer::class.java) { AiGrouping.StreamReader().content() }
+        val done = AiGrouping.StreamReader()
+        done.line("data: [DONE]")
+        assertThrows(AiGrouping.UnusableAnswer::class.java) { done.content() }
+        val small = AiGrouping.StreamReader(maxChars = 10)
+        assertThrows(AiGrouping.UnusableAnswer::class.java) {
+            small.line("data: {\"choices\":[{\"delta\":{\"content\":\"12345678901\"}}]}")
+        }
     }
 }

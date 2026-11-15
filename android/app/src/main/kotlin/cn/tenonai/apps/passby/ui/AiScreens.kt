@@ -281,7 +281,12 @@ fun AiPreviewScreen(model: AppViewModel) {
                 }
             }
         }
-        if (model.aiWorking) Working(stringResource(R.string.ai_working))
+        if (model.aiWorking) {
+            Working(
+                if (model.aiReceived == 0) stringResource(R.string.ai_working_waiting, model.aiSeconds)
+                else stringResource(R.string.ai_working_receiving, model.aiReceived, draft.titles.size, model.aiSeconds),
+            )
+        }
         Column(Modifier.fillMaxWidth().padding(horizontal = PagePadding, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             model.aiError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) }
             PrimaryButton(
@@ -291,6 +296,9 @@ fun AiPreviewScreen(model: AppViewModel) {
                 enabled = !model.aiWorking && draft.titles.isNotEmpty(),
                 icon = Icons.Upload,
             )
+            if (model.aiWorking) {
+                TextButton(onClick = { model.aiCancel() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.ai_stop_waiting)) }
+            }
         }
     }
 }

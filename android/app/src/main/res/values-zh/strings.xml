@@ -236,7 +236,9 @@
     <string name="ai_preview_hide_request">收起完整请求</string>
     <string name="ai_preview_request_note">这是将要发出的请求原文。开头是固定的说明文字，后面是上面的标题和文件夹名。API Key 放在请求头里，不在这里显示。</string>
     <string name="ai_send">发送</string>
-    <string name="ai_working">正在等 AI 回复…</string>
+    <string name="ai_working_waiting">已发送，正在等模型开始回复…（%1$d 秒）</string>
+    <string name="ai_working_receiving">模型正在回复：已收到 %1$d / %2$d 条建议（%3$d 秒）</string>
+    <string name="ai_stop_waiting">不等了</string>
     <string name="ai_nothing_to_send">没有要发送的内容</string>
     <string name="ai_error_address">接口地址不对，请回到上一页检查。没有发送任何内容。</string>
     <string name="ai_error_no_key">没有可用的 API Key，请回到上一页重新填写。没有发送任何内容。</string>

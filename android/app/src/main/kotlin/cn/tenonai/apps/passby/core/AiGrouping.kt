@@ -15,6 +15,9 @@ object AiGrouping {
     /** More titles than this are not sent in one request. */
     const val MAX_TITLES = 500
 
+    /** The longest answer that is read; 500 suggestions with long names stay far below it. */
+    const val MAX_ANSWER_CHARS = 400_000
+
     /** A suggested folder name or title longer than this is dropped. Counted in code points. */
     const val MAX_FOLDER_NAME = 40
     const val MAX_TITLE = 120
@@ -64,7 +67,8 @@ object AiGrouping {
                     ),
                 ),
                 "temperature" to JsonNumber("0"),
-                "stream" to JsonBool(false),
+                // The answer arrives piece by piece, so the page can show that it is coming.
+                "stream" to JsonBool(true),
             ),
         )
         return Json.write(root)
@@ -83,8 +87,17 @@ object AiGrouping {
      * agreed form.
      */
     fun parse(response: String, count: Int): List<Suggestion> {
+        val content = try {
+            Json.parse(response)["choices"].items?.firstOrNull()["message"]["content"].string ?: throw UnusableAnswer()
+        } catch (e: JsonException) {
+            throw UnusableAnswer()
+        }
+        return parseContent(content, count)
+    }
+
+    /** Reads the text the model wrote, whether it came whole or was put together from a stream. */
+    fun parseContent(content: String, count: Int): List<Suggestion> {
         val items = try {
-            val content = Json.parse(response)["choices"].items?.firstOrNull()["message"]["content"].string ?: throw UnusableAnswer()
             Json.parse(withoutFence(content))["items"].items ?: throw UnusableAnswer()
         } catch (e: JsonException) {
             throw UnusableAnswer()
@@ -105,6 +118,68 @@ object AiGrouping {
             )
         }
         return out.sortedBy { it.index }
+    }
+
+    /**
+     * Puts a streamed answer together. Each line of the response is given to [line]; lines that are
+     * not `data:` events, or whose JSON carries no text, add nothing. The text is data and nothing
+     * more, as in [parse]. A provider that ignores `stream` and answers with one JSON document is
+     * read too: its lines are kept and [content] takes the text from the whole document.
+     */
+    class StreamReader(private val maxChars: Int = MAX_ANSWER_CHARS) {
+        private val text = StringBuilder()
+        private val plain = StringBuilder()
+        private var events = false
+
+        /** True once the provider has said the answer is complete. */
+        var done = false
+            private set
+
+        /** How many characters of the answer have arrived. */
+        val received: Int get() = text.length
+
+        /** How many suggestions have arrived so far, counted by their numbers; only for showing progress. */
+        val items: Int get() = ITEM.findAll(text).count()
+
+        @Throws(UnusableAnswer::class)
+        fun line(line: String) {
+            if (done) return
+            if (!line.startsWith("data:")) {
+                if (!events && line.isNotBlank() && !line.startsWith(":") && !line.startsWith("event:") && !line.startsWith("id:") && !line.startsWith("retry:")) {
+                    plain.append(line).append('\n')
+                    if (plain.length > maxChars * 4) throw UnusableAnswer()
+                }
+                return
+            }
+            events = true
+            val data = line.substring(5).trim()
+            if (data == "[DONE]") {
+                done = true
+                return
+            }
+            val piece = try {
+                Json.parse(data)["choices"].items?.firstOrNull()["delta"]["content"].string
+            } catch (e: JsonException) {
+                null
+            } ?: return
+            text.append(piece)
+            if (text.length > maxChars) throw UnusableAnswer()
+        }
+
+        /** The text the model wrote. Throws [UnusableAnswer] when nothing usable arrived. */
+        @Throws(UnusableAnswer::class)
+        fun content(): String {
+            if (events) return text.toString().ifBlank { throw UnusableAnswer() }
+            return try {
+                Json.parse(plain.toString())["choices"].items?.firstOrNull()["message"]["content"].string ?: throw UnusableAnswer()
+            } catch (e: JsonException) {
+                throw UnusableAnswer()
+            }
+        }
+
+        private companion object {
+            val ITEM = Regex("\"n\"\\s*:")
+        }
     }
 
     /** Some models wrap their JSON in a Markdown code fence although asked not to. */
