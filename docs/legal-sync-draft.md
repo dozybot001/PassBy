@@ -63,25 +63,25 @@ English: The app stays offline by default. It does not connect to our servers, i
 
 同步只在你打开「设置 › 同步」并开始时进行。它在同一个局域网（一般是同一个 Wi-Fi）里，让这台手机的密码本和另一台手机、或电脑上的同步网页保持一致。
 
-怎么连：一台手机点「让别的设备连过来」，显示它在局域网里的地址和一个 12 位配对码，你在另一台设备上填进去。两台设备直接相连，内容不经过我们的服务器，我们收不到。只有同步页面开着时才能连；离开页面、10 分钟没有连接或配对码输错 5 次就停止。配对码每次都换，用过一次就作废。
+怎么连：一台手机点「让别的设备连过来」，显示它在局域网里的地址和一个 12 位配对码，你在另一台设备上填进去。两台设备直接相连，内容不经过我们的服务器，我们收不到。只有同步页面开着时才能连；你离开页面、应用退到后台、10 分钟没有连接，或者在有设备连上之前配对码输错 5 次，就停止。配对码每次都换；一台设备连上以后，这个配对码就作废，别的设备不能再用它连接。
 
 传什么：全部条目（标题、账户、密码、备注）和文件夹，以及「你的密码本」里说的修改时间、记号和删除记录。「最近删除」、草稿和上次导出日期不传。内容先用配对码派生的密钥加密（AES-256-GCM，密钥经 PBKDF2-HMAC-SHA256 和 HKDF-SHA256 派生）再传。同一个局域网里的其他人能看到这两台设备在通信，没有配对码看不到内容。在配对码有效时拿到配对码和地址的人，可以取走整个密码本，所以请只在你信任的网络里同步，配对码不要给别人。
 
 同步之后：另一台设备删掉的条目进这台手机的「最近删除」，保留 30 天；两边都改过的同一条，两份都留下，另一份的标题带「（冲突副本）」。同步过去的内容存在另一台设备上，由那台设备保管。
 
-手机上另外记着同步用的端口号和上次连接的地址，只在本机，不进备份。
+手机上另外记着同步用的端口号和上次连接的地址。安卓上这两项只在本机，不进备份。【iPhone 上它们存在应用的偏好设置里，会随系统备份和换机带走。】
 
 English:
 
 Sync happens only when you open Settings › Sync and start it. On one local network (usually the same Wi-Fi), it brings this phone's notebook in line with another phone, or with the sync page on a computer.
 
-How devices connect: one phone taps "Let another device connect" and shows its address on the local network and a 12-character pairing code, which you enter on the other device. The two devices connect directly; nothing passes through our servers and we receive none of it. A connection is possible only while the Sync page is open; it stops when you leave the page, after 10 minutes without a connection, or after 5 wrong pairing codes. The pairing code is new every time and works once.
+How devices connect: one phone taps "Let another device connect" and shows its address on the local network and a 12-character pairing code, which you enter on the other device. The two devices connect directly; nothing passes through our servers and we receive none of it. A connection is possible only while the Sync page is open; it stops when you leave the page, when the app goes to the background, after 10 minutes without a connection, or after 5 wrong pairing codes before any device has connected. The pairing code is new every time; once one device has connected, the code is used up and no other device can connect with it.
 
 What is sent: all entries (title, account, password, notes) and folders, together with the change times, marks and deletion records described under "Your notebook". Recently Deleted, drafts and the date of your last export are not sent. Everything is encrypted before it is sent, with a key derived from the pairing code (AES-256-GCM; the key is derived with PBKDF2-HMAC-SHA256 and HKDF-SHA256). Other people on the same local network can see that the two devices are talking to each other, but cannot read the content without the pairing code. Anyone who has the pairing code and the address while the code is valid can take a copy of your whole notebook, so sync only on a network you trust and do not give the pairing code to anyone.
 
 After a sync: entries deleted on the other device move to Recently Deleted on this phone and are kept for 30 days; when the same entry was changed on both devices, both versions are kept, and the other one has "(Conflict copy)" added to its title. What you sync to another device is stored on that device and is in its care.
 
-The phone also keeps the port used for sync and the last address you connected to. These stay on the phone and are left out of backups.
+The phone also keeps the port used for sync and the last address you connected to. On Android these stay on the phone and are left out of backups.【 On iPhone they are kept in the app's preferences and are included in system backups and device transfers.】
 
 ### 新增一节「同步网页」/ "The sync page"，接在后面
 
@@ -89,7 +89,7 @@ The phone also keeps the port used for sync and the last address you connected t
 
 passby.tenonai.cn/app/ 是一个静态网页，用来在电脑上连你的手机。页面从我们的网站加载，加载时服务器照常记录访问日志（见「我们可能收到的信息」）。页面不用登录，不向我们的服务器发送任何内容，只连你填的那个局域网地址。
 
-密码本只放在页面的内存里，不写进浏览器的存储；你关掉页面、点「断开并清除」，或离开页面 5 分钟后清掉。浏览器里只记上次连接的地址，清除本站的网站数据即可删除。
+密码本只放在页面的内存里，不写进浏览器的存储。你关掉页面、点「断开并清除」、离开页面窗口满 5 分钟，或 10 分钟没有在页面上操作，就清掉。浏览器里只记上次连接的地址，清除本站的网站数据即可删除。
 
 手机分享的链接里，地址放在 # 后面，浏览器不会把这一段发给服务器；链接里没有配对码。
 
@@ -99,7 +99,7 @@ English:
 
 passby.tenonai.cn/app/ is a static web page for connecting to your phone from a computer. The page is loaded from our website, and loading it is recorded in the server's access logs like any other visit (see "Information we may receive"). The page has no sign-in, sends nothing to our servers, and connects only to the local network address you enter.
 
-Your notebook is held only in the page's memory and is not written to browser storage. It is cleared when you close the page, choose "Disconnect and clear", or have been away from the page for 5 minutes. The browser remembers only the last address you connected to; clearing this site's data removes it.
+Your notebook is held only in the page's memory and is not written to browser storage. It is cleared when you close the page, choose "Disconnect and clear", have been away from the page's window for 5 minutes, or have not used the page for 10 minutes. The browser remembers only the last address you connected to; clearing this site's data removes it.
 
 In the link your phone shares, the address comes after the # sign, which browsers do not send to the server; the link contains no pairing code.
 
@@ -259,11 +259,9 @@ English: a pairing code given to someone else, syncing on a network or with a de
 
 ## 六、以实际为准的几处
 
-写进政策的这些是按设计和你给的事实写的，做出来不一样要改文字：
+法务组 11-15 第二次答复后的状态：
 
-- 离开页面 5 分钟清内存（代码有，还没实测）。
-- 主机停止的三个条件：离开页面、10 分钟没有连接、配对码错 5 次。
-- 手机上端口号和上次地址「不进备份」：安卓已确认，iPhone 做完请确认。
-- iPhone 的 AI 分组流程和安卓一致（打开时说明、发送前预览、只发标题和文件夹名、逐项勾选），key 在钥匙串里且不随备份迁到别的设备。
-- 安卓 17 的权限在系统里显示为「附近的设备」。
-- 同步内容里不含 API Key 和 AI 分组的配置。
+- 已按实际改定：网页清内存的四种情况；主机停止的四个条件和配对码一次性；端口号和上次地址（安卓不进备份，iPhone 进）。
+- 发布前要做：「离开窗口 5 分钟清掉」实际等一次，等不出来告诉法务组；「附近的设备」这个中文名在中文系统上看一眼，名称不同就照系统的改。
+- 等 iPhone 的 AI 分组移植完逐条回法务组：打开时说明、发送前预览、只发标题和文件夹名、逐项勾选；key 在钥匙串里、只存在这台设备上。
+- 同步内容里不含 API Key 和 AI 分组的配置（属实）。
