@@ -197,6 +197,30 @@ class SyncTransportTest {
         assertEquals("403", waiting.send(waiting.hello))
         failsWith(SyncGuestException.Kind.WRONG_CODE) { guest(h.port).exchange(SyncState()) }
         assertEquals("the session itself carries on", "200", first.send(first.state(1)))
+        // With the code used up, frames that do not open are refused without counting: another device
+        // on the network cannot stop the sync by sending a handful of them.
+        repeat(SyncHost.MAX_FAILURES + 2) {
+            assertEquals("403", waiting.send(waiting.state(1)))
+            assertEquals("403", first.send(first.frame(9, SyncCodec.request(SyncState()), key = first.keys.hostToGuest)))
+        }
+        assertEquals("200", first.send(first.state(20)))
+        assertEquals(null, stop)
+    }
+
+    @Test
+    fun connectionsThatAreNeverAnsweredDoNotKeepAnIdleHostOpen() {
+        val h = startHost()
+        now += SyncHost.IDLE_MS
+        // Something keeps knocking under the wrong name; the host still notices it has been idle.
+        repeat(3) {
+            try {
+                raw(h.port, "POST /passby-sync/v1/begin HTTP/1.1\r\nHost: other:1\r\nContent-Length: 0\r\n\r\n")
+            } catch (e: IOException) {
+                // Already closed.
+            }
+        }
+        assertTrue(stoppedLatch.await(5, TimeUnit.SECONDS))
+        assertEquals(SyncHost.Stop.IDLE, stop)
     }
 
     @Test

@@ -84,11 +84,12 @@ data class SyncAddress(val host: String, val port: Int) {
     companion object {
         /**
          * This phone's address on the Wi-Fi or local network it is on, or null when it is on none.
-         * Mobile data and VPN interfaces are left out; Wi-Fi comes before anything else.
+         * Only Wi-Fi, hotspot and wired interfaces are considered, by name: mobile data and VPN interfaces
+         * go by many names and can carry private addresses too. Wi-Fi comes before anything else.
          */
         fun local(port: Int): SyncAddress? = try {
             NetworkInterface.getNetworkInterfaces().toList()
-                .filter { it.isUp && !it.isLoopback && !it.isPointToPoint && LEFT_OUT.none { prefix -> it.name.startsWith(prefix) } }
+                .filter { it.isUp && !it.isLoopback && !it.isPointToPoint && LOCAL.any { prefix -> it.name.startsWith(prefix) } }
                 .sortedBy { if (it.name.startsWith("wlan")) 0 else 1 }
                 .flatMap { it.inetAddresses.toList() }
                 .firstNotNullOfOrNull { parse("${it.hostAddress}:$port") }
@@ -96,7 +97,7 @@ data class SyncAddress(val host: String, val port: Int) {
             null
         }
 
-        private val LEFT_OUT = listOf("rmnet", "ccmni", "pdp", "tun", "ppp", "dummy")
+        private val LOCAL = listOf("wlan", "swlan", "ap", "softap", "eth")
 
         /** Reads `10.1.2.3:52814`. Names are not looked up, and only 10/8, 172.16/12 and 192.168/16 are accepted. */
         fun parse(text: String): SyncAddress? {
@@ -194,10 +195,14 @@ class SyncHost(
 
     private fun serve(socket: ServerSocket) {
         while (!stopped) {
+            // Checked on every round, so that connections which are never answered cannot keep it open.
+            if (clock() - lastRequest >= IDLE_MS) {
+                stop(Stop.IDLE)
+                return
+            }
             val connection = try {
                 socket.accept()
             } catch (e: SocketTimeoutException) {
-                if (clock() - lastRequest >= IDLE_MS) stop(Stop.IDLE)
                 continue
             } catch (e: IOException) {
                 if (!stopped) stop(Stop.FAILED)
@@ -254,7 +259,10 @@ class SyncHost(
                     answerTo(request.body)
                 } catch (e: SyncException) {
                     if (e.kind == SyncException.Kind.REFUSED) {
-                        failures += 1
+                        // Once a session holds the code it cannot be guessed any more, so frames that
+                        // do not open no longer count: another device on the network must not be able
+                        // to stop a sync in progress by sending five of them.
+                        if (session == null) failures += 1
                         return answer("403 Forbidden")
                     }
                     null
