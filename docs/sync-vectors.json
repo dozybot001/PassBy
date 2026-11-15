@@ -35,17 +35,27 @@
     "exchanges": [
       {
         "counter": 0,
-        "requestPlaintext": "{\"v\":1,\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":true}],\"folders\":[],\"tombstones\":[]}",
-        "requestBodyBase64": "u9O5VwHekikQjDZnFDSpwgGSxd/yXos2pjvpb9qmdV0AAAAAAAAAANDZJPVgfl8YfJMf25apwKSBawLLX51c+oq0ylx4yR9xhH3BKY8up/csDNGKlucDqnCO92BuwvrQMHEB7KtFcvvB5WYeuAgAZM2UEYADF2Me89An8i81OWLiWGCYr7vnSOP2usUJCRtDCzgWdvMiCT0lN8lJPrwokmiIjQGoihUMtEJNDU6F/WJCUaFbsaobm8t46YOwPy3CzsXTlsy92wH2vN3NngXOnOB1ArTsv8FkIFtF8hui6faW0hAmaDXFzWIcHg==",
-        "responsePlaintext": "{\"v\":1,\"state\":{\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":false}],\"folders\":[],\"tombstones\":[]},\"summary\":{\"added\":0,\"updated\":0,\"removed\":0,\"conflicts\":0}}",
-        "responseBodyBase64": "AAAAAAAAAADQtI9tL0QHprSRM7iZbLvvmpvBabdAJwtZkIGVmaeJ5kuJxAhBJ3uQ7E66ok6bLdH31EwMQYuipxn2LTs3WJeXtIIQchk6cgS1Bi8W6z7gVHrhM0hDKKMU0nAwm0f4rDMCzqI+2QUXd31g8z5NHsmS6yJeJyHzEclI8AISUgDYNhg48pg5I4w/VoM8sm7SLDuO5mW7xKxLnZOtvN1ApI6H/FoCqbaa2X8eCp9HDRz9TwYegcOLDSdQ8T3aGidzMsHLNK/D9vOkAdZZQ9IrTYIYIEHWU0Kbbu8ruEyBHsEkLLubrjh57OjdfYMqUzmDH1NHIXGHQd89cuA+KcFKRnw3qKvF+PySLNd5jw=="
+        "hello": true,
+        "requestPlaintext": "{\"v\":1,\"hello\":true}",
+        "requestBodyBase64": "u9O5VwHekikQjDZnFDSpwgGSxd/yXos2pjvpb9qmdV0AAAAAAAAAANDZJPVgfl8YcZgHxZDuifLJRRyUhVcH8Mq1JOSF8E9V6BjSew==",
+        "responsePlaintext": "{\"v\":1,\"hello\":true}",
+        "responseBodyBase64": "AAAAAAAAAADQtI9tL0QHpq+APqCTbLvgyovKYLppZc/jnBslZGb8GTSA8tc="
       },
       {
         "counter": 1,
+        "hello": false,
         "requestPlaintext": "{\"v\":1,\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":true}],\"folders\":[],\"tombstones\":[]}",
         "requestBodyBase64": "u9O5VwHekikQjDZnFDSpwgGSxd/yXos2pjvpb9qmdV0AAAAAAAAAAZdPc4jwvocFbYHMaM2hxFzWKI6oZYt5/7zBltkQBoONZ1FbjzlHAGykydMJ8HPNIpYQXvSyGN12stlxNa//eSDIXPH0KxVXfC//Go7dg4aANXlx4UulykHbgz3+vgQF8GT/zV7H/CX5q+QBamob162Uj91mttPY3RCCuhwLfNW90SWVwJNdxTF/6lQrtuxBTYOxo+mB+A5qcQiklvBejZLQSovBkSeEa4BIdtU0+2O1sdfxIewnuk+jxwg4gyRzI2oYpg==",
         "responsePlaintext": "{\"v\":1,\"state\":{\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":false}],\"folders\":[],\"tombstones\":[]},\"summary\":{\"added\":0,\"updated\":0,\"removed\":0,\"conflicts\":0}}",
         "responseBodyBase64": "AAAAAAAAAAG5uqP4IxsnkYjgyGNWIhdfD9JcmzNJ+NXeS7Ki8SFsHVOiZHu16a+WNcsrTe6CSFL+QHQ0kBdFtAoON/sxs27kmq5Nt6/FVWS5bfdzdxRdjl/oYyxczqf7x7UwspUKTM7Xj7U39QmoEXRxbF+PHlQwM1O0k0F4okp9j7l9OS4BIOFERzRRyQlVWOhcgEBo47EEocXaM5b/uSip4rOabooPrOfF+S2G7jkgs/7lrDt1KnLQB9a6i1mzezXQOIJoN0kpG34oOjHGHrkPePmPJK8hmStdyRhJKCeSoPW4IsIgXj0ZifE1CCI5q4eE9GgDwjKBno8v6OrCSYFjrSNOmUoxsDZh1Fl7FW/JZQ=="
+      },
+      {
+        "counter": 2,
+        "hello": false,
+        "requestPlaintext": "{\"v\":1,\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":true}],\"folders\":[],\"tombstones\":[]}",
+        "requestBodyBase64": "u9O5VwHekikQjDZnFDSpwgGSxd/yXos2pjvpb9qmdV0AAAAAAAAAAlCiHyGH1pWL1KqdJ8A+gd8s93N6701fiZCn07rBTbGRdi8YThj4ioyCQJkvRK3/Ds//p7cgLNsQ4lQDHn5e/Nm5jcUbDA8yDQugqujCYaM6SVIHL0TAUTF5Vuq+yZ0EC8NJT2FEhVu2qE+8NLv0IY9SUwsMh4cQkBUR0zs59uA8o9hMfDPNckYA736WEr8Uae98mA9TWlhtL+CIbovstTqHWLCDw4CFe6NbCd9xTNw0RnWvi/a2G9HMmQVjPQoUM3112A==",
+        "responsePlaintext": "{\"v\":1,\"state\":{\"entries\":[{\"id\":\"00000000-0000-4000-8000-000000000001\",\"title\":\"t01\",\"account\":\"\",\"password\":\"p01\",\"notes\":\"\",\"updatedAt\":1000,\"dirty\":false}],\"folders\":[],\"tombstones\":[]},\"summary\":{\"added\":0,\"updated\":0,\"removed\":0,\"conflicts\":0}}",
+        "responseBodyBase64": "AAAAAAAAAALHAPkBprc2tZOBfLiJYRUcA2ZPxTmc1bQsY/OAaKeBgyvUukbgYgjw1a05ZWCQvev3G2OOfS86B6RoUwhAhepbI5KEAhu6+r/ohvd/LqdQKr9ZW/rPYZMoLuZcBJOabmB8xKH8U5c7dbwnfafcFCxGdDnslq2mYIw+CS3icsdLE5f9e5B9UN+YHpGAD9Eos1I3VdS5Y2sP2dr6jvQZkOmdGmtOLQ3eTHCHTwuWR85S6hwht/1lr3Gupw/ovlNRQy1QcDjd2wsbUYGBSw8fgwxmeX/ulHmOQ7Zf4b73miV8hs0sY7axaGqy0pXlJ/8whEP3w54pF9a8PzZM8FO2UXOV+gVsNCcYsfedqQ=="
       }
     ]
   },

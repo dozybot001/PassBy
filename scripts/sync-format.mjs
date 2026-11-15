@@ -56,6 +56,10 @@ export function open(key, hostNonce, guestNonce, direction, counter, sealed) {
   catch { throw new SyncError('refused'); }
 }
 
+// What both sides send at counter 0, before any notebook content: the guest shows it holds the code,
+// and the host's sealed answer shows the same. The state follows from counter 1 (docs/sync.md 6.2).
+export const HELLO = '{"v":1,"hello":true}';
+
 // The body of an exchange request and of its response.
 export const requestBody = (hostNonce, guestNonce, counter, sealed) =>
   Buffer.concat([hostNonce, guestNonce, counterBytes(counter), sealed]);
@@ -218,12 +222,13 @@ function build() {
       note: 'Vectors use 100,000 iterations so tests stay fast; the apps use 600,000.',
       typed, code, iterations, hostNonceHex: hex(hostNonce), guestNonceHex: hex(guestNonce),
       guestToHostKeyHex: hex(keys.guestToHost), hostToGuestKeyHex: hex(keys.hostToGuest),
-      exchanges: [0, 1].map(counter => ({
+      exchanges: [[0, Buffer.from(HELLO), Buffer.from(HELLO)], [1, request, response], [2, request, response]].map(([counter, req, res]) => ({
         counter,
-        requestPlaintext: request.toString('utf8'),
-        requestBodyBase64: requestBody(hostNonce, guestNonce, counter, seal(keys.guestToHost, hostNonce, guestNonce, 0, counter, request)).toString('base64'),
-        responsePlaintext: response.toString('utf8'),
-        responseBodyBase64: responseBody(counter, seal(keys.hostToGuest, hostNonce, guestNonce, 1, counter, response)).toString('base64'),
+        hello: counter === 0,
+        requestPlaintext: req.toString('utf8'),
+        requestBodyBase64: requestBody(hostNonce, guestNonce, counter, seal(keys.guestToHost, hostNonce, guestNonce, 0, counter, req)).toString('base64'),
+        responsePlaintext: res.toString('utf8'),
+        responseBodyBase64: responseBody(counter, seal(keys.hostToGuest, hostNonce, guestNonce, 1, counter, res)).toString('base64'),
       })),
     },
     merges: MERGES.map(m => {
@@ -243,6 +248,7 @@ function check(v) {
   const hostNonce = Buffer.from(v.crypto.hostNonceHex, 'hex'), guestNonce = Buffer.from(v.crypto.guestNonceHex, 'hex');
   const keys = deriveKeys(canonicalCode(v.crypto.typed), hostNonce, guestNonce, v.crypto.iterations);
   ok(hex(keys.guestToHost) === v.crypto.guestToHostKeyHex && hex(keys.hostToGuest) === v.crypto.hostToGuestKeyHex, 'keys');
+  ok(v.crypto.exchanges[0].hello && v.crypto.exchanges[0].requestPlaintext === HELLO && v.crypto.exchanges[0].responsePlaintext === HELLO, 'hello comes first');
   for (const x of v.crypto.exchanges) {
     const req = Buffer.from(x.requestBodyBase64, 'base64'), res = Buffer.from(x.responseBodyBase64, 'base64');
     ok(req.subarray(0, 16).equals(hostNonce) && req.subarray(16, 32).equals(guestNonce) && req.readBigUInt64BE(32) === BigInt(x.counter), 'request header');
