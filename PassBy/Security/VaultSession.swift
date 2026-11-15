@@ -260,6 +260,21 @@ final class VaultSession: ObservableObject {
         return saved && taken ? true : nil
     }
 
+    // MARK: AI grouping (docs/android.md 9.2)
+
+    /// Applies the suggestions the person ticked, as one save. Entries are renamed and moved; none
+    /// is removed. Returns what changed, for undoing, or nil when it could not be saved.
+    func applyAiSuggestions(_ changes: [AiGrouping.Change]) -> AiGrouping.Applied? {
+        let applied = AiGrouping.apply(vault, changes: changes)
+        return commit(applied.vault) ? applied : nil
+    }
+
+    /// Puts back what `applyAiSuggestions` changed, as one save. Changes made since are left alone.
+    @discardableResult
+    func undoAiSuggestions(_ applied: AiGrouping.Applied) -> Bool {
+        commit(AiGrouping.undo(vault, applied: applied))
+    }
+
     @discardableResult
     func createFolder(name: String) -> UUID? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)

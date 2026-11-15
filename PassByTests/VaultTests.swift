@@ -274,6 +274,7 @@ final class ScreenSnapshots: XCTestCase {
             ("12-about", AnyView(NavigationStack { AboutPassByView() })),
             ("13-migration", AnyView(MigrationView())),
             ("14-sync", AnyView(NavigationStack { SyncView() })),
+            ("15-ai", AnyView(NavigationStack { AiView() })),
         ]
         for style in [UIUserInterfaceStyle.light, .dark] {
             for (name, view) in screens {
