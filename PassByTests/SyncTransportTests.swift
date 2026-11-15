@@ -243,6 +243,67 @@ final class SyncTransportTests: XCTestCase {
             XCTAssertEqual(error as? SyncGuestError, .wrongCode)
         }
     }
+
+    // The two tests below talk to the reference implementation running on the Mac (scripts/sync-dev-host.mjs
+    // and scripts/sync-dev-guest.mjs) with the real key derivation. They are skipped unless the addresses
+    // are given: TEST_RUNNER_PASSBY_INTEROP_HOST and TEST_RUNNER_PASSBY_INTEROP_LISTEN on the xcodebuild line.
+    private let interopCode = "AB3D9KXMP2QW"
+
+    func testInteropAsGuestOfTheReferenceHost() async throws {
+        guard let text = ProcessInfo.processInfo.environment["PASSBY_INTEROP_HOST"], let address = SyncAddress.parse(text) else {
+            throw XCTSkip("no reference host")
+        }
+        var phone = Notebook()
+        phone.update(Vault(entries: [VaultEntry(title: "iphone", account: "a@example.com", password: "example-only", notes: "第一行\nsecond")]), now: Date())
+        let guest = SyncGuest(address: address, code: interopCode)
+        let first = try await guest.exchange(phone.syncState())
+        try phone.takeSynced(first.state, now: Date())
+        XCTAssertEqual(first.summary.conflicts, 0)
+        XCTAssertGreaterThanOrEqual(first.summary.added, 1)
+        XCTAssertTrue(phone.vault.entries.contains { $0.title == "iphone" })
+        XCTAssertGreaterThanOrEqual(phone.vault.entries.count, 2)
+        print("INTEROP guest after first:", phone.vault.entries.map(\.title).sorted(), phone.vault.folders.map(\.name), first.summary)
+
+        var vault = phone.vault
+        vault.entries[vault.entries.firstIndex { $0.title == "iphone" }!].password = "example-changed"
+        phone.update(vault, now: Date())
+        let second = try await guest.exchange(phone.syncState())
+        try phone.takeSynced(second.state, now: Date())
+        XCTAssertEqual(second.summary, SyncSummary(added: 0, updated: 0, removed: 0, conflicts: 0))
+        print("INTEROP guest after second:", second.summary)
+    }
+
+    func testInteropAsHostOfTheReferenceGuest() async throws {
+        guard let text = ProcessInfo.processInfo.environment["PASSBY_INTEROP_LISTEN"], let address = SyncAddress.parse(text) else {
+            throw XCTSkip("no address to listen on")
+        }
+        var notebook = Notebook()
+        notebook.update(Vault(entries: [VaultEntry(title: "iphone host", password: "example-only")]), now: Date())
+        let lock = NSLock()
+        var exchanges = 0
+        let host = try SyncHost(code: interopCode, address: address, exchange: { guest in
+            lock.lock(); defer { lock.unlock() }
+            guard let merged = try? SyncMerge.merge(host: notebook.syncState(), guest: guest, marker: " (Conflict copy)"),
+                  (try? notebook.takeSynced(merged.state, now: Date())) != nil,
+                  let summary = try? SyncMerge.summary(before: guest, after: merged.state, conflicts: merged.conflicts) else { return nil }
+            exchanges += 1
+            return (merged.state, summary)
+        }, onStopped: { _ in })
+        func read() -> (Int, [VaultEntry]) { lock.lock(); defer { lock.unlock() }; return (exchanges, notebook.vault.entries) }
+        host.start()
+        defer { host.stop() }
+        print("INTEROP host listening on", address)
+        for _ in 0..<240 {
+            try await Task.sleep(nanoseconds: 500_000_000)
+            if read().0 >= 2 { break }
+        }
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let (count, entries) = read()
+        XCTAssertEqual(count, 2)
+        print("INTEROP host ended with:", entries.map { "\($0.title)|\($0.notes)" }.sorted())
+        XCTAssertTrue(entries.contains { $0.title == "iphone host" })
+        XCTAssertEqual(entries.first { $0.title == "q" }?.notes, "edited on the Mac 1")
+    }
 }
 
 extension VaultEntry: Hashable {
