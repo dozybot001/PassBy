@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  INTERNET is requested for one feature, AI grouping, which is off until the person turns it on.
-  One file opens connections (system/AiClient.kt). The build checks the merged manifest for any
+  INTERNET is requested for two features: AI grouping, which is off until the person turns it on,
+  and sync with another device on the local network, which runs only while its page is open.
+  Two files open connections (system/AiClient.kt and core/SyncTransport.kt). The build checks the merged manifest for any
   other permission (app/build.gradle.kts, CheckPermissions).
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Android 17 and later ask the person before an app may reach devices on the local network.
+      Asked for on the sync page only, when the person starts a sync (docs/sync.md).
+    -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <application
         android:name=".PassByApp"

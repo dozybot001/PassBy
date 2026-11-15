@@ -106,9 +106,13 @@ androidComponents {
             mergedManifest.set(variant.artifacts.get(SingleArtifact.MERGED_MANIFEST))
             // Both come from androidx.biometric and only allow asking the system to verify the person.
             allowed.addAll("android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT")
-            // For AI grouping only, which is off until the person turns it on. One file opens connections
-            // (system/AiClient.kt); a unit test checks that no other can.
+            // For AI grouping, which is off until the person turns it on, and for sync on the local
+            // network. Two files open connections (system/AiClient.kt, core/SyncTransport.kt); a unit
+            // test checks that no other can.
             allowed.add("android.permission.INTERNET")
+            // For sync between two devices on the same local network (core/SyncTransport.kt). Android 17
+            // and later ask the person for it; it is requested on the sync page only.
+            allowed.add("android.permission.ACCESS_LOCAL_NETWORK")
             // Declared by androidx.core for receivers the app registers for itself; it is the app's own
             // signature-level permission and grants nothing outside the app.
             allowed.add(variant.applicationId.map { "$it.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" })

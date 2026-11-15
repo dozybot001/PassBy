@@ -302,4 +302,6 @@
     <string name="sync_error_untrusted">The reply could not be verified. Nothing was changed.</string>
     <string name="sync_error_failed">The sync did not finish and nothing was changed. Update PassBy on both devices and try again.</string>
     <string name="sync_error_changed">The notebook changed during the sync. Please sync again.</string>
+    <string name="sync_permission_denied">Sync needs the "Nearby devices" permission before the system lets PassBy reach another device on the same Wi-Fi. PassBy uses it only for syncing on this page.</string>
+    <string name="sync_open_app_settings">Open app settings</string>
 </resources>

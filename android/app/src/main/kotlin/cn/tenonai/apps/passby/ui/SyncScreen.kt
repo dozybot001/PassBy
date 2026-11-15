@@ -1,6 +1,13 @@
 package cn.tenonai.apps.passby.ui
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,12 +42,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import cn.tenonai.apps.passby.R
 import cn.tenonai.apps.passby.core.SyncCrypto
 import cn.tenonai.apps.passby.core.SyncHost
 import cn.tenonai.apps.passby.core.SyncSummary
 
 private const val WEB_APP = "https://passby.tenonai.cn/app/"
+private const val LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK"
+private const val LOCAL_NETWORK_SINCE = 37
 
 /** A value to read off this screen and type on the other device. */
 @Composable
@@ -83,6 +94,27 @@ fun SyncScreen(model: AppViewModel) {
     var code by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) { model.syncRefresh() }
 
+    // Android 17 and later ask the person before an app may reach the local network. It is asked for
+    // when a sync is started, not before.
+    var pending by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var denied by rememberSaveable { mutableStateOf(false) }
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        denied = !granted
+        if (granted) pending?.invoke()
+        pending = null
+    }
+    fun withLocalNetwork(action: () -> Unit) {
+        val needed = Build.VERSION.SDK_INT >= LOCAL_NETWORK_SINCE &&
+            ContextCompat.checkSelfPermission(context, LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED
+        if (needed) {
+            pending = action
+            ask.launch(LOCAL_NETWORK)
+        } else {
+            denied = false
+            action()
+        }
+    }
+
     Page(title = stringResource(R.string.sync), onBack = { model.back() }) {
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = PagePadding, vertical = 12.dp),
@@ -92,6 +124,17 @@ fun SyncScreen(model: AppViewModel) {
             model.syncSummary?.let { Result(it) }
             model.syncError?.let {
                 Text(stringResource(it), Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            }
+            if (denied) {
+                Text(stringResource(R.string.sync_permission_denied), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                LinkButton(stringResource(R.string.sync_open_app_settings), Icons.External, onClick = {
+                    val settings = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+                    try {
+                        context.startActivity(settings)
+                    } catch (e: ActivityNotFoundException) {
+                        // No settings page to open; the text above says what is needed.
+                    }
+                })
             }
             model.syncStopped?.let {
                 Text(
@@ -115,7 +158,7 @@ fun SyncScreen(model: AppViewModel) {
                 Text(stringResource(R.string.sync_host_waiting), style = MaterialTheme.typography.bodyMedium, color = palette.secondary)
                 SecondaryButton(stringResource(R.string.sync_host_stop), onClick = model::syncHostStop, icon = Icons.Close)
             } else {
-                PrimaryButton(stringResource(R.string.sync_host_start), onClick = model::syncHostStart, enabled = !model.syncWorking, icon = Icons.Refresh)
+                PrimaryButton(stringResource(R.string.sync_host_start), onClick = { withLocalNetwork(model::syncHostStart) }, enabled = !model.syncWorking, icon = Icons.Refresh)
                 val own = model.syncAddress
                 if (own != null) {
                     val message = stringResource(R.string.sync_link_message, "$WEB_APP#$own")
@@ -155,8 +198,9 @@ fun SyncScreen(model: AppViewModel) {
                 PrimaryButton(
                     stringResource(if (model.syncWorking) R.string.sync_working else R.string.sync_join),
                     onClick = {
-                        model.syncJoin(address, code)
+                        val typed = code
                         code = ""
+                        withLocalNetwork { model.syncJoin(address, typed) }
                     },
                     enabled = !model.syncWorking && address.isNotBlank() && code.isNotBlank(),
                     icon = Icons.Check,

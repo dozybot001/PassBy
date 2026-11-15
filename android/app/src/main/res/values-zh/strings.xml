@@ -299,4 +299,6 @@
     <string name="sync_error_untrusted">对方的回复验证不过，没有做任何改动。</string>
     <string name="sync_error_failed">同步没有完成，没有做任何改动。把两台设备的 PassBy 都更新到最新再试。</string>
     <string name="sync_error_changed">同步时密码本有改动，请再同步一次。</string>
+    <string name="sync_permission_denied">同步要先允许 PassBy 使用「附近的设备」，系统才让它连同一个 Wi-Fi 里的另一台设备。PassBy 只在这个页面同步时用到它。</string>
+    <string name="sync_open_app_settings">打开应用设置</string>
 </resources>
