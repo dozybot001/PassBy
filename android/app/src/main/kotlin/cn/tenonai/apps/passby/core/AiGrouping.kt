@@ -138,8 +138,21 @@ object AiGrouping {
         /** How many characters of the answer have arrived. */
         val received: Int get() = text.length
 
-        /** How many suggestions have arrived so far, counted by their numbers; only for showing progress. */
-        val items: Int get() = ITEM.findAll(text).count()
+        private var counted = 0
+        private var scannedTo = 0
+
+        /**
+         * How many suggestions have arrived so far, counted by their numbers; only for showing
+         * progress. Each call looks at the text that arrived since the last one, not at all of it.
+         */
+        val items: Int
+            get() {
+                // A number split across two pieces is found once its second half arrives.
+                val from = maxOf(0, scannedTo - 16)
+                counted += ITEM.findAll(text, from).count { it.range.last >= scannedTo }
+                scannedTo = text.length
+                return counted
+            }
 
         @Throws(UnusableAnswer::class)
         fun line(line: String) {
@@ -180,6 +193,25 @@ object AiGrouping {
         private companion object {
             val ITEM = Regex("\"n\"\\s*:")
         }
+    }
+
+    /**
+     * Reads one line without trusting its length: a response that never sends a line break must not
+     * be read into memory whole. Returns null at the end of the input; throws [UnusableAnswer] once a
+     * line passes [maxLine] characters. The line break, `\n` or `\r\n`, is not part of the result.
+     */
+    @Throws(UnusableAnswer::class, java.io.IOException::class)
+    fun boundedLine(input: java.io.Reader, maxLine: Int): String? {
+        val line = StringBuilder()
+        while (true) {
+            val c = input.read()
+            if (c < 0) return if (line.isEmpty()) null else line.toString()
+            if (c == '\n'.code) break
+            line.append(c.toChar())
+            if (line.length > maxLine) throw UnusableAnswer()
+        }
+        if (line.isNotEmpty() && line[line.length - 1] == '\r') line.setLength(line.length - 1)
+        return line.toString()
     }
 
     /** Some models wrap their JSON in a Markdown code fence although asked not to. */

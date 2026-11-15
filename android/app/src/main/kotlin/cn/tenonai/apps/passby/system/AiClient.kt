@@ -28,6 +28,7 @@ object AiClient {
     private const val READ_TIMEOUT_MS = 60_000
     // A streamed answer repeats a little JSON around every few characters of text.
     private const val MAX_RESPONSE_CHARS = 8 * 1024 * 1024
+    private const val MAX_LINE_CHARS = 1024 * 1024
 
     /** One request in flight. [cancel] may be called from any thread and closes the connection. */
     class Call {
@@ -119,7 +120,8 @@ object AiClient {
             var read = 0L
             BufferedReader(InputStreamReader(connection.inputStream, Charsets.UTF_8), 16 * 1024).use { input ->
                 while (!reader.done) {
-                    val line = input.readLine() ?: break
+                    // Not readLine(): that reads a whole line, however long, before any limit applies.
+                    val line = AiGrouping.boundedLine(input, MAX_LINE_CHARS) ?: break
                     read += line.length + 1
                     if (read > MAX_RESPONSE_CHARS) throw Failure(Problem.TOO_LARGE)
                     val before = reader.received

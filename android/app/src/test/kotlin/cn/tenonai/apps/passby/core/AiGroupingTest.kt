@@ -242,4 +242,40 @@ class AiGroupingTest {
             small.line("data: {\"choices\":[{\"delta\":{\"content\":\"12345678901\"}}]}")
         }
     }
+
+    @Test
+    fun `a line with no end is refused once it passes the limit, without reading the rest`() {
+        // A reader that never ends and never sends a line break.
+        var read = 0
+        val endless = object : java.io.Reader() {
+            override fun read(buffer: CharArray, offset: Int, length: Int): Int {
+                buffer.fill('x', offset, offset + length)
+                read += length
+                return length
+            }
+            override fun close() {}
+        }
+        assertThrows(AiGrouping.UnusableAnswer::class.java) { AiGrouping.boundedLine(endless, 1000) }
+        assertTrue(read <= 1001)
+        val lines = java.io.StringReader("data: one\r\n\ndata: two")
+        assertEquals("data: one", AiGrouping.boundedLine(lines, 100))
+        assertEquals("", AiGrouping.boundedLine(lines, 100))
+        assertEquals("data: two", AiGrouping.boundedLine(lines, 100))
+        assertNull(AiGrouping.boundedLine(lines, 100))
+    }
+
+    @Test
+    fun `suggestions are counted once even when a number arrives in two pieces`() {
+        val reader = AiGrouping.StreamReader()
+        fun event(text: String) = "data: " + Json.write(
+            JsonObject(linkedMapOf("choices" to JsonArray(listOf(JsonObject(linkedMapOf("delta" to JsonObject(linkedMapOf("content" to JsonString(text))))))))),
+        )
+        reader.line(event("{\"items\":[{\"n"))
+        assertEquals(0, reader.items)
+        reader.line(event("\":1},{\"n\":2},"))
+        assertEquals(2, reader.items)
+        assertEquals(2, reader.items)
+        reader.line(event("{\"n\" : 3}]}"))
+        assertEquals(3, reader.items)
+    }
 }
