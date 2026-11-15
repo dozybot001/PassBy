@@ -35,6 +35,18 @@ class NotebookStoreTest {
     }
 
     @Test
+    fun savingWithoutTheEarlierVersionLeavesWhatWasRemovedInNeitherFile() {
+        val store = NotebookStore(directory())
+        store.save(full)
+        val without = full.removeDeleted("E3")
+        store.saveWithoutEarlierVersion(without)
+        assertEquals(without, ready(store).notebook)
+        val files = directory().listFiles()!!
+        assertEquals(setOf("notebook.json", "notebook.json.previous"), files.map { it.name }.toSet())
+        for (file in files) assertEquals(without, NotebookCodec.decode(file.readBytes()))
+    }
+
+    @Test
     fun aFreshInstallOpensAnEmptyNotebookAndWritesNothing() {
         val opened = ready(NotebookStore(directory()))
         assertEquals(Notebook(), opened.notebook)

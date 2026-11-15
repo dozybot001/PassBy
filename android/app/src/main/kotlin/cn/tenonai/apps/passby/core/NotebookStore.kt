@@ -152,6 +152,17 @@ class NotebookStore(private val directory: File) {
     fun save(notebook: Notebook) = write(notebook, keepPrevious = true)
 
     /**
+     * Writes the notebook so that the earlier version does not stay behind as `.previous`. Used when
+     * entries have left Recently Deleted for good: the kept copy becomes the same as the current file,
+     * so what the person removed is in neither.
+     */
+    @Synchronized
+    fun saveWithoutEarlierVersion(notebook: Notebook) {
+        write(notebook, keepPrevious = true)
+        write(notebook, keepPrevious = true)
+    }
+
+    /**
      * Renames unreadable files out of the way so a new notebook can be started or imported.
      * They stay in the directory. Only called when the person chooses to start over.
      */

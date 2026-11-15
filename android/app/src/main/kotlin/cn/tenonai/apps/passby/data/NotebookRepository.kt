@@ -44,7 +44,7 @@ class NotebookRepository(
                     val current = opened.notebook.withoutExpired(clock())
                     if (current !== opened.notebook) {
                         try {
-                            store.save(current)
+                            store.saveWithoutEarlierVersion(current)
                         } catch (e: IOException) {
                             // Nothing is lost; they are dropped again next time.
                         }
@@ -64,7 +64,9 @@ class NotebookRepository(
         val next = change(current, clock())
         if (next == current) return@withLock true
         try {
-            withContext(Dispatchers.IO) { store.save(next) }
+            // Entries removed from Recently Deleted for good are not left in the earlier version either.
+            val removed = current.deleted.any { old -> next.deleted.none { it.entry.id == old.entry.id } && next.entries.none { it.id == old.entry.id } }
+            withContext(Dispatchers.IO) { if (removed) store.saveWithoutEarlierVersion(next) else store.save(next) }
         } catch (e: IOException) {
             return@withLock false
         }
