@@ -158,6 +158,8 @@ rollback() {
     cp "$lock/previous.caddy" "$config"
     if [[ -f "$lock/web-before.caddy" ]]; then cp "$lock/web-before.caddy" "$web_config"; else rm -f "$web_config"; fi
     systemctl reload caddy
+    # Put back as it was: leave no lock behind, or the next publication would be refused.
+    rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/candidate.caddy" "$lock/previous.caddy" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
 }
 cp "$lock/candidate.caddy" "$config"
 cp "$lock/web-candidate.caddy" "$web_config"
@@ -196,7 +198,8 @@ for host in hosts:
         assert gone(f'https://{host}{path}'), path
     assert home.headers.get('X-Frame-Options') == 'DENY'
     footer = home.read().decode()
-    assert '湘ICP备2026054319号-1' in footer and '湘公网安备' not in footer, host
+    # The company's public security filing number, and no other one (the personal number must not appear here).
+    assert '湘ICP备2026054319号-1' in footer and footer.count('公网安备') == footer.count('湘公网安备43010202002408号') >= 1, host
 root = pathlib.Path(sys.argv[1])
 for name, digest in json.loads((root / 'manifest.json').read_text())['files'].items():
     path = name.split('/', 1)[1]
