@@ -6,6 +6,8 @@
 
 ## 现状
 
+**2026-11-18 起项目归档：不再开发新功能，现有版本继续提供。** 安卓安装包、网页版和源代码照旧可用；问题仍可写信到 support@tenonai.cn。
+
 | | 版本 | 状态 |
 | --- | --- | --- |
 | 安卓 | 2.2.0 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
