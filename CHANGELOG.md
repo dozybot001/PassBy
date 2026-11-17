@@ -8,7 +8,7 @@
 
 - 继续提供的：安卓 2.2.0（GitHub、Gitee 的 Releases）、网页版 <https://passby.tenonai.cn/app/>、介绍页、支持页和法律页面、源代码。
 - 归档时还开着的：
-  - iPhone 2.1（Build 19）11-16 提交审核，还没有结果；通过后是否上架要创始人确认，步骤在 `docs/app-store-release.md`。销售范围在此之前不要打开。
+  - iPhone 2.1（Build 19）11-16 提交审核，还没有结果；创始人 11-18 已确认「过审后上架」：通过后打开销售范围（除中国大陆）并手动发布，步骤在 `docs/app-store-release.md`。销售范围在通过之前不要打开。
   - `main` 上安卓有一处没发布的改动（同步主机的空闲计时，见下面「未发布」），没有出包。
   - 没做过的验证：网页用线上地址在 Chrome 里连一次并抓包；两台真实手机之间同步；iPhone 真机。记在 `docs/sync.md` 第 9 节。
 - 新增 `scripts/export-to-csv.mjs`：把导出文件转成谷歌密码管理器、Chrome 能导入的 CSV。
