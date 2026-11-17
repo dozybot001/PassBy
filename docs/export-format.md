@@ -4,6 +4,7 @@ iPhone、安卓和网页三端共用这份格式。三端都要通过 `docs/expo
 
 - `node scripts/export-format.mjs`：重新生成测试向量，并逐条核对。
 - `node scripts/export-format.mjs --check`：只核对仓库里现有的测试向量。
+- `node scripts/export-to-csv.mjs <文件.passby> [输出.csv]`：把导出文件转成谷歌密码管理器和 Chrome 能导入的 CSV（`name,url,username,password,note`）。导出码在终端里输入、不回显；PassBy 没有网址一栏，标题或备注里明显有网址或域名时才填 `url`。CSV 是明文，导入后删掉。
 
 11-14 另用 CommonCrypto 加 CryptoKit（iOS 的做法）和 WebCrypto（网页的做法）各自解开了全部有效向量。
 
