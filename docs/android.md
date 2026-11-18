@@ -8,6 +8,13 @@
 
 > **11-15 已接手**：安卓并入「PassBy · 开发」（创始人：「不要分出一个安卓开发，全都并入主开发，保持一个会话」，会话规范 5.6）。下面是原安卓会话写的交接，之后的进展直接改正文。接手后的第一处改动：创始人看了法务文本说「这种 ai 服务由模型服务商提供的我们不要过于揽责」，法务组据此重写了隐私政策、用户协议和应用内文案（定稿在 `docs/legal-2.1-draft.md`）；`ai_provider_note`、`ai_turn_on_provider` 中英文已照改，不再替 DeepSeek 介绍主体，也不说它「可能会保存」。安全组对 a61410f 的包已说合格；只改文案重出的包传完备案即可。文案改完后重出的候选包：提交 7453d2a，`PassBy-2.1.0.apk` 的 SHA-256 `618edb2240aa37459e546ce1968dedfa882df6afbe53b6a638f83bd65f51fed0`，证书不变，相对 a61410f 只动了两个 `strings.xml`；a61410f 的包（7ce00431…）作废。没有发布。
 
+### 2.2.1 已发布（2026-11-18）
+
+- 同步主机只有 200 应答才刷新空闲计时（fe4b6c5，和 iPhone 一致）；撤掉字标旁的 Tenon 小标，关于页出品方改为小号横版组合（创始人 11-18，总办转达；规范 2.35）。versionCode 6，提交 fa76220，权限和 2.2.0 相同。
+- 安全组 11-18 回复可以发。
+- 标签 `android-v2.2.1`。`PassBy-2.2.1.apk`，SHA-256 `605b971f70b38206bfb2fbad300f0440fa6a8051ab8bd360a62b4faa9b7b027f`，证书不变。
+- 地址：https://github.com/dozybot001/PassBy/releases/tag/android-v2.2.1 、https://gitee.com/dozybot/PassBy/releases/tag/android-v2.2.1 。不登录从 GitHub 下载核对过校验值和证书。
+
 ### 2.2.0 已发布（2026-11-15）
 
 - 局域网同步（设计、协议和测试记录都在 `docs/sync.md`）。versionCode 5，提交 5e74812。权限多一项 `ACCESS_LOCAL_NETWORK`（Android 17 起的运行时权限，只在同步页申请），`release.sh` 的权限名单同步加上。
@@ -119,7 +126,6 @@
 
 ### 可以以后做的小事
 
-- 2.2.0 之后 `main` 上有一处没发布的改动：同步主机只有 200 应答才刷新空闲计时（见 `docs/sync.md` 第 9 节）。下一个版本带上，versionCode 还是 5，发布时再加。
 - `notebook.json.unreadable`：用户确认恢复正常后删掉，或在隐私政策里照实写（安全组、法务组都提过）。
 - 从别的应用里「用 PassBy 打开」导出文件，第一版没有做。
 - AI 分组一次最多发 500 个标题，超过的要分几次，现在只发前 500 个并在预览页说明。
