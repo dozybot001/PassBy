@@ -10,7 +10,7 @@
 
 | | 版本 | 状态 |
 | --- | --- | --- |
-| 安卓 | 2.2.0 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
+| 安卓 | 2.2.1 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
 | iPhone | 2.1 | 已提交 App Store 审核（2026-11-16），通过后在 App Store 提供 |
 | 网页 | — | <https://passby.tenonai.cn/app/>（电脑上的 Chrome、Edge）。它不登录、不存密码本，要连同一个 Wi-Fi 里一部打开了「同步」的手机，设计见 [docs/sync.md](docs/sync.md) |
 
