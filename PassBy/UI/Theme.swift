@@ -20,13 +20,8 @@ struct NotebookTitle: View {
     var body: some View {
         HStack(spacing: size * 0.3) {
             NotebookMark(size: size)
-            HStack(alignment: .top, spacing: max(4, size * 0.18)) {
-                Text("PassBy").font(.system(size: size, weight: .semibold)).tracking(-0.7)
-                Image("TenonMark").resizable().scaledToFit()
-                    .frame(width: max(14, size * 0.58), height: max(14, size * 0.58)).offset(y: -size * 0.04)
-                    .accessibilityHidden(true)
-            }
-        }.accessibilityElement(children: .ignore).accessibilityLabel(Text("PassBy, by Tenon"))
+            Text("PassBy").font(.system(size: size, weight: .semibold)).tracking(-0.7)
+        }.accessibilityElement(children: .ignore).accessibilityLabel(Text(verbatim: "PassBy"))
             .accessibilityAddTraits(.isHeader).fixedSize(horizontal: true, vertical: false)
     }
 }
