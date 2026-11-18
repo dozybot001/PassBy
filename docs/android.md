@@ -13,7 +13,8 @@
 - 同步主机只有 200 应答才刷新空闲计时（fe4b6c5，和 iPhone 一致）；撤掉字标旁的 Tenon 小标，关于页出品方改为小号横版组合（创始人 11-18，总办转达；规范 2.35）。versionCode 6，提交 fa76220，权限和 2.2.0 相同。
 - 安全组 11-18 回复可以发。
 - 标签 `android-v2.2.1`。`PassBy-2.2.1.apk`，SHA-256 `605b971f70b38206bfb2fbad300f0440fa6a8051ab8bd360a62b4faa9b7b027f`，证书不变。
-- 地址：https://github.com/dozybot001/PassBy/releases/tag/android-v2.2.1 、https://gitee.com/dozybot/PassBy/releases/tag/android-v2.2.1 。不登录从 GitHub 下载核对过校验值和证书。
+- 地址：https://github.com/dozybot001/PassBy/releases/tag/android-v2.2.1 、https://gitee.com/dozybot/PassBy/releases/tag/android-v2.2.1 。不登录从 GitHub、Gitee 各下载核对过校验值、证书和版本号。
+- 安全组 11-18 发布后复核通过（它的工作区 1f83e09）：权限和清单只差版本号，没有新地址。
 
 ### 2.2.0 已发布（2026-11-15）
 
