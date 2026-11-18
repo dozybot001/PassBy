@@ -7,13 +7,13 @@
 <p align="center">一个简单的密码本。</p>
 
 <p align="center">
-  <a href="README.md">English</a> · 简体中文
-</p>
-
-<p align="center">
   <a href="https://github.com/dozybot001/PassBy/releases"><img src="https://img.shields.io/github/v/release/dozybot001/PassBy?filter=android-v*&label=Android&color=555" alt="安卓最新版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/dozybot001/PassBy?color=555" alt="MIT 许可证"></a>
   <img src="https://img.shields.io/badge/status-archived-777" alt="状态：已归档">
+</p>
+
+<p align="center">
+  <a href="https://passby.tenonai.cn/">官网</a> · <a href="https://gitee.com/dozybot/PassBy/releases">下载安卓版</a> · <a href="#文档">文档</a> · <a href="README.md">English</a>
 </p>
 
 <p align="center">
@@ -23,57 +23,18 @@
   </picture>
 </p>
 
-没有账号，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。App 默认不联网，只在两种时候例外：你打开「AI 分组」时连你选的模型服务商，你用「同步」时在同一个 Wi-Fi 里连你的另一台设备。
-
-免费，源代码以 MIT 许可证公开。由长沙榫卯人工智能科技有限公司（榫卯 Tenon AI）提供。
+没有账号，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。App 默认不联网，只在两种时候例外：你打开「AI 分组」时连你选的模型服务商，你用「同步」时在同一个 Wi-Fi 里连你的另一台设备。免费，源代码以 MIT 许可证公开。
 
 > [!NOTE]
 > **2026-11-18 起项目归档：不再开发新功能，现有版本继续提供。** 问题仍可写信到 <support@tenonai.cn>。
+
+## 快速开始
 
 | | 版本 | 在哪里 |
 | --- | --- | --- |
 | 安卓 | 2.2.1 | 安装包（apk）在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
 | iPhone | 2.1 | 已提交 App Store 审核（2026-11-16），通过后在 App Store 提供 |
 | 网页 | — | <https://passby.tenonai.cn/app/>，电脑上的 Chrome、Edge，连同一个 Wi-Fi 里的手机使用 |
-
-## 能做什么
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>只是一本密码本</h3>
-      <p>标题、账户、密码、备注四栏，可以放进文件夹，可以搜索。点一行就复制密码，60 秒后清除剪贴板。删除的条目在「最近删除」里留 30 天。</p>
-    </td>
-    <td width="50%"><img src="docs/assets/detail-zh.png" width="270" alt="一条密码的详情：账户、隐藏的密码和备注"></td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>随手生成强密码</h3>
-      <p>密码生成器：8 到 4096 位，可选大小写字母、数字、符号。</p>
-    </td>
-    <td width="50%"><img src="docs/assets/generator-zh.png" width="270" alt="密码生成器：长度滑块和字符种类开关"></td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>在电脑上用，只走你自己的 Wi-Fi</h3>
-      <p>用 Chrome 或 Edge 打开网页版，和手机配对后可以查看、搜索、复制和修改，每次改动都存回手机。传输内容加密，只在这两台设备之间传，浏览器里不保存密码本。</p>
-    </td>
-    <td width="50%"><img src="docs/assets/web-zh.png" width="400" alt="连上手机的网页版，左边是列表，右边是一条密码"></td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>AI 分组，你要才有</h3>
-      <p>默认关闭。用你自己选的模型服务商和 API Key，让模型按标题建议分组和更整齐的标题，你确认后才改动。只发标题和文件夹名，从手机直接发给服务商，发送前能看到要发出的全部内容。</p>
-    </td>
-    <td width="50%"><img src="docs/assets/ai-zh.png" width="270" alt="AI 分组设置：默认关闭，只发标题和文件夹名"></td>
-  </tr>
-</table>
-
-另外还有：一道门（打开时和离开满 5 分钟后用指纹、人脸或锁屏密码验证，可以关）；加密导出和导入 `.passby` 文件，用来自己留备份、换手机，或者在 iPhone 和安卓之间搬；中文和英文，深色和浅色。
-
-不做的：账号、经过服务器的云同步、自动填充、广告、统计。
-
-## 快速开始
 
 **安卓**（Android 8.0 或更高）
 
@@ -99,14 +60,29 @@ node scripts/sync-web-check.mjs
 
 安卓见 [docs/android.md](docs/android.md)。网站（`public/`）是静态文件，没有构建步骤。
 
+## 能做什么
+
+- **只是一本密码本**：标题、账户、密码、备注四栏，可以分文件夹、搜索；点一下复制，60 秒后清除剪贴板。
+- **随手生成强密码**：8 到 4096 位，大小写字母、数字、符号自己选。
+- **在电脑上用，只走你自己的 Wi-Fi**：网页版和手机配对后使用，传输加密，浏览器里不保存密码本。
+- **AI 分组，你要才有**：默认关闭；只按标题建议分组，你确认后才改动。
+
+另外还有：一道门（打开时和离开满 5 分钟后用指纹、人脸或锁屏密码验证，可以关）；加密导出和导入 `.passby` 文件，用来自己留备份、换手机，或者在 iPhone 和安卓之间搬；中文和英文，深色和浅色。
+
+不做的：账号、经过服务器的云同步、自动填充、广告、统计。
+
+## 截图
+
+<p align="center">
+  <img src="docs/assets/detail-zh.png" height="260" alt="一条密码的详情：账户、隐藏的密码和备注">
+  <img src="docs/assets/generator-zh.png" height="260" alt="密码生成器：长度滑块和字符种类开关">
+  <img src="docs/assets/web-zh.png" height="260" alt="连上手机的网页版，左边是列表，右边是一条密码">
+  <img src="docs/assets/ai-zh.png" height="260" alt="AI 分组设置：默认关闭，只发标题和文件夹名">
+</p>
+
 ## 数据去向
 
-- **密码本**是手机上 App 自己目录里的一个文件，不发给我们，我们也没有服务器。
-- **备份**跟着系统的备份和换机走，由提供备份的服务（Apple、Google 或手机厂商）或你的电脑保存；备份有没有加密，取决于你的设置。
-- **AI 分组**（默认关闭）只把条目标题和文件夹名发给你选的服务商，不发账户、密码和备注；这部分适用服务商的条款。
-- **同步**只在同一个 Wi-Fi 里，在手机和你的另一台设备之间加密传输密码本。
-
-完整清单见 [docs/privacy.md](docs/privacy.md) 和[隐私政策](https://passby.tenonai.cn/privacy/)。
+密码本只在手机上 App 自己的目录和手机自己的备份里，PassBy 没有服务器。只有你打开的「AI 分组」会把条目标题和文件夹名发给你选的服务商，「同步」会在同一个 Wi-Fi 里把密码本加密传给你的另一台设备。完整清单见 [docs/privacy.md](docs/privacy.md) 和[隐私政策](https://passby.tenonai.cn/privacy/)。
 
 ## 安全
 

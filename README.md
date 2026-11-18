@@ -7,13 +7,13 @@
 <p align="center">A simple password notebook.</p>
 
 <p align="center">
-  English · <a href="README.zh-CN.md">简体中文</a>
-</p>
-
-<p align="center">
   <a href="https://github.com/dozybot001/PassBy/releases"><img src="https://img.shields.io/github/v/release/dozybot001/PassBy?filter=android-v*&label=Android&color=555" alt="Latest Android release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/dozybot001/PassBy?color=555" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/status-archived-777" alt="Status: archived">
+</p>
+
+<p align="center">
+  <a href="https://passby.tenonai.cn/">Website</a> · <a href="https://github.com/dozybot001/PassBy/releases/latest">Download for Android</a> · <a href="#documentation">Docs</a> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
 <p align="center">
@@ -23,57 +23,18 @@
   </picture>
 </p>
 
-No account, and nothing goes through our servers: your notebook is kept on your phone and moves with the phone's own backups. The app stays offline, with two exceptions: AI grouping, when you turn it on, connects to the model provider you choose; Sync connects to your other device on the same Wi-Fi.
-
-Free, with the source code under the MIT License. Made by Tenon AI (Changsha Tenon Artificial Intelligence Technology Co., Ltd.).
+No account, and nothing goes through our servers: your notebook is kept on your phone and moves with the phone's own backups. The app stays offline, with two exceptions: AI grouping, when you turn it on, connects to the model provider you choose; Sync connects to your other device on the same Wi-Fi. Free and open source under the MIT License.
 
 > [!NOTE]
 > **Archived on 18 November 2026.** No new features are planned; the existing versions stay available. Questions still go to <support@tenonai.cn>.
+
+## Quick start
 
 | | Version | Where |
 | --- | --- | --- |
 | Android | 2.2.1 | `.apk` on [GitHub Releases](https://github.com/dozybot001/PassBy/releases) and [Gitee Releases](https://gitee.com/dozybot/PassBy/releases) |
 | iPhone | 2.1 | In App Store review since 16 November 2026 |
 | Web | — | <https://passby.tenonai.cn/app/>, Chrome or Edge on a computer, connected to a phone on the same Wi-Fi |
-
-## What it does
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Just the notebook</h3>
-      <p>Title, account, password and notes, in folders, with search. Tap a row to copy the password; the clipboard is cleared after 60 seconds. Deleted entries stay in Recently Deleted for 30 days.</p>
-    </td>
-    <td width="50%"><img src="docs/assets/detail-en.png" width="270" alt="An entry with its account, hidden password and notes"></td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Strong passwords on the spot</h3>
-      <p>The generator makes passwords from 8 to 4096 characters, with your choice of upper and lower case, digits and symbols.</p>
-    </td>
-    <td width="50%"><img src="docs/assets/generator-en.png" width="270" alt="The password generator with a length slider and character options"></td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>On your computer, over your own Wi-Fi</h3>
-      <p>Open the web version in Chrome or Edge and pair it with your phone. You can view, search, copy and edit; every change is saved back to the phone. Traffic is encrypted and goes only between the two devices, and the browser keeps nothing.</p>
-    </td>
-    <td width="50%"><img src="docs/assets/web-en.png" width="400" alt="The web version connected to a phone, showing the list and an entry"></td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>AI grouping, only if you ask</h3>
-      <p>Off by default. With a provider and API key you choose, a model suggests folders and tidier titles from your entry titles, and nothing changes until you confirm. Only titles and folder names are sent, straight from the phone to the provider, and you see everything before it goes out.</p>
-    </td>
-    <td width="50%"><img src="docs/assets/ai-en.png" width="270" alt="AI grouping settings: off by default, sends titles and folder names only"></td>
-  </tr>
-</table>
-
-Also: a lock that asks for your fingerprint, face or screen lock when you open the app and after 5 minutes away; encrypted export and import of a `.passby` file, for your own backups or moving between iPhone and Android; English and Chinese; light and dark.
-
-Not included: accounts, cloud sync through a server, autofill, ads, analytics.
-
-## Quick start
 
 **Android** (8.0 or later)
 
@@ -99,14 +60,29 @@ node scripts/sync-web-check.mjs
 
 Android: see [docs/android.md](docs/android.md). The website in `public/` is static files with no build step.
 
+## What it does
+
+- **Just the notebook**: title, account, password and notes, in folders, with search; tap to copy, and the clipboard clears after 60 seconds.
+- **Strong passwords on the spot**: a generator for 8 to 4096 characters, with letters, digits and symbols as you choose.
+- **On your computer, over your own Wi-Fi**: pair the web version with your phone; traffic is encrypted, and the browser keeps nothing.
+- **AI grouping, only if you ask**: off by default; suggests folders from titles only, and nothing changes until you confirm.
+
+Also: a lock that asks for your fingerprint, face or screen lock when you open the app and after 5 minutes away; encrypted export and import of a `.passby` file, for your own backups or moving between iPhone and Android; English and Chinese; light and dark.
+
+Not included: accounts, cloud sync through a server, autofill, ads, analytics.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/assets/detail-en.png" height="260" alt="An entry with its account, hidden password and notes">
+  <img src="docs/assets/generator-en.png" height="260" alt="The password generator with a length slider and character options">
+  <img src="docs/assets/web-en.png" height="260" alt="The web version connected to a phone, showing the list and an entry">
+  <img src="docs/assets/ai-en.png" height="260" alt="AI grouping settings: off by default, sends titles and folder names only">
+</p>
+
 ## Where your data goes
 
-- **The notebook** is one file in the app's own folder on the phone. Nothing is sent to us; there is no server.
-- **Backups** follow the phone's system backup and device transfer. They are kept by whoever provides the backup (Apple, Google, the phone maker) or by your computer; whether they are encrypted depends on your settings.
-- **AI grouping** (off by default) sends entry titles and folder names, never accounts, passwords or notes, to the provider you chose. That provider's terms apply.
-- **Sync** sends the notebook, encrypted, between your phone and your other device on the same Wi-Fi only.
-
-The full list is in [docs/privacy.md](docs/privacy.md) and the [Privacy Policy](https://passby.tenonai.cn/privacy/).
+Your notebook stays in the app's own folder on your phone and in the phone's own backups; there is no PassBy server. Only AI grouping, when you turn it on, sends entry titles and folder names to the provider you chose, and Sync sends the notebook, encrypted, to your other device on the same Wi-Fi. The full list is in [docs/privacy.md](docs/privacy.md) and the [Privacy Policy](https://passby.tenonai.cn/privacy/).
 
 ## Security
 
