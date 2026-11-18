@@ -143,13 +143,7 @@ fun AboutScreen(model: AppViewModel) {
                 )
                 Text(stringResource(R.string.about_what), style = MaterialTheme.typography.bodyLarge)
                 Text(stringResource(R.string.about_how), style = MaterialTheme.typography.bodyLarge)
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Image(painterResource(R.drawable.tenon_mark), contentDescription = null, Modifier.size(28.dp))
-                    Column {
-                        Text(stringResource(R.string.publisher), style = MaterialTheme.typography.labelMedium, color = palette.secondary)
-                        Text(stringResource(R.string.publisher_name), style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
+                Text(stringResource(R.string.publisher), style = MaterialTheme.typography.bodyMedium, color = palette.secondary)
             }
             HorizontalDivider(Modifier.padding(horizontal = PagePadding), color = palette.rule)
             SettingRow(title = stringResource(R.string.website), text = WEBSITE_URL, icon = Icons.External, onClick = { open { openLink(context, WEBSITE_URL) } })

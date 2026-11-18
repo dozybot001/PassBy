@@ -90,8 +90,8 @@ fun BrandMark(size: Dp, modifier: Modifier = Modifier, color: Color = palette.in
 }
 
 /**
- * The full logo: mark, wordmark, and the Tenon mark at the upper right of the wordmark, with the
- * proportions the product standard gives (§1.2 to §1.5). Read out as one name.
+ * The logo: mark and wordmark, spaced as the product standard gives (§1.5). Read out as one name.
+ * There is no Tenon mark beside it (founder, 2026-11-18).
  */
 @Composable
 fun BrandLockup(wordmarkSize: Int, modifier: Modifier = Modifier) {
@@ -106,22 +106,14 @@ fun BrandLockup(wordmarkSize: Int, modifier: Modifier = Modifier) {
     ) {
         BrandMark(size = s.dp)
         Spacer(Modifier.width((s * 0.3f).dp))
-        Row(verticalAlignment = Alignment.Top) {
-            Text(
-                stringResource(R.string.app_name),
-                fontSize = s.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = (-0.02f).em,
-                color = palette.ink,
-                maxLines = 1,
-            )
-            Spacer(Modifier.width(maxOf(4f, s * 0.18f).dp))
-            Image(
-                painterResource(R.drawable.tenon_mark),
-                contentDescription = null,
-                modifier = Modifier.offset(y = (-s * 0.04f).dp).size(maxOf(14f, s * 0.58f).dp),
-            )
-        }
+        Text(
+            stringResource(R.string.app_name),
+            fontSize = s.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-0.02f).em,
+            color = palette.ink,
+            maxLines = 1,
+        )
     }
 }
 
