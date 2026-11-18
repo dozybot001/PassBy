@@ -122,7 +122,8 @@
     <string name="feedback">Send feedback</string>
     <string name="version">Version</string>
     <string name="version_value">%1$s (%2$d)</string>
-    <string name="publisher">By Tenon AI</string>
+    <string name="publisher">Publisher</string>
+    <string name="publisher_name">Tenon AI</string>
     <string name="brand_description">PassBy</string>
     <string name="about_what">PassBy is a simple password notebook. Keep titles, accounts, passwords and notes together, organize them in folders, and generate strong passwords to copy into other apps.</string>
     <string name="about_how">No account, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone\'s own backups and device transfers. The app stays offline by default, with two exceptions: when you turn on AI grouping it connects to the model provider you choose, and when you use Sync it connects directly to your other device on the same Wi-Fi.</string>

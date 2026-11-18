@@ -120,7 +120,8 @@
     <string name="feedback">发送反馈</string>
     <string name="version">版本</string>
     <string name="version_value">%1$s（%2$d）</string>
-    <string name="publisher">榫卯 Tenon AI 出品</string>
+    <string name="publisher">出品方</string>
+    <string name="publisher_name">榫卯 Tenon AI</string>
     <string name="brand_description">PassBy</string>
     <string name="about_what">PassBy 是一个简单的密码本。将标题、账户、密码和备注保存在一起，按文件夹整理，并生成强密码，复制到其他应用中使用。</string>
     <string name="about_how">没有账号，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。App 默认不联网，只在两种时候例外：你打开「AI 分组」时连你选的模型服务商，你用「同步」时在同一个 Wi-Fi 里连你的另一台设备。</string>

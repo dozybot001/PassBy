@@ -8,8 +8,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -25,9 +27,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import cn.tenonai.apps.passby.BuildConfig
 import cn.tenonai.apps.passby.R
@@ -143,7 +148,18 @@ fun AboutScreen(model: AppViewModel) {
                 )
                 Text(stringResource(R.string.about_what), style = MaterialTheme.typography.bodyLarge)
                 Text(stringResource(R.string.about_how), style = MaterialTheme.typography.bodyLarge)
-                Text(stringResource(R.string.publisher), style = MaterialTheme.typography.bodyMedium, color = palette.secondary)
+                val publisherLabel = stringResource(R.string.publisher) + " " + stringResource(R.string.publisher_name)
+                // Publisher: the small Tenon lockup, the orange T beside the company name (standard 1.4).
+                Row(
+                    Modifier.clearAndSetSemantics { contentDescription = publisherLabel },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(stringResource(R.string.publisher), style = MaterialTheme.typography.bodyMedium, color = palette.secondary)
+                    Spacer(Modifier.width(16.dp))
+                    Image(painterResource(R.drawable.tenon_mark), contentDescription = null, Modifier.size(20.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.publisher_name), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = palette.ink)
+                }
             }
             HorizontalDivider(Modifier.padding(horizontal = PagePadding), color = palette.rule)
             SettingRow(title = stringResource(R.string.website), text = WEBSITE_URL, icon = Icons.External, onClick = { open { openLink(context, WEBSITE_URL) } })
