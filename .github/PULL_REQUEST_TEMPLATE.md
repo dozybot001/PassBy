@@ -1,5 +1,5 @@
-<!-- 项目已归档，只接受安全修复、缺陷修复和文字更正，见 CONTRIBUTING.md。安全问题请先私下报告。
-     The project is archived and accepts only security fixes, bug fixes and text corrections; see CONTRIBUTING.md. Report security problems privately first. -->
+<!-- PassBy 目前只接受安全修复、崩溃或丢数据的修复、文字和翻译更正，见 CONTRIBUTING.md。安全问题请先私下报告。
+     PassBy currently accepts only security fixes, fixes for crashes or data loss, and text and translation corrections; see CONTRIBUTING.md. Report security problems privately first. -->
 
 ## 改了什么 / What changed
 

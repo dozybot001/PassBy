@@ -7,7 +7,7 @@
 按开源仓库规范（创始人 11-18 定，运营组转达）：
 
 - `README.md` 改写成英文，中文放到 `README.zh-CN.md`，两份互相链接；加上标志、徽章、深浅色首图和四张功能配图（`docs/assets/`，取自给官网拍的截图，单张不到 300 KB）。
-- 新增 `CONTRIBUTING.md`（归档后只接受安全修复、缺陷修复和文字更正）、`CODE_OF_CONDUCT.md`（Contributor Covenant 2.1，联系 support@tenonai.cn）、`.github/` 下的缺陷和建议模板（中英双语）和 PR 模板。
+- 新增 `CONTRIBUTING.md`（现在接受哪几类改动）、`CODE_OF_CONDUCT.md`（Contributor Covenant 2.1，联系 support@tenonai.cn）、`.github/` 下的缺陷和建议模板（中英双语）和 PR 模板。
 
 ## 撤掉 Tenon 小标（2026-11-18）
 
@@ -18,17 +18,10 @@
 - 应用图标、favicon、分享图和手机桌面图标本来就只有 PassBy 自己的图形，没有角标，没动。
 - 安卓 2.2.1 已发布。iPhone 的改动在 `main` 上，审核中的 2.1（19）不撤回（和产品组商定）；2.1 发布后打成 2.1.1（Build 20）提交，提交前请创始人确认。
 
-## 项目归档（2026-11-18）
-
-创始人 11-18：「PassBy 后续也不会再开发，很简单，也基本没什么维护需求。这个项目归档，但是依旧对外分发。」
-
-- 继续提供的：安卓 2.2.0（GitHub、Gitee 的 Releases）、网页版 <https://passby.tenonai.cn/app/>、介绍页、支持页和法律页面、源代码。
-- 归档时还开着的：
-  - iPhone 2.1（Build 19）11-16 提交审核，还没有结果；创始人 11-18 已确认「过审后上架」：通过后打开销售范围（除中国大陆）并手动发布，步骤在 `docs/app-store-release.md`。销售范围在通过之前不要打开。
-  - 没做过的验证：网页用线上地址在 Chrome 里连一次并抓包；两台真实手机之间同步；iPhone 真机。记在 `docs/sync.md` 第 9 节。
-- 新增 `scripts/export-to-csv.mjs`：把导出文件转成谷歌密码管理器、Chrome 能导入的 CSV。
-
 ## 未发布
+
+### 工具：导出文件转 CSV（2026-11-18）
+- 新增 `scripts/export-to-csv.mjs`：把导出文件转成谷歌密码管理器、Chrome 能导入的 CSV。
 
 ### 网页：页脚加上公安联网备案号（2026-11-16）
 - 介绍页、支持页、法律页面和各存档页的页脚在 ICP 备案号后加上「湘公网安备43010202002408号」（法务组，迁移清单 2.1）。同步网页（`/app/`）没有页脚，没动。

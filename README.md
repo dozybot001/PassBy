@@ -9,7 +9,6 @@
 <p align="center">
   <a href="https://github.com/dozybot001/PassBy/releases"><img src="https://img.shields.io/github/v/release/dozybot001/PassBy?filter=android-v*&label=Android&color=555" alt="Latest Android release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/dozybot001/PassBy?color=555" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/status-archived-777" alt="Status: archived">
 </p>
 
 <p align="center">
@@ -24,9 +23,6 @@
 </p>
 
 No account, and nothing goes through our servers: your notebook is kept on your phone and moves with the phone's own backups. The app stays offline, with two exceptions: AI grouping, when you turn it on, connects to the model provider you choose; Sync connects to your other device on the same Wi-Fi. Free and open source under the MIT License.
-
-> [!NOTE]
-> **Archived on 18 November 2026.** No new features are planned; the existing versions stay available. Questions still go to <support@tenonai.cn>.
 
 ## Quick start
 
@@ -106,7 +102,7 @@ Most documents are in Chinese and record discussions and decisions as they were 
 
 ## Contributing
 
-The project is archived, so only a narrow set of changes is accepted: security fixes, fixes for crashes or data loss, and corrections to text and translations. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+PassBy currently accepts these changes: security fixes, fixes for crashes or data loss, and corrections to text and translations. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 

@@ -9,7 +9,6 @@
 <p align="center">
   <a href="https://github.com/dozybot001/PassBy/releases"><img src="https://img.shields.io/github/v/release/dozybot001/PassBy?filter=android-v*&label=Android&color=555" alt="安卓最新版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/dozybot001/PassBy?color=555" alt="MIT 许可证"></a>
-  <img src="https://img.shields.io/badge/status-archived-777" alt="状态：已归档">
 </p>
 
 <p align="center">
@@ -24,9 +23,6 @@
 </p>
 
 没有账号，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。App 默认不联网，只在两种时候例外：你打开「AI 分组」时连你选的模型服务商，你用「同步」时在同一个 Wi-Fi 里连你的另一台设备。免费，源代码以 MIT 许可证公开。
-
-> [!NOTE]
-> **2026-11-18 起项目归档：不再开发新功能，现有版本继续提供。** 问题仍可写信到 <support@tenonai.cn>。
 
 ## 快速开始
 
@@ -106,7 +102,7 @@ node scripts/sync-web-check.mjs
 
 ## 参与贡献
 
-项目已归档，只接受少数几类改动：安全修复、崩溃或丢数据的修复、文字和翻译的更正。见 [CONTRIBUTING.md](CONTRIBUTING.md) 和[行为准则](CODE_OF_CONDUCT.md)。
+PassBy 目前只接受这几类改动：安全修复、崩溃或丢数据的修复、文字和翻译的更正。见 [CONTRIBUTING.md](CONTRIBUTING.md) 和[行为准则](CODE_OF_CONDUCT.md)。
 
 ## 许可证
 

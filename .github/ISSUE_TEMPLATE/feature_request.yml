@@ -1,12 +1,12 @@
 name: 建议 / Suggestion
-description: 改进建议。项目已归档，新功能大概率不会做。An idea. The project is archived, so new features are unlikely.
+description: 改进建议。新功能目前不接受。An idea. New features are not accepted at the moment.
 labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        PassBy 已归档，只接受安全修复、缺陷修复和文字更正，见 CONTRIBUTING.md。
-        PassBy is archived and accepts only security fixes, bug fixes and text corrections; see CONTRIBUTING.md.
+        PassBy 目前只接受安全修复、崩溃或丢数据的修复、文字和翻译更正，见 CONTRIBUTING.md。
+        PassBy currently accepts only security fixes, fixes for crashes or data loss, and text and translation corrections; see CONTRIBUTING.md.
   - type: textarea
     id: problem
     attributes:

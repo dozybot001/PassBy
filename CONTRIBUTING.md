@@ -1,12 +1,12 @@
 # 参与贡献 / Contributing
 
-PassBy 已于 2026-11-18 归档：不再开发新功能，现有版本继续提供。所以现在只接受这几类改动：
+PassBy 目前只接受这几类改动：
 
 - 安全修复。先按 [SECURITY.md](SECURITY.md) 私下报告，不要先开公开的 issue 或 PR。
 - 崩溃、丢数据、导出文件打不开或导入出错的修复。
 - 界面文字、翻译和文档的更正。
 
-新功能、界面改版、新增依赖或联网的改动不再接受；有想法可以开 issue 讨论，但大概率不会做。
+新功能、界面改版、新增依赖或联网的改动不接受。
 
 ## 提交前
 
@@ -22,13 +22,13 @@ PassBy 已于 2026-11-18 归档：不再开发新功能，现有版本继续提�
 
 ---
 
-PassBy was archived on 18 November 2026: no new features, and the existing versions stay available. Only these changes are accepted now:
+PassBy currently accepts only these changes:
 
 - Security fixes. Report them privately first, as described in [SECURITY.md](SECURITY.md); don't open a public issue or PR first.
 - Fixes for crashes, data loss, or export files that won't open or import correctly.
 - Corrections to interface text, translations and documentation.
 
-New features, redesigns, and changes that add dependencies or network access are no longer accepted. You can open an issue to discuss an idea, but it is unlikely to be built.
+New features, redesigns, and changes that add dependencies or network access are not accepted.
 
 Before you submit:
 
