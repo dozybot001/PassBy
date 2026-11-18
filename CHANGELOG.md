@@ -2,6 +2,15 @@
 
 格式按 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-CN/1.1.0/)，版本号按语义化版本。iPhone 版本号与 App Store 一致；网页随时发布，记在下一个 iPhone 版本或「未发布」之下。
 
+## 撤掉 Tenon 小标（2026-11-18）
+
+创始人 11-18 定各产品取消橙色小 T 的 Tenon 标志（总办转达，Tenon-AI inbox 290dc4b）：「目前产品可以全面取消那个橙色小 T 的 logo。……此外，PassBy 也调整」。
+
+- 网页：介绍页、支持页、法律页面（含存档）、错误页和同步网页，字标右上的小 T 去掉；页脚写「PassBy · 榫卯 Tenon AI 出品」。删了 `public/web/tenon-mark.svg`。
+- 安卓、iPhone：列表顶部字标的小 T 去掉；关于页出品方改成一行字「榫卯 Tenon AI 出品」/「By Tenon AI」，不放图标。删了两端的小 T 图片。
+- 应用图标、favicon、分享图和手机桌面图标本来就只有 PassBy 自己的图形，没有角标，没动。
+- 安卓随 2.2.1 发布；iPhone 的改动在 `main` 上，审核中的 2.1（19）还带着小 T，怎么处理和产品组商量。
+
 ## 项目归档（2026-11-18）
 
 创始人 11-18：「PassBy 后续也不会再开发，很简单，也基本没什么维护需求。这个项目归档，但是依旧对外分发。」
