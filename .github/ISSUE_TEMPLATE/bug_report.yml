@@ -1,0 +1,41 @@
+name: 缺陷 / Bug report
+description: PassBy 出错、崩溃或丢数据。Something is broken, crashes or loses data.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        不要贴真实的密码、导出文件或导出码；安全问题请按 SECURITY.md 私下报告。
+        Never include real passwords, export files or export codes. Report security problems privately, as described in SECURITY.md.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 平台 / Platform
+      options: [Android, iPhone, 网页 / Web]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: PassBy 版本和系统版本 / PassBy and OS version
+      placeholder: "PassBy 2.2.1, Android 15"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+      placeholder: "1. …\n2. …"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望和实际 / Expected and actual
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: 截图或其他 / Screenshots or anything else
+      description: 截图前遮住密码。Hide passwords before taking screenshots.

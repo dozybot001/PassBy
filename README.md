@@ -1,94 +1,145 @@
-# PassBy
+<p align="center">
+  <img src="docs/assets/logo.svg" width="72" height="72" alt="PassBy logo">
+</p>
 
-一个简单的密码本。没有账号，不经过我们的服务器；密码本由手机保管，跟着手机自己的备份和换机走。App 默认不联网，只在两种时候例外：你打开「AI 分组」时连你选的模型服务商，你用「同步」时在同一个 Wi-Fi 里连你的另一台设备。
+<h1 align="center">PassBy</h1>
 
-由长沙榫卯人工智能科技有限公司（榫卯 Tenon AI）提供，免费，源代码以 MIT 许可证公开。
+<p align="center">A simple password notebook.</p>
 
-## 现状
+<p align="center">
+  English · <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-**2026-11-18 起项目归档：不再开发新功能，现有版本继续提供。** 安卓安装包、网页版和源代码照旧可用；问题仍可写信到 support@tenonai.cn。
+<p align="center">
+  <a href="https://github.com/dozybot001/PassBy/releases"><img src="https://img.shields.io/github/v/release/dozybot001/PassBy?filter=android-v*&label=Android&color=555" alt="Latest Android release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/dozybot001/PassBy?color=555" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/status-archived-777" alt="Status: archived">
+</p>
 
-| | 版本 | 状态 |
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark-en.png">
+    <img src="docs/assets/hero-light-en.png" width="860" alt="PassBy on an Android phone, and the same notebook open in a browser on a computer over Wi-Fi">
+  </picture>
+</p>
+
+No account, and nothing goes through our servers: your notebook is kept on your phone and moves with the phone's own backups. The app stays offline, with two exceptions: AI grouping, when you turn it on, connects to the model provider you choose; Sync connects to your other device on the same Wi-Fi.
+
+Free, with the source code under the MIT License. Made by Tenon AI (Changsha Tenon Artificial Intelligence Technology Co., Ltd.).
+
+> [!NOTE]
+> **Archived on 18 November 2026.** No new features are planned; the existing versions stay available. Questions still go to <support@tenonai.cn>.
+
+| | Version | Where |
 | --- | --- | --- |
-| 安卓 | 2.2.1 | 安装包（apk）发布在 [GitHub](https://github.com/dozybot001/PassBy/releases) 和 [Gitee](https://gitee.com/dozybot/PassBy/releases) 的 Releases 里 |
-| iPhone | 2.1 | 已提交 App Store 审核（2026-11-16），通过后在 App Store 提供 |
-| 网页 | — | <https://passby.tenonai.cn/app/>（电脑上的 Chrome、Edge）。它不登录、不存密码本，要连同一个 Wi-Fi 里一部打开了「同步」的手机，设计见 [docs/sync.md](docs/sync.md) |
+| Android | 2.2.1 | `.apk` on [GitHub Releases](https://github.com/dozybot001/PassBy/releases) and [Gitee Releases](https://gitee.com/dozybot/PassBy/releases) |
+| iPhone | 2.1 | In App Store review since 16 November 2026 |
+| Web | — | <https://passby.tenonai.cn/app/>, Chrome or Edge on a computer, connected to a phone on the same Wi-Fi |
 
-1.x 的 iPhone 版和网页版（Tenon 账号登录、iCloud 同步）已于 2026-11-15 停止提供，见[更新记录](CHANGELOG.md)。
+## What it does
 
-## 安装安卓版
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Just the notebook</h3>
+      <p>Title, account, password and notes, in folders, with search. Tap a row to copy the password; the clipboard is cleared after 60 seconds. Deleted entries stay in Recently Deleted for 30 days.</p>
+    </td>
+    <td width="50%"><img src="docs/assets/detail-en.png" width="270" alt="An entry with its account, hidden password and notes"></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Strong passwords on the spot</h3>
+      <p>The generator makes passwords from 8 to 4096 characters, with your choice of upper and lower case, digits and symbols.</p>
+    </td>
+    <td width="50%"><img src="docs/assets/generator-en.png" width="270" alt="The password generator with a length slider and character options"></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>On your computer, over your own Wi-Fi</h3>
+      <p>Open the web version in Chrome or Edge and pair it with your phone. You can view, search, copy and edit; every change is saved back to the phone. Traffic is encrypted and goes only between the two devices, and the browser keeps nothing.</p>
+    </td>
+    <td width="50%"><img src="docs/assets/web-en.png" width="400" alt="The web version connected to a phone, showing the list and an entry"></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>AI grouping, only if you ask</h3>
+      <p>Off by default. With a provider and API key you choose, a model suggests folders and tidier titles from your entry titles, and nothing changes until you confirm. Only titles and folder names are sent, straight from the phone to the provider, and you see everything before it goes out.</p>
+    </td>
+    <td width="50%"><img src="docs/assets/ai-en.png" width="270" alt="AI grouping settings: off by default, sends titles and folder names only"></td>
+  </tr>
+</table>
 
-1. 在 Releases 里下载 `PassBy-<版本>.apk`，需要 Android 8.0 或更高。
-2. 安装前可以核对：每个版本的说明里有安装包的 SHA-256；安装包由长沙榫卯人工智能科技有限公司签名，签名证书的 SHA-256 指纹登记在 [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256)，也公布在[支持页](https://passby.tenonai.cn/support/)上。
-3. 以后更新时，系统如果提示签名不一致，不要安装。
+Also: a lock that asks for your fingerprint, face or screen lock when you open the app and after 5 minutes away; encrypted export and import of a `.passby` file, for your own backups or moving between iPhone and Android; English and Chinese; light and dark.
 
-## 能做什么
+Not included: accounts, cloud sync through a server, autofill, ads, analytics.
 
-- 条目有标题、账户、密码、备注四栏，可以放进文件夹，可以搜索。
-- 点一行就复制密码，复制的内容 60 秒后清除。
-- 密码生成器：8 到 4096 位，可选大小写字母、数字、符号。
-- 一道门：打开时验证一次，离开满 5 分钟再验证；用指纹或人脸，没有就用锁屏密码；可以关。
-- 删除的条目在「最近删除」里留 30 天。
-- 加密导出和导入：导出成一个 `.passby` 文件，用来自己留备份、换手机，或者在 iPhone 和安卓之间搬。
-- AI 分组（安卓 2.1 起，默认关闭）：用你自己选的模型服务商和你自己的 API Key，让模型按标题给出分组建议，你确认后才改动。只发条目的标题和现有文件夹名，不发账户、密码和备注；请求从手机直接发给服务商，不经过我们。这项服务由服务商提供。
-- 中文和英文，深色和浅色。
+## Quick start
 
-不做的：账号、经过服务器的云同步、自动填充、广告、统计。
+**Android** (8.0 or later)
 
-## 密码本放在哪里，靠什么保护
+1. Download `PassBy-<version>.apk` from [Releases](https://github.com/dozybot001/PassBy/releases).
+2. Check it before installing: each release lists the installer's SHA-256. The installer is signed by Changsha Tenon Artificial Intelligence Technology Co., Ltd.; the signing certificate's SHA-256 fingerprint is in [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256) and on the [Support page](https://passby.tenonai.cn/support/).
+3. If an update ever reports a signature mismatch, do not install it.
 
-- 密码本是手机上 App 自己目录里的一个文件，由系统的文件加密保护：iPhone 锁着时读不出来，安卓手机在开机后第一次解锁之前读不出来。PassBy 不另加自己的密钥，所以它的安全取决于手机的锁屏密码。没有设锁屏的手机，这层保护不起作用，App 会提示一次。
-- 它跟着系统的备份和换机走。备份由提供备份的服务（Apple、Google 或手机厂商）或你的电脑保存，不经过我们；备份本身有没有加密，取决于你的设置，详见[隐私政策](https://passby.tenonai.cn/privacy/)。
-- 导出文件用 AES-256-GCM 加密，密钥由导出码或你设的口令经 PBKDF2-HMAC-SHA256（60 万次）派生。导出码和口令都不保存，丢了就打不开文件。格式见 [docs/export-format.md](docs/export-format.md)，各端共用同一份[测试向量](docs/export-vectors.json)。
-- 加密只用系统自带的实现，不带第三方加密库。
-- 没有请第三方做过安全审计。解锁了的手机、你粘贴进去的应用、拿到导出文件和导出码的人，都能读到密码。
+**On a computer**: in PassBy on the phone, open Settings › Sync and tap “Let another device connect”. Open <https://passby.tenonai.cn/app/> on a computer on the same Wi-Fi and enter the address and pairing code the phone shows. Details and troubleshooting are on the [Support page](https://passby.tenonai.cn/support/).
 
-发现安全问题请看 [SECURITY.md](SECURITY.md)。
+**Build it yourself**
 
-## 文档
+```sh
+# iPhone (iOS 17 or later): run the tests
+xcodebuild -project PassBy.xcodeproj -scheme PassBy \
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
+  -derivedDataPath build CODE_SIGN_IDENTITY=- test
 
-- [2.0 的设计和决定](docs/local-notebook.md)
-- [导出文件格式](docs/export-format.md)
-- [安卓版](docs/android.md)
-- [隐私与数据清单](docs/privacy.md)
-- [App Store 发布记录](docs/app-store-release.md)
-- [更新记录](CHANGELOG.md)
-- 线上：[隐私政策](https://passby.tenonai.cn/privacy/)、[用户协议](https://passby.tenonai.cn/terms/)、[支持](https://passby.tenonai.cn/support/)
+# Check the export and sync formats against the shared test vectors
+node scripts/export-format.mjs --check
+node scripts/sync-format.mjs --check
+node scripts/sync-web-check.mjs
+```
 
-文档是开发过程中写下的记录，里面有当时的讨论和决定，以代码和上面的线上页面为准。
+Android: see [docs/android.md](docs/android.md). The website in `public/` is static files with no build step.
 
-## 开发
+## Where your data goes
 
-- iPhone：打开 [PassBy.xcodeproj](PassBy.xcodeproj)，最低 iOS 17。
+- **The notebook** is one file in the app's own folder on the phone. Nothing is sent to us; there is no server.
+- **Backups** follow the phone's system backup and device transfer. They are kept by whoever provides the backup (Apple, Google, the phone maker) or by your computer; whether they are encrypted depends on your settings.
+- **AI grouping** (off by default) sends entry titles and folder names, never accounts, passwords or notes, to the provider you chose. That provider's terms apply.
+- **Sync** sends the notebook, encrypted, between your phone and your other device on the same Wi-Fi only.
 
-  ```sh
-  xcodebuild -project PassBy.xcodeproj -scheme PassBy \
-    -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
-    -derivedDataPath build CODE_SIGN_IDENTITY=- test
-  ```
+The full list is in [docs/privacy.md](docs/privacy.md) and the [Privacy Policy](https://passby.tenonai.cn/privacy/).
 
-- 安卓：见 [docs/android.md](docs/android.md)。
-- 导出格式的参考实现：`node scripts/export-format.mjs --check`。
-- 网站（`public/`）是静态文件，没有构建步骤。
+## Security
 
-给 agent 的项目说明在 [AGENTS.md](AGENTS.md)。
+- The notebook is protected by the system's file encryption: on iPhone it can't be read while the phone is locked; on Android, not before the first unlock after a restart. PassBy adds no key of its own, so it is as safe as your screen lock. Without a screen lock this protection does not work, and the app tells you once.
+- Export files use AES-256-GCM with a key derived from the export code or your passphrase by PBKDF2-HMAC-SHA256 (600,000 iterations). Neither is stored; lose it and the file can't be opened. Format: [docs/export-format.md](docs/export-format.md), with [test vectors](docs/export-vectors.json) shared by every platform.
+- Only the platform's built-in cryptography is used, with no third-party crypto libraries.
+- There has been no third-party security audit. Anyone with your unlocked phone, any app you paste a password into, and anyone with both an export file and its code can read your passwords.
 
-## 许可证
+To report a security problem, see [SECURITY.md](SECURITY.md); please don't open a public issue.
 
-[MIT](LICENSE)。Copyright (c) 2026 Changsha Tenon Artificial Intelligence Technology Co., Ltd.
+## Documentation
 
-## 名称和标志
+- [Design and decisions for 2.0](docs/local-notebook.md)
+- [Export file format](docs/export-format.md) · [Sync over Wi-Fi](docs/sync.md)
+- [Android](docs/android.md) · [App Store release notes](docs/app-store-release.md)
+- [Privacy and data inventory](docs/privacy.md)
+- [Changelog](CHANGELOG.md)
+- Online: [Privacy Policy](https://passby.tenonai.cn/privacy/), [Terms](https://passby.tenonai.cn/terms/), [Support](https://passby.tenonai.cn/support/)
 
-PassBy 和榫卯 Tenon 的名称和标志（包括 `PassBy/Assets.xcassets/`、`android/app/src/main/res/`、`public/web/` 和 `public/apple-touch-icon.png` 里的图标）不在 MIT 许可证的授权范围内。你可以照原样提到它们，说明你在使用 PassBy 或基于它修改；但不要把它们用作你自己产品的名称或标志，也不要让人以为你的产品来自榫卯 Tenon AI 或得到它的认可。
+Most documents are in Chinese and record discussions and decisions as they were made; the code and the online pages above are authoritative. Notes for coding agents are in [AGENTS.md](AGENTS.md).
 
-自己构建或修改后分发的版本，请换掉名称、图标和包名（iPhone 的 Bundle ID、安卓的 applicationId）：包名和签名是我们发布渠道的标识。
+## Contributing
 
-Name and logos: The PassBy and Tenon AI names and logos, including the icons in `PassBy/Assets.xcassets/`, `android/app/src/main/res/`, `public/web/` and `public/apple-touch-icon.png`, are not licensed under the MIT License. You may refer to them as they are to say that you use PassBy or that your work is based on it, but do not use them as the name or logo of your own product, or in a way that suggests your product comes from or is endorsed by Tenon AI.
+The project is archived, so only a narrow set of changes is accepted: security fixes, fixes for crashes or data loss, and corrections to text and translations. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## 第三方声明
+## License
 
-仓库现在的代码不包含第三方代码和字体。历史提交里带有 JetBrains Mono 字体（Copyright 2020 The JetBrains Mono Project Authors），按 SIL Open Font License 1.1 授权，许可原文见 [docs/third-party/JetBrainsMono-OFL.txt](docs/third-party/JetBrainsMono-OFL.txt)。安卓安装包里带的开源库和它们的许可证，见应用里的「开源许可」页。
+[MIT](LICENSE). Copyright (c) 2026 Changsha Tenon Artificial Intelligence Technology Co., Ltd.
+
+**Name and logos.** The PassBy and Tenon AI names and logos, including the icons in `PassBy/Assets.xcassets/`, `android/app/src/main/res/`, `public/web/`, `public/apple-touch-icon.png` and `docs/assets/logo.svg`, are not licensed under the MIT License. You may refer to them as they are to say that you use PassBy or that your work is based on it, but do not use them as the name or logo of your own product, or in a way that suggests your product comes from or is endorsed by Tenon AI. If you distribute your own build, change the name, the icons and the package identifiers (the iPhone bundle ID and the Android applicationId): they and the signature identify our release channels.
+
+**Third-party notices.** The current code contains no third-party code or fonts. Earlier commits include the JetBrains Mono font (Copyright 2020 The JetBrains Mono Project Authors) under the SIL Open Font License 1.1; see [docs/third-party/JetBrainsMono-OFL.txt](docs/third-party/JetBrainsMono-OFL.txt). Open-source libraries in the Android app and their licenses are listed on the app's Open source licenses page.
 
 ---
 
-榫卯 Tenon AI · [tenonai.cn](https://tenonai.cn/)
+<p>Publisher&emsp;<img src="public/web/tenon-mark.svg" width="20" height="20" alt="" align="absmiddle">&nbsp;<b>Tenon AI</b> · <a href="https://tenonai.cn/">tenonai.cn</a></p>

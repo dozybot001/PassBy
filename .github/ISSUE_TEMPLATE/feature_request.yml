@@ -1,0 +1,20 @@
+name: 建议 / Suggestion
+description: 改进建议。项目已归档，新功能大概率不会做。An idea. The project is archived, so new features are unlikely.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        PassBy 已归档，只接受安全修复、缺陷修复和文字更正，见 CONTRIBUTING.md。
+        PassBy is archived and accepts only security fixes, bug fixes and text corrections; see CONTRIBUTING.md.
+  - type: textarea
+    id: problem
+    attributes:
+      label: 遇到的问题 / The problem
+      description: 你想做什么、现在为什么做不到。What you want to do and why you can't now.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 建议的做法 / What you suggest

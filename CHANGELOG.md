@@ -2,6 +2,13 @@
 
 格式按 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-CN/1.1.0/)，版本号按语义化版本。iPhone 版本号与 App Store 一致；网页随时发布，记在下一个 iPhone 版本或「未发布」之下。
 
+## 仓库整修（2026-11-18）
+
+按开源仓库规范（创始人 11-18 定，运营组转达）：
+
+- `README.md` 改写成英文，中文放到 `README.zh-CN.md`，两份互相链接；加上标志、徽章、深浅色首图和四张功能配图（`docs/assets/`，取自给官网拍的截图，单张不到 300 KB）。
+- 新增 `CONTRIBUTING.md`（归档后只接受安全修复、缺陷修复和文字更正）、`CODE_OF_CONDUCT.md`（Contributor Covenant 2.1，联系 support@tenonai.cn）、`.github/` 下的缺陷和建议模板（中英双语）和 PR 模板。
+
 ## 撤掉 Tenon 小标（2026-11-18）
 
 创始人 11-18 定各产品取消橙色小 T 的 Tenon 标志（总办转达，Tenon-AI inbox 290dc4b）：「目前产品可以全面取消那个橙色小 T 的 logo。……此外，PassBy 也调整」；随后改为出品方用小号横版标志（inbox bf564ad：「出品方是 logo 加字可以吗」，答可以）。按产品规范 2.35 的 1.2–1.7、2.2 做。
