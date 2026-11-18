@@ -3,3 +3,4 @@
 .wordmark .product-symbol,nav .brand .product-symbol{width:1em;height:1em;flex:none}
 .product-name{display:inline-flex;align-items:flex-start;gap:max(4px,.18em)}
 .wordmark:hover,nav .brand:hover{text-decoration:none}
+.publisher{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15px;color:var(--text)}.publisher img{width:20px;height:20px;flex:none}
