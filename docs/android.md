@@ -174,7 +174,7 @@
 | 签名密钥怎么生成和保管 | 第 7.2 节 | 安全组 11-14（产品规范 15.6） |
 | 装开发环境 | 「同意全装」，含代他接受 Android SDK 许可协议（Q118） | 创始人 11-14 20:21，总办转达 |
 | 真机 | 有一台 Redmi Note 11T Pro+ 可借（Q119） | 创始人 11-14，总办转达 |
-| 证书上的公司英文名 | `Changsha Tenon Artificial Intelligence Technology Co., Ltd.`，和邓白氏编码申请里填的逐字一致 | 法务组 11-14（Tenon-AI 40205a7） |
+| 证书上的公司英文名 | `Changsha Tenon Artificial Intelligence Technology Co., Ltd.`，和邓白氏编码申请里填的逐字一致。11-19 起公司英文名已改为 `Tenon Artificial Intelligence Technology Co., Ltd.`，证书上是原来的英文名 | 法务组 11-14（Tenon-AI 40205a7） |
 | 国内直接分发不办 App 备案 | 证据够了：清单里没有联网权限，多出权限构建就失败。以后任何版本要加联网，必须先办备案 | 法务组 11-14 |
 | 系统备份对外怎么说 | 不说「云端备份是端到端加密的」。能说的是：只在系统表示这次云端备份能端到端加密时，密码本才进入云端备份；加密由提供备份的服务（例如 Google）完成。国内厂商的云备份和换机工具以厂商说明为准 | 法务组 11-14 |
 

@@ -35,7 +35,7 @@
 **安卓**（Android 8.0 或更高）
 
 1. 在 [Releases](https://github.com/dozybot001/PassBy/releases) 里下载 `PassBy-<版本>.apk`。
-2. 安装前可以核对：每个版本的说明里有安装包的 SHA-256；安装包由长沙榫卯人工智能科技有限公司签名，签名证书的 SHA-256 指纹登记在 [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256)，也公布在[支持页](https://passby.tenonai.cn/support/)上。
+2. 安装前可以核对：每个版本的说明里有安装包的 SHA-256；安装包由长沙榫卯人工智能科技有限公司签名（证书上是公司原来的英文名 Changsha Tenon Artificial Intelligence Technology Co., Ltd.），签名证书的 SHA-256 指纹登记在 [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256)，也公布在[支持页](https://passby.tenonai.cn/support/)上。
 3. 以后更新时，系统如果提示签名不一致，不要安装。
 
 **在电脑上用**：在手机的 PassBy 里打开「设置 › 同步」，点「让别的设备连过来」；电脑连同一个 Wi-Fi，打开 <https://passby.tenonai.cn/app/>，输入手机上显示的地址和配对码。步骤和排查见[支持页](https://passby.tenonai.cn/support/)。
@@ -106,7 +106,7 @@ PassBy 目前只接受这几类改动：安全修复、崩溃或丢数据的修�
 
 ## 许可证
 
-[MIT](LICENSE)。Copyright (c) 2026 Changsha Tenon Artificial Intelligence Technology Co., Ltd.（长沙榫卯人工智能科技有限公司）
+[MIT](LICENSE)。Copyright (c) 2026 Tenon Artificial Intelligence Technology Co., Ltd. (长沙榫卯人工智能科技有限公司)
 
 **名称和标志。** PassBy 和榫卯 Tenon 的名称和标志（包括 `PassBy/Assets.xcassets/`、`android/app/src/main/res/`、`public/web/`、`public/apple-touch-icon.png` 和 `docs/assets/logo.svg` 里的图标）不在 MIT 许可证的授权范围内。你可以照原样提到它们，说明你在使用 PassBy 或基于它修改；但不要把它们用作你自己产品的名称或标志，也不要让人以为你的产品来自榫卯 Tenon AI 或得到它的认可。自己构建或修改后分发的版本，请换掉名称、图标和包名（iPhone 的 Bundle ID、安卓的 applicationId）：包名和签名是我们发布渠道的标识。
 

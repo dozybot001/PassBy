@@ -35,7 +35,7 @@ No account, and nothing goes through our servers: your notebook is kept on your 
 **Android** (8.0 or later)
 
 1. Download `PassBy-<version>.apk` from [Releases](https://github.com/dozybot001/PassBy/releases).
-2. Check it before installing: each release lists the installer's SHA-256. The installer is signed by Changsha Tenon Artificial Intelligence Technology Co., Ltd.; the signing certificate's SHA-256 fingerprint is in [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256) and on the [Support page](https://passby.tenonai.cn/support/).
+2. Check it before installing: each release lists the installer's SHA-256. The installer is signed with a certificate issued to Changsha Tenon Artificial Intelligence Technology Co., Ltd., the company's earlier English name; the signing certificate's SHA-256 fingerprint is in [`android/release/signing-certificate.sha256`](android/release/signing-certificate.sha256) and on the [Support page](https://passby.tenonai.cn/support/).
 3. If an update ever reports a signature mismatch, do not install it.
 
 **On a computer**: in PassBy on the phone, open Settings › Sync and tap “Let another device connect”. Open <https://passby.tenonai.cn/app/> on a computer on the same Wi-Fi and enter the address and pairing code the phone shows. Details and troubleshooting are on the [Support page](https://passby.tenonai.cn/support/).
@@ -106,7 +106,7 @@ PassBy currently accepts these changes: security fixes, fixes for crashes or dat
 
 ## License
 
-[MIT](LICENSE). Copyright (c) 2026 Changsha Tenon Artificial Intelligence Technology Co., Ltd.
+[MIT](LICENSE). Copyright (c) 2026 Tenon Artificial Intelligence Technology Co., Ltd. (长沙榫卯人工智能科技有限公司)
 
 **Name and logos.** The PassBy and Tenon AI names and logos, including the icons in `PassBy/Assets.xcassets/`, `android/app/src/main/res/`, `public/web/`, `public/apple-touch-icon.png` and `docs/assets/logo.svg`, are not licensed under the MIT License. You may refer to them as they are to say that you use PassBy or that your work is based on it, but do not use them as the name or logo of your own product, or in a way that suggests your product comes from or is endorsed by Tenon AI. If you distribute your own build, change the name, the icons and the package identifiers (the iPhone bundle ID and the Android applicationId): they and the signature identify our release channels.
 
