@@ -16,3 +16,8 @@ keystore.properties
 .env
 .env.*
 !.env.example
+
+# Agent tool directories stay local; agent notes live only in AGENTS.md (product standard 23.6.3).
+.claude/
+.codex/
+.intent/

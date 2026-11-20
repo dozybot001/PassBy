@@ -91,14 +91,13 @@ To report a security problem, see [SECURITY.md](SECURITY.md); please don't open 
 
 ## Documentation
 
-- [Design and decisions for 2.0](docs/local-notebook.md)
 - [Export file format](docs/export-format.md) · [Sync over Wi-Fi](docs/sync.md)
-- [Android](docs/android.md) · [App Store release notes](docs/app-store-release.md)
+- [Android](docs/android.md) · [AI grouping](docs/ai-grouping.md)
 - [Privacy and data inventory](docs/privacy.md)
 - [Changelog](CHANGELOG.md)
 - Online: [Privacy Policy](https://passby.tenonai.cn/privacy/), [Terms](https://passby.tenonai.cn/terms/), [Support](https://passby.tenonai.cn/support/)
 
-Most documents are in Chinese and record discussions and decisions as they were made; the code and the online pages above are authoritative. Notes for coding agents are in [AGENTS.md](AGENTS.md).
+The documents are in Chinese and describe how PassBy works now; where they differ from the code or the online pages, those are authoritative. Notes for coding agents are in [AGENTS.md](AGENTS.md).
 
 ## Contributing
 

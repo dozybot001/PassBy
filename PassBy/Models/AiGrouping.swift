@@ -1,7 +1,7 @@
 import Foundation
 
 /// AI grouping, the part that needs no iPhone: what is sent to the model, how its answer is read,
-/// and how the suggestions the person accepts change the notebook (docs/android.md 9.2).
+/// and how the suggestions the person accepts change the notebook (docs/ai-grouping.md).
 ///
 /// `request` takes plain strings, and its only caller, `draft`, passes titles and folder names.
 /// An account, a password or notes cannot reach it.

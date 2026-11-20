@@ -260,7 +260,7 @@ final class VaultSession: ObservableObject {
         return saved && taken ? true : nil
     }
 
-    // MARK: AI grouping (docs/android.md 9.2)
+    // MARK: AI grouping (docs/ai-grouping.md)
 
     /// Applies the suggestions the person ticked, as one save. Entries are renamed and moved; none
     /// is removed. Returns what changed, for undoing, or nil when it could not be saved.

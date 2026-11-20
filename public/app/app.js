@@ -87,14 +87,6 @@ const stored = {
   set(value) { try { localStorage.setItem(ADDRESS_KEY, value); } catch { /* Private windows may refuse. */ } },
 };
 
-// What the retired web app left on this origin is removed; this page keeps only the last address.
-function removeOldData() {
-  try { indexedDB.deleteDatabase('passby-trusted-browser'); } catch { /* Not available. */ }
-  try {
-    for (const key of Object.keys(localStorage)) if (key.startsWith('passby.')) localStorage.removeItem(key);
-  } catch { /* Not available. */ }
-}
-
 // ---- Connection ----
 
 let session = null;
@@ -360,5 +352,4 @@ function renderBook() {
 }
 
 disconnectButton.addEventListener('click', clear);
-removeOldData();
 renderConnect();

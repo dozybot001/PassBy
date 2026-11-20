@@ -2,7 +2,7 @@ import Security
 import XCTest
 @testable import PassBy
 
-/// AI grouping as docs/android.md 9.2 describes it; the cases follow the Android tests.
+/// AI grouping as docs/ai-grouping.md describes it; the cases follow the Android tests.
 final class AiGroupingTests: XCTestCase {
     private let work = VaultFolder(name: "工作")
     private lazy var mail = VaultEntry(title: "gmail", account: "ACCOUNT-alex@example.com", password: "PASSWORD-s3cret", notes: "NOTES-recovery codes", folderID: work.id)

@@ -91,14 +91,13 @@ node scripts/sync-web-check.mjs
 
 ## 文档
 
-- [2.0 的设计和决定](docs/local-notebook.md)
 - [导出文件格式](docs/export-format.md) · [局域网同步](docs/sync.md)
-- [安卓版](docs/android.md) · [App Store 发布记录](docs/app-store-release.md)
+- [安卓版](docs/android.md) · [AI 分组](docs/ai-grouping.md)
 - [隐私与数据清单](docs/privacy.md)
 - [更新记录](CHANGELOG.md)
 - 线上：[隐私政策](https://passby.tenonai.cn/privacy/)、[用户协议](https://passby.tenonai.cn/terms/)、[支持](https://passby.tenonai.cn/support/)
 
-文档是开发过程中写下的记录，里面有当时的讨论和决定，以代码和上面的线上页面为准。给 agent 的项目说明在 [AGENTS.md](AGENTS.md)。
+文档描述 PassBy 现在的做法；和代码或线上页面有出入时，以代码和线上页面为准。给 agent 的项目说明在 [AGENTS.md](AGENTS.md)。
 
 ## 参与贡献
 
