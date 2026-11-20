@@ -31,7 +31,6 @@ files = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
 (root / 'manifest.json').write_text(json.dumps({'commit': sys.argv[2], 'files': files}, indent=2))
 PY
 directory="/opt/passby-site/releases/$release"
-config=/etc/caddy/sites-enabled/tenon-ai.caddy
 web_config=/etc/caddy/sites-enabled/passby.caddy
 web_host='passby.tenonai.cn'
 lock=/opt/passby-site/.publish-lock
@@ -51,14 +50,9 @@ actual = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
 assert actual == m['files']
 PY
 chmod -R a+rX "$directory"
-cp "$config" "$lock/previous.caddy"
 if [[ -f "$web_config" ]]; then cp "$web_config" "$lock/web-before.caddy"; fi
-python3 - "$config" "$lock/candidate.caddy" "$directory" "$lock/web-candidate.caddy" "$web_host" <<'PYROUTE'
-import pathlib,re,sys
-source=pathlib.Path(sys.argv[1]).read_text()
-# Take out the routes PassBy used to add to the main site; nothing is added back.
-source=re.sub(r'\n\t# BEGIN PASSBY\n.*?\t# END PASSBY\n','\n',source,flags=re.S)
-pathlib.Path(sys.argv[2]).write_text(source)
+python3 - "$directory" "$lock/web-candidate.caddy" "$web_host" <<'PYROUTE'
+import pathlib,sys
 web="""HOST {
     import access_log
     encode zstd gzip
@@ -97,17 +91,16 @@ web="""HOST {
         file_server
     }
 }
-""".replace('HOST',sys.argv[5]).replace('DIRECTORY',sys.argv[3]).replace('PAGES_CSP',
+""".replace('HOST',sys.argv[3]).replace('DIRECTORY',sys.argv[1]).replace('PAGES_CSP',
     "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; "
     "base-uri 'none'; form-action 'none'; frame-ancestors 'none'").replace('APP_CSP',
     "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src http:; "
     "base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'")
-pathlib.Path(sys.argv[4]).write_text(web)
+pathlib.Path(sys.argv[2]).write_text(web)
 PYROUTE
 # Validate the candidate with all other current sites before touching ingress.
 mkdir "$lock/sites"
 cp /etc/caddy/sites-enabled/*.caddy "$lock/sites/"
-cp "$lock/candidate.caddy" "$lock/sites/tenon-ai.caddy"
 cp "$lock/web-candidate.caddy" "$lock/sites/passby.caddy"
 # The root config defines shared snippets such as access_log; validate through it.
 python3 - "$lock" <<'PY'
@@ -119,13 +112,11 @@ pathlib.Path(sys.argv[1], 'Caddyfile').write_text(root.replace(line, 'import ' +
 PY
 caddy validate --config "$lock/Caddyfile" --adapter caddyfile >/dev/null
 rollback() {
-    cp "$lock/previous.caddy" "$config"
     if [[ -f "$lock/web-before.caddy" ]]; then cp "$lock/web-before.caddy" "$web_config"; else rm -f "$web_config"; fi
     systemctl reload caddy
     # Put back as it was: leave no lock behind, or the next publication would be refused.
-    rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/candidate.caddy" "$lock/previous.caddy" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
+    rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
 }
-cp "$lock/candidate.caddy" "$config"
 cp "$lock/web-candidate.caddy" "$web_config"
 if ! systemctl reload caddy; then rollback; exit 1; fi
 if ! python3 - "$directory" "$web_host" <<'PY'
@@ -175,7 +166,7 @@ then
     rollback
     exit 1
 fi
-cp "$lock/previous.caddy" "$directory/ingress-before.caddy"
+if [[ -f "$lock/web-before.caddy" ]]; then cp "$lock/web-before.caddy" "$directory/ingress-before.caddy"; fi
 find "$directory" -type f -exec chmod 0444 {} +
 # Retention keeps the release this one replaced.
 if [[ -L /opt/passby-site/current && "$(readlink /opt/passby-site/current)" != "$directory" ]]; then
@@ -183,5 +174,5 @@ if [[ -L /opt/passby-site/current && "$(readlink /opt/passby-site/current)" != "
 fi
 ln -sfn "$directory" /opt/passby-site/current
 printf '%s\n' "$release" > /opt/passby-site/last-successful-commit
-rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/candidate.caddy" "$lock/previous.caddy" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
+rm -rf "$lock/sites" "$lock/Caddyfile" "$lock/web-before.caddy" "$lock/web-candidate.caddy"
 echo "Published PassBy introduction, support and legal pages: $release"
