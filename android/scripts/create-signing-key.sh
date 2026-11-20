@@ -58,7 +58,7 @@ printf '%s\n' "$SHA256" > "$FINGERPRINT_FILE"
 
 echo "密钥库：$KEYSTORE"
 echo "证书主体：$SUBJECT"
-echo "证书指纹（不是秘密，登记到 docs/android.md 和支持页）："
+echo "证书指纹（不是秘密，登记到 android/release/signing-certificate.sha256 和支持页）："
 echo "  SHA-256  $SHA256"
 echo "  SHA-1    $SHA1"
 echo "  MD5      $MD5"

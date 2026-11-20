@@ -6,7 +6,7 @@ import java.text.Normalizer
 
 /**
  * AI grouping, the part that needs no phone: what is sent to the model, how its answer is read, and
- * how the suggestions the person accepts change the notebook (docs/android.md §9).
+ * how the suggestions the person accepts change the notebook (docs/ai-grouping.md).
  *
  * Nothing in this file can see an account, a password or notes. [request] takes plain strings, and
  * the only caller passes titles and folder names.

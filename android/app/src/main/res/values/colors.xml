@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Black, white and gray (docs/local-notebook.md §7). There is no accent colour. -->
+<!-- Black, white and gray (AGENTS.md). There is no accent colour. -->
 <resources>
     <color name="paper">#FAFAFA</color>
     <color name="ink">#141414</color>

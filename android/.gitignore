@@ -7,7 +7,7 @@ local.properties
 *.apk
 *.aab
 
-# The signing key lives outside the repository (docs/android.md). These lines stop a stray copy from being added.
+# The signing key lives outside the repository (docs/android.md 4). These lines stop a stray copy from being added.
 *.jks
 *.keystore
 *.p12

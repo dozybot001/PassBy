@@ -11,7 +11,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Black, white and gray (docs/local-notebook.md §7), the colours the web version uses. There is no
+ * Black, white and gray (AGENTS.md), the colours the web version uses. There is no
  * accent colour: what stands out does so by being ink on paper.
  */
 data class Palette(
