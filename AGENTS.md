@@ -8,7 +8,7 @@
 - `android/`：安卓应用，说明在 `docs/android.md`。
 - `public/`：介绍页和法律页面，以及局域网同步的网页端（`public/app/`，设计见 `docs/sync.md`），静态文件，没有构建步骤。
 - `scripts/`：测试、发布和图标生成脚本。
-- `docs/`：描述现状的文档：导出格式（`export-format.md`）、同步（`sync.md`）、AI 分组（`ai-grouping.md`）、安卓（`android.md`）、隐私清单（`privacy.md`）。计划、发布记录和历史在 Tenon-AI 的 `docs/products/passby/`，不进本仓库（产品规范 23.0）。
+- `docs/`：描述现状的文档：导出格式（`export-format.md`）、同步（`sync.md`）、AI 分组（`ai-grouping.md`）、安卓（`android.md`）、隐私清单（`privacy.md`）。
 
 ## 常用命令
 
