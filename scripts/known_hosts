@@ -1,4 +1,4 @@
-# SSH host keys pinned for publishing (product standard 15.2.4). A changed key is
+# SSH host keys pinned for publishing. A changed key is
 # verified out of band before this file is edited; scripts never scan for keys.
 wesaid-prod ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF04m6j053DAJl6BD7gCrp3imgHYo9qupHW/J51Aw//W
 gitee.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMuEoYdx6to5oxR60IWj8uoe1aI0X1fKOHWOtLqTg1tsLT1iFwXV5JmFjU46EzeMBV/6EmI1uaRI6HiEPtPtJHE=

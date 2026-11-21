@@ -6,18 +6,18 @@ xcuserdata/
 *.ipa
 *.xcarchive
 
-# Signing keys stay outside the repository (product standard 15.6.2).
+# Signing keys stay outside the repository.
 *.jks
 *.keystore
 *.p12
 keystore.properties
 
-# Local environment files hold secrets (product standard 23.6.1).
+# Local environment files hold secrets.
 .env
 .env.*
 !.env.example
 
-# Agent tool directories stay local; agent notes live only in AGENTS.md (product standard 23.6.3).
+# Agent tool directories stay local; agent notes live only in AGENTS.md.
 .claude/
 .codex/
 .intent/

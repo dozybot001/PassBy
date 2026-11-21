@@ -565,7 +565,7 @@ struct AboutPassByView: View {
                 Text("No account, and your notebook never passes through our servers. Your phone keeps your notebook, and it moves with your phone's own backups and device transfers. The app stays offline by default, with two exceptions: when you turn on AI grouping it connects to the model provider you choose, and when you use Sync it connects directly to your other device on the same Wi-Fi. Export an encrypted file to keep a backup of your own or to move to another phone.")
                     .foregroundStyle(Palette.secondary)
                 VStack(alignment: .leading, spacing: 12) {
-                    // Publisher: the small Tenon lockup, the orange T beside the company name (standard 1.4).
+                    // Publisher: the small Tenon lockup, the orange T beside the company name.
                     HStack(spacing: 0) {
                         Text("Publisher").font(.subheadline).foregroundStyle(Palette.secondary)
                         Spacer().frame(width: 16)
