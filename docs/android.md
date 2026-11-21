@@ -67,6 +67,6 @@
 - 签名密钥：RSA 4096，PKCS12，别名 `passby`，在仓库外；口令在登录钥匙串（服务 `tenon-android-signing`，账户 `passby`），不进文件、参数和日志。证书的 SHA-256 登记在 `android/release/signing-certificate.sha256`：`CDD81F2D2D37F3DB9C460C4F6E2186C900D6C68337589541284A683FD44A4984`。
 - 生成和备份：`scripts/create-signing-key.sh`、`scripts/backup-signing-key.sh <第一处> <第二处>`。备份是 AES-256 加密的磁盘映像，脚本当场做恢复演练（用备份里的私钥签名并验签）。备份的位置和口令的保管不写在这里。
 - 出正式包：`scripts/release.sh`。`android/` 有没提交的改动就停；跑测试、lint 和正式构建；`apksigner` 只用 v2、v3 签；核对证书指纹、包名、版本号、不可调试、权限名单，全部通过才改名为 `android/build/release/PassBy-<版本>.apk`，并写 `SHA256SUMS`。找不到正式密钥就停。
-- 放到 Releases：打标签 `android-v<版本>` 推到两边；GitHub 和 Gitee 各建一个 Release，传同一个安装包和 `SHA256SUMS`，说明里写安装包的 SHA-256 和支持页的位置；再从两边各下载一次核对。
+- 放到 Releases：第一次放出前，先用 `backup-signing-key.sh` 做完备份和恢复演练。打标签 `android-v<版本>` 推到两边；GitHub 和 Gitee 各建一个 Release，传同一个安装包和 `SHA256SUMS`，说明里写安装包的 SHA-256 和支持页的位置；再从两边各下载一次核对。
 - 说明里写「密码本存在你的手机上」，不写「只存在」（还有系统备份和导出文件）。要提醒：更新时系统提示签名不一致、要先卸载旧版，就不要装，先到支持页核对。
 - 怀疑密钥泄露：停止用它发布。
