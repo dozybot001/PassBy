@@ -1,6 +1,5 @@
 #!/bin/bash
 # Builds PassBy for Android and signs it with the app signing key. It does not publish anything.
-# Product standard 15.6.4 and 15.6.7.
 #
 # Signing happens here and not in Gradle, so the password never reaches the Gradle daemon or a build
 # file. Without the real key this stops; it never falls back to another key.
@@ -80,4 +79,4 @@ printf '%s\n' "$PERMISSIONS" | sed 's/^/  /'
 echo "SHA256SUMS："
 sed 's/^/  /' "$OUT_DIR/SHA256SUMS"
 echo
-echo "这一步没有发布任何东西。放到 Releases 要等仓库公开、备份和恢复演练做完，并由创始人确认。"
+echo "这一步没有发布任何东西。放到 Releases 的步骤见 docs/android.md。"

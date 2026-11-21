@@ -1,6 +1,6 @@
 #!/bin/bash
-# Creates PassBy's Android app signing key. Run once, on the development Mac, on a day the founder
-# can make the backups (backup-signing-key.sh) straight afterwards. Product standard 15.6.
+# Creates PassBy's Android app signing key. Run once, on the development Mac, on a day the backups
+# (backup-signing-key.sh) can be made straight afterwards.
 #
 # The key cannot be replaced: an update signed with another key will not install over the app, and
 # uninstalling erases a notebook that exists only on the phone.

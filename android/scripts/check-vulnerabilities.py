@@ -2,8 +2,8 @@
 """Checks the libraries that go into the app against the OSV vulnerability database (osv.dev).
 
 Reads app/gradle.lockfile, takes what the release app carries at run time, and asks OSV about each
-name and version. Only library names and versions are sent. Run before every release
-(product standard 15.1.2); exits with 1 if anything is reported.
+name and version. Only library names and versions are sent. Run before every release;
+exits with 1 if anything is reported.
 """
 import json, pathlib, sys, urllib.request
 

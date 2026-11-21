@@ -1,19 +1,18 @@
 #!/bin/bash
-# Backs up PassBy's Android signing key and proves the backup can be restored. Run with the founder
-# present, before anything signed with the key is released or given to anyone else to install.
-# Product standard 15.6.3.
+# Backs up PassBy's Android signing key and proves the backup can be restored. Run it before anything
+# signed with the key is released or given to anyone else to install.
 #
 # Usage: backup-signing-key.sh <first place> <second place>
 #
 # The two places are folders outside this Mac's own disk and apart from each other: a USB drive and
 # a folder in iCloud Drive that is not shared, or two USB drives of which one is kept somewhere else.
 #
-# Run it in a terminal the founder types into. The image passphrase is read from the keyboard and
-# must never be piped in, passed as an argument, or typed into a Claude session.
+# Run it in a terminal you type into yourself. The image passphrase is read from the keyboard and
+# must never be piped in, passed as an argument, or typed into an AI assistant.
 #
 # The backup is one AES-256 encrypted disk image holding the keystore, its password and a note of the
 # fingerprints. The keystore password is written straight into the mounted image, so it never rests on
-# the ordinary disk. The image's own passphrase is typed by the founder and exists nowhere on this Mac.
+# the ordinary disk. The image's own passphrase is typed by hand and exists nowhere on this Mac.
 set -euo pipefail
 umask 077
 source "$(dirname "${BASH_SOURCE[0]}")/signing-common.sh"

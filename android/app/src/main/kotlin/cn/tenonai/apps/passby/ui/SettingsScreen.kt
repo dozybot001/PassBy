@@ -41,7 +41,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-/** A date the way the product standard writes it: "2026 年 11 月 14 日" or "Nov 14, 2026". */
+/** A date written out in full: "2026 年 11 月 14 日" or "Nov 14, 2026". */
 @Composable
 fun formatDate(millis: Long): String {
     val locale = LocalConfiguration.current.locales[0]
@@ -125,7 +125,7 @@ fun SettingsScreen(model: AppViewModel, notebook: Notebook, activity: FragmentAc
     }
 }
 
-/** What the product standard asks of an About page (§2.2), in its order. */
+/** The About page: what PassBy is, how it works, the publisher, the legal pages and feedback. */
 @Composable
 fun AboutScreen(model: AppViewModel) {
     val context = LocalContext.current
@@ -149,7 +149,7 @@ fun AboutScreen(model: AppViewModel) {
                 Text(stringResource(R.string.about_what), style = MaterialTheme.typography.bodyLarge)
                 Text(stringResource(R.string.about_how), style = MaterialTheme.typography.bodyLarge)
                 val publisherLabel = stringResource(R.string.publisher) + " " + stringResource(R.string.publisher_name)
-                // Publisher: the small Tenon lockup, the orange T beside the company name (standard 1.4).
+                // Publisher: the small Tenon lockup, the orange T beside the company name.
                 Row(
                     Modifier.clearAndSetSemantics { contentDescription = publisherLabel },
                     verticalAlignment = Alignment.CenterVertically,

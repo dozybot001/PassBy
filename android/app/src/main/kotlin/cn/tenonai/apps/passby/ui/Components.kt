@@ -90,8 +90,8 @@ fun BrandMark(size: Dp, modifier: Modifier = Modifier, color: Color = palette.in
 }
 
 /**
- * The logo: mark and wordmark, spaced as the product standard gives (§1.5). Read out as one name.
- * There is no Tenon mark beside it (founder, 2026-11-18).
+ * The logo: mark and wordmark, the gap 0.3 of the mark's size. Read out as one name.
+ * There is no Tenon mark beside it.
  */
 @Composable
 fun BrandLockup(wordmarkSize: Int, modifier: Modifier = Modifier) {
